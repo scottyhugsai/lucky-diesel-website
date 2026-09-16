@@ -92,4 +92,14 @@ describe('parseLead', () => {
     const trimmed = parseLead({ ...valid, name: '  Cody  ' });
     expect(trimmed.ok && trimmed.lead.name).toBe('Cody');
   });
+
+  test('records SMS consent only when explicitly given', () => {
+    const withConsent = parseLead({ ...valid, smsConsent: true });
+    const without = parseLead(valid);
+    const stringy = parseLead({ ...valid, smsConsent: 'true' });
+
+    expect(withConsent.ok && withConsent.lead.smsConsent).toBe(true);
+    expect(without.ok && without.lead.smsConsent).toBe(false);
+    expect(stringy.ok && stringy.lead.smsConsent).toBe(false);
+  });
 });

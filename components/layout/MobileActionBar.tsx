@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { MessageSquare, Phone, Wrench } from 'lucide-react';
 import { BUSINESS } from '@/lib/site';
 
@@ -21,9 +22,9 @@ export function MobileActionBar() {
           </a>
         </li>
         <li>
-          <a href="#quote" className="btn-go flex h-12 items-center justify-center gap-2 rounded-sm text-sm font-bold">
+          <Link href="/#quote" className="btn-go flex h-12 items-center justify-center gap-2 rounded-sm text-sm font-bold">
             <Wrench className="size-4" aria-hidden="true" /> Request service
-          </a>
+          </Link>
         </li>
       </ul>
     </nav>

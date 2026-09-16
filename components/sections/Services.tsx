@@ -17,9 +17,9 @@ export function Services() {
             <p className="mt-6 max-w-sm text-chalk/65">
               One shop for the tune, the parts and the install. Tap a service to start a request.
             </p>
-            <a href="#quote" className="btn-go display mt-8 inline-flex items-center gap-3 rounded-sm px-6 py-3 text-xl not-italic">
+            <Link href="/#quote" className="btn-go display mt-8 inline-flex items-center gap-3 rounded-sm px-6 py-3 text-xl not-italic">
               Request service <ArrowRight className="size-5" aria-hidden="true" />
-            </a>
+            </Link>
           </div>
         </Reveal>
 
@@ -37,6 +37,11 @@ export function Services() {
                 <span>
                   <span className="display block text-3xl not-italic sm:text-4xl">{service.name}</span>
                   <span className="mt-1 block text-[0.95rem] text-chalk/60">{service.blurb}</span>
+                  {service.partsFrom && (
+                    <span className="mt-2 inline-block rounded-sm bg-clover/10 px-2 py-0.5 text-xs font-semibold text-clover tabular-nums">
+                      Parts from ${service.partsFrom.toLocaleString('en-US')}
+                    </span>
+                  )}
                 </span>
                 <span className="grid size-11 place-items-center rounded-full border border-line transition-all duration-300 group-hover:border-clover group-hover:bg-clover group-hover:text-carbon">
                   <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />

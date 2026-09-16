@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { Check, LoaderCircle, Mail, MessageSquare, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
-import { parseLead, type Lead, type LeadField } from '@/lib/lead';
+import { parseLead, SMS_CONSENT_TEXT, type Lead, type LeadField } from '@/lib/lead';
 import { BUSINESS, OTHER_PLATFORM, OTHER_SERVICE, PLATFORMS, SERVICES } from '@/lib/site';
 import { Field, inputClass } from './Field';
 
@@ -43,6 +44,7 @@ export function QuoteForm({ initialPlatform, initialService }: QuoteFormProps) {
   });
   const [errors, setErrors] = useState<Partial<Record<LeadField, string>>>({});
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  const [smsConsent, setSmsConsent] = useState(false);
 
   const platform = PLATFORMS.find((p) => p.id === values.platform);
 
@@ -68,7 +70,7 @@ export function QuoteForm({ initialPlatform, initialService }: QuoteFormProps) {
       const response = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, smsConsent }),
       });
       const data: { ok?: boolean; delivered?: boolean; message?: string; errors?: Partial<Record<LeadField, string>> } =
         await response.json().catch(() => ({}));
@@ -166,6 +168,20 @@ export function QuoteForm({ initialPlatform, initialService }: QuoteFormProps) {
           <input tabIndex={-1} autoComplete="off" name="company" value={values.company} onChange={(e) => update('company', e.target.value)} />
         </label>
       </div>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-sm border border-line bg-carbon p-3 text-xs leading-relaxed text-chalk/65 has-[:checked]:border-clover/50">
+        <input
+          type="checkbox"
+          name="smsConsent"
+          checked={smsConsent}
+          onChange={(e) => setSmsConsent(e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 accent-[var(--clover)]"
+        />
+        <span>
+          {SMS_CONSENT_TEXT}{' '}
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-clover">Privacy</Link>
+        </span>
+      </label>
 
       {status.kind === 'error' && (
         <p id="form-error" role="alert" className="flex items-start gap-2 rounded-sm border border-danger/40 bg-danger/10 p-3 text-sm">

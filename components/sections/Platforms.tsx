@@ -14,21 +14,20 @@ export function Platforms() {
               Every generation.
             </h2>
           </div>
-          <p className="max-w-xs text-chalk/65">From a ’89 12-valve to a brand-new 6.7. Pick yours to start a quote.</p>
+          <p className="max-w-xs text-chalk/65">From a ’89 12-valve to a brand-new 6.7. Pick yours.</p>
         </Reveal>
 
         <ul className="mt-12 border-t border-line">
           {PLATFORMS.map((platform, index) => (
             <Reveal as="li" key={platform.id} delayMs={index * 90} className="border-b border-line">
               <Link
-                href={`/?truck=${platform.id}#quote`}
-                scroll={false}
+                href={`/${platform.id}`}
                 className="group relative grid gap-4 overflow-hidden py-8 sm:grid-cols-[minmax(0,5fr)_minmax(0,6fr)_auto] sm:items-center sm:gap-8 sm:py-10"
               >
                 <span aria-hidden="true" className="absolute inset-0 -z-10 origin-left scale-x-0 bg-clover transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-x-100 group-focus-visible:scale-x-100" />
                 <span className="flex items-baseline gap-4 transition-[padding] duration-500 group-hover:text-carbon sm:group-hover:pl-6">
                   <span className="display text-6xl sm:text-7xl lg:text-8xl">{platform.name}</span>
-                  <span className="text-sm font-medium text-steel group-hover:text-carbon/70">{platform.make}</span>
+                  <span className="text-sm font-semibold text-steel group-hover:text-carbon/70">{platform.make}</span>
                 </span>
                 <span className="flex flex-wrap gap-1.5">
                   {platform.generations.map((generation) => (
@@ -38,7 +37,7 @@ export function Platforms() {
                   ))}
                 </span>
                 <span className="flex items-center gap-2 font-semibold text-clover group-hover:text-carbon sm:pr-6">
-                  <span className="sm:sr-only">Get a {platform.name} quote</span>
+                  <span className="sm:sr-only">{platform.name} services</span>
                   <ArrowUpRight className="size-8 transition-transform duration-300 group-hover:rotate-45" aria-hidden="true" />
                 </span>
               </Link>

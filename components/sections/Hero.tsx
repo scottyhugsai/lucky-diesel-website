@@ -17,7 +17,7 @@ export function Hero() {
 
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-6">
         <div className="lg:col-span-7">
-          <p className="kicker rise">Duramax · Powerstroke · Cummins</p>
+          <p className="kicker rise">Diesel performance · {BUSINESS.city}, {BUSINESS.region}</p>
 
           <h1 id="hero-heading" className="display mt-5 text-[length:var(--text-mega)]">
             {HEADLINE.map((line, index) => (
@@ -32,14 +32,15 @@ export function Hero() {
           </h1>
 
           <p className="rise mt-7 max-w-md text-lg leading-relaxed text-chalk/75 sm:text-xl" style={{ '--rise-delay': '480ms' } as React.CSSProperties}>
-            Tuning, parts and repair for diesel trucks. Tell us what you drive, and we’ll tell you what it takes.
+            Duramax, Powerstroke and Cummins tuning, parts and repair in {BUSINESS.city}. Tell us what you drive, and
+            we’ll tell you what it takes.
           </p>
 
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={{ '--rise-delay': '580ms' } as React.CSSProperties}>
-            <a href="#quote" className="btn-go display group flex items-center justify-center gap-3 rounded-sm px-8 py-4 text-2xl not-italic">
+            <Link href="/#quote" className="btn-go display group flex items-center justify-center gap-3 rounded-sm px-8 py-4 text-2xl not-italic">
               Request service
               <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
-            </a>
+            </Link>
             <a
               href={BUSINESS.phoneHref}
               className="flex items-center justify-center gap-3 rounded-sm border border-chalk/25 px-7 py-4 text-lg font-semibold tabular-nums transition-colors duration-200 hover:border-clover hover:text-clover"
@@ -55,12 +56,11 @@ export function Hero() {
               {PLATFORMS.map((platform) => (
                 <li key={platform.id}>
                   <Link
-                    href={`/?truck=${platform.id}#quote`}
-                    scroll={false}
+                    href={`/${platform.id}`}
                     className="display inline-flex items-baseline gap-2 rounded-sm border border-line bg-carbon-2 px-4 py-2.5 text-xl not-italic transition-colors duration-200 hover:border-clover hover:bg-clover hover:text-carbon"
                   >
                     {platform.name}
-                    <span className="font-sans text-xs font-medium normal-case tracking-normal opacity-60">{platform.make}</span>
+                    <span className="font-sans text-xs font-semibold normal-case tracking-normal opacity-60">{platform.make}</span>
                   </Link>
                 </li>
               ))}
@@ -87,7 +87,7 @@ export function Hero() {
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-clover opacity-60 motion-reduce:animate-none" />
               <span className="relative inline-flex size-2.5 rounded-full bg-clover" />
             </span>
-            <span className="text-sm font-medium">EZ-Lynk tuning &amp; DDP parts</span>
+            <span className="text-sm font-semibold">EZ-Lynk tuning &amp; DDP parts</span>
           </div>
         </div>
       </div>

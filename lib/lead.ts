@@ -2,6 +2,11 @@ import { OTHER_PLATFORM, OTHER_SERVICE, PLATFORMS, SERVICES } from './site';
 
 /** Shared by the form (client) and the API route (server). */
 
+/** Shown beside the opt-in checkbox. Bump the version whenever the wording changes. */
+export const SMS_CONSENT_VERSION = '2026-09-16';
+export const SMS_CONSENT_TEXT =
+  'I agree to receive text messages from Lucky Diesel LLC about my service request, appointments, estimates, job status and service reminders at the number provided. Message frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Consent is not a condition of purchase.';
+
 export interface Lead {
   name: string;
   phone: string;
@@ -10,6 +15,9 @@ export interface Lead {
   mileage: string;
   serviceLabel: string;
   details: string;
+  platformId: string;
+  serviceId: string;
+  smsConsent: boolean;
 }
 
 export type LeadField = 'name' | 'phone' | 'email' | 'platform' | 'generation' | 'service' | 'details';
@@ -95,6 +103,9 @@ export function parseLead(input: unknown): ParseResult {
       mileage: text(source, 'mileage').slice(0, MAX_MILEAGE),
       serviceLabel: service ? service.name : 'Other',
       details,
+      platformId: text(source, 'platform'),
+      serviceId: serviceId,
+      smsConsent: source.smsConsent === true,
     },
   };
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 import { SocialIcons } from '@/components/ui/SocialIcons';
 import { BUSINESS } from '@/lib/site';
@@ -41,7 +42,14 @@ export function SiteFooter() {
         <p aria-hidden="true" className="display mt-16 select-none whitespace-nowrap text-[clamp(4rem,17vw,15rem)] leading-[0.8] text-chalk/[0.04]">
           Lucky Diesel
         </p>
-        <p className="mt-6 text-sm text-steel">© {new Date().getFullYear()} {BUSINESS.legalName}. All rights reserved.</p>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-sm text-steel">
+          <p>© {new Date().getFullYear()} {BUSINESS.legalName} · {BUSINESS.city}, {BUSINESS.region}</p>
+          <ul className="flex gap-5">
+            <li><Link href="/emissions-policy" className="hover:text-clover">Emissions policy</Link></li>
+            <li><Link href="/privacy" className="hover:text-clover">Privacy</Link></li>
+            <li><Link href="/login" className="hover:text-clover">Customer &amp; staff login</Link></li>
+          </ul>
+        </div>
       </div>
     </footer>
   );
