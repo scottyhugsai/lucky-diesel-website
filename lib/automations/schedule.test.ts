@@ -73,3 +73,14 @@ describe('catalog', () => {
     expect(describeTiming({ anchor: 'before_appointment', delayMinutes: 120 })).toBe('2 hours before appointment');
   });
 });
+
+describe('default SMS copy', () => {
+  test('fits standard text encoding so segments stay cheap', async () => {
+    const { smsSegments } = await import('@/lib/messaging/template');
+    for (const automation of AUTOMATIONS) {
+      if (!automation.sms) continue;
+      const sample = automation.sms.replace(/\{\{[a-z_]+\}\}/g, 'x'.repeat(8));
+      expect(smsSegments(sample), automation.key).toBeLessThanOrEqual(2);
+    }
+  });
+});

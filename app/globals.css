@@ -43,6 +43,7 @@
 }
 
 html {
+  color-scheme: dark;
   scroll-behavior: smooth;
   scroll-padding-top: 5.5rem;
   background: var(--carbon);
@@ -57,6 +58,11 @@ body {
 ::selection {
   background: var(--clover);
   color: var(--carbon);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--clover);
 }
 
 :focus-visible {

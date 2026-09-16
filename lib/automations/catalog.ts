@@ -36,7 +36,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms', 'email'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'New lead: {{customer_name}} · {{vehicle}} · {{service}}. {{customer_phone}}. Open: {{admin_link}}',
+    sms: "New lead: {{customer_name}} - {{vehicle}} - {{service}}. {{customer_phone}}. Open: {{admin_link}}",
     emailSubject: 'New service request — {{customer_name}} ({{service}})',
     emailBody:
       '{{customer_name}} just requested {{service}}.\n\nTruck: {{vehicle}}\nMileage: {{mileage}}\nPhone: {{customer_phone}}\nEmail: {{customer_email}}\n\n"{{details}}"\n\nOpen the lead: {{admin_link}}',
@@ -50,7 +50,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms', 'email'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'Hey {{first_name}}, Lucky Diesel here. Got your {{service}} request for the {{vehicle}}. We’ll reach out shortly. Reply STOP to opt out.',
+    sms: "Hey {{first_name}}, Lucky Diesel here. Got your {{service}} request for the {{vehicle}}. We'll reach out shortly. Reply STOP to opt out.",
     emailSubject: 'We got your request, {{first_name}}',
     emailBody:
       'Hey {{first_name}},\n\nThanks for reaching out about {{service}} for your {{vehicle}}. We’ll get back to you shortly with next steps.\n\nNeed us sooner? Call or text {{shop_phone}}.\n\n— Lucky Diesel',
@@ -64,7 +64,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: DAY,
-    sms: 'Hi {{first_name}}, still want to get the {{vehicle}} in for {{service}}? Book a time here: {{booking_link}}',
+    sms: "Hi {{first_name}}, still want to get the {{vehicle}} in for {{service}}? Book a time here: {{booking_link}}",
   },
   {
     key: 'lead_follow_up_3d',
@@ -89,7 +89,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms', 'email'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'You’re booked, {{first_name}}: {{service}} on {{appointment_time}}. See details in your portal: {{portal_link}}',
+    sms: "You're booked, {{first_name}}: {{service}} on {{appointment_time}}. See details in your portal: {{portal_link}}",
     emailSubject: 'Booked: {{service}} on {{appointment_time}}',
     emailBody:
       'Hey {{first_name}},\n\nYou’re on the schedule for {{service}} on {{appointment_time}}.\n\nYour portal: {{portal_link}}\n\nNeed to change it? Call or text {{shop_phone}}.\n\n— Lucky Diesel',
@@ -103,7 +103,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'New booking: {{customer_name}} · {{vehicle}} · {{service}} · {{appointment_time}}. {{admin_link}}',
+    sms: "New booking: {{customer_name}} - {{vehicle}} - {{service}} - {{appointment_time}}. {{admin_link}}",
   },
   {
     key: 'appointment_reminder_24h',
@@ -114,7 +114,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'before_appointment',
     delayMinutes: DAY,
-    sms: 'Reminder: {{vehicle}} is booked at Lucky Diesel tomorrow, {{appointment_time}}. Reply C to confirm or call {{shop_phone}} to reschedule.',
+    sms: "Reminder: {{vehicle}} is booked at Lucky Diesel tomorrow, {{appointment_time}}. Reply C to confirm or call {{shop_phone}} to reschedule.",
   },
   {
     key: 'appointment_reminder_2h',
@@ -125,7 +125,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'before_appointment',
     delayMinutes: 2 * HOUR,
-    sms: 'See you soon, {{first_name}}. Your {{service}} appointment is at {{appointment_time}}.',
+    sms: "See you soon, {{first_name}}. Your {{service}} appointment is at {{appointment_time}}.",
   },
   // ── Work orders ──
   {
@@ -137,7 +137,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'Your {{vehicle}} is in the bay, {{first_name}}. Follow progress live: {{portal_link}}',
+    sms: "Your {{vehicle}} is in the bay, {{first_name}}. Follow progress live: {{portal_link}}",
   },
   {
     key: 'inspection_ready',
@@ -148,7 +148,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms', 'email'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: '{{first_name}}, your inspection for the {{vehicle}} is ready: {{recommended_count}} items with photos, {{estimate_total}}. Review & approve: {{approval_link}}',
+    sms: "{{first_name}}, your inspection for the {{vehicle}} is ready: {{recommended_count}} items with photos, {{estimate_total}}. Review & approve: {{approval_link}}",
     emailSubject: 'Your {{vehicle}} inspection is ready to review',
     emailBody:
       'Hey {{first_name}},\n\nWe finished inspecting your {{vehicle}}. There are {{recommended_count}} recommended items totaling {{estimate_total}}, each with photos and notes.\n\nApprove or decline each item here: {{approval_link}}\n\n— Lucky Diesel',
@@ -162,7 +162,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: 4 * HOUR,
-    sms: 'Hi {{first_name}}, we’re holding your {{vehicle}} until you review the estimate. Approve here: {{approval_link}} or call {{shop_phone}}.',
+    sms: "Hi {{first_name}}, we're holding your {{vehicle}} until you review the estimate. Approve here: {{approval_link}} or call {{shop_phone}}.",
   },
   {
     key: 'estimate_decision_alert',
@@ -173,7 +173,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'WO #{{work_order}} approved by {{customer_name}}: {{approved_total}}. Good to go on the {{vehicle}}.',
+    sms: "WO #{{work_order}} approved by {{customer_name}}: {{approved_total}}. Good to go on the {{vehicle}}.",
   },
   {
     key: 'waiting_parts',
@@ -184,7 +184,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'Update on your {{vehicle}}: we’re waiting on parts. We’ll text you as soon as they land. {{portal_link}}',
+    sms: "Update on your {{vehicle}}: we're waiting on parts. We'll text you as soon as they land. {{portal_link}}",
   },
   {
     key: 'job_ready',
@@ -195,7 +195,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms', 'email'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'Your {{vehicle}} is ready, {{first_name}}! Invoice {{invoice_total}}. Pay online to skip the counter: {{pay_link}}',
+    sms: "Your {{vehicle}} is ready, {{first_name}}! Invoice {{invoice_total}}. Pay online to skip the counter: {{pay_link}}",
     emailSubject: 'Your {{vehicle}} is ready — invoice #{{invoice_number}}',
     emailBody:
       'Hey {{first_name}},\n\nYour {{vehicle}} is done and ready for pickup.\n\nInvoice #{{invoice_number}}: {{invoice_total}}\nPay online: {{pay_link}}\n\nWork details, photos and your truck’s history are in your portal: {{portal_link}}\n\n— Lucky Diesel',
@@ -223,7 +223,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: DAY,
-    sms: 'Thanks for trusting us with the {{vehicle}}, {{first_name}}. Mind sharing how it went? {{review_link}}',
+    sms: "Thanks for trusting us with the {{vehicle}}, {{first_name}}. Mind sharing how it went? {{review_link}}",
   },
   {
     key: 'review_reminder',
@@ -247,7 +247,7 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
     channels: ['sms'],
     anchor: 'event',
     delayMinutes: 0,
-    sms: 'Hey {{first_name}}, the {{vehicle}} is due for {{due_service}}. Grab a time: {{booking_link}}',
+    sms: "Hey {{first_name}}, the {{vehicle}} is due for {{due_service}}. Grab a time: {{booking_link}}",
   },
   {
     key: 'declined_work_follow_up',
