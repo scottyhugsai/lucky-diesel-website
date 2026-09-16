@@ -21,7 +21,6 @@ export function templatePlaceholders(template: string): string[] {
 
 /** SMS segments: 160 GSM-7 characters, or 153 each when split. Unicode drops to 70/67. */
 export function smsSegments(body: string): number {
-  // eslint-disable-next-line no-control-regex
   const isGsm = /^[\x0A\x0D\x20-\x7E£¥èéùìòÇØøÅå_ÆæßÉ¡ÄÖÑÜ§¿äöñüà]*$/.test(body);
   const single = isGsm ? 160 : 70;
   const multi = isGsm ? 153 : 67;

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { deliverLead } from '@/lib/deliver-lead';
+import { createWebsiteLead } from '@/lib/domain/leads';
 import { parseLead } from '@/lib/lead';
 
 const WINDOW_MS = 10 * 60 * 1000;
@@ -15,12 +16,9 @@ function isThrottled(ip: string, now: number): boolean {
 }
 
 export async function POST(request: Request) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (isThrottled(ip, Date.now())) {
-    return NextResponse.json(
-      { ok: false, message: 'Too many requests. Give us a call instead.' },
-      { status: 429 },
-    );
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+  if (isThrottled(ip ?? 'unknown', Date.now())) {
+    return NextResponse.json({ ok: false, message: 'Too many requests. Give us a call instead.' }, { status: 429 });
   }
 
   const body: unknown = await request.json().catch(() => null);
@@ -32,6 +30,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, errors: parsed.errors }, { status: 422 });
   }
 
-  const result = await deliverLead(parsed.lead);
-  return NextResponse.json({ ok: true, delivered: result.delivered });
+  const saved = await createWebsiteLead(parsed.lead, { ip }).catch((error: unknown) => ({
+    ok: false as const,
+    error: error instanceof Error ? error.message : String(error),
+  }));
+
+  if (!saved.ok) {
+    // Database down: fall back to emailing the shop directly so the lead isn't lost.
+    console.error(`[lead] could not save lead, falling back to email: ${saved.error}`);
+    const result = await deliverLead(parsed.lead);
+    return NextResponse.json({ ok: true, delivered: result.delivered });
+  }
+
+  return NextResponse.json({ ok: true, delivered: true });
 }
