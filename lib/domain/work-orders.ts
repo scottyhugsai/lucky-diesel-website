@@ -42,6 +42,17 @@ export async function changeWorkOrderStatus(workOrderId: string, to: Status, act
   return { ok: true, data: undefined };
 }
 
+/** Status triggers run as the service role; stamp who actually did it on the just-written events. */
+export async function attributeRecentEvents(db: ReturnType<typeof createAdminClient>, workOrderId: string, actorId: string | null | undefined): Promise<void> {
+  if (!actorId) return;
+  await db
+    .from('work_order_events')
+    .update({ actor_id: actorId })
+    .eq('work_order_id', workOrderId)
+    .is('actor_id', null)
+    .gte('created_at', new Date(Date.now() - 60_000).toISOString());
+}
+
 /** Freezes approved lines into an invoice, marks the job invoiced and sends the pickup/pay message. */
 export async function createInvoice(workOrderId: string, actorId: string): Promise<DomainResult<{ invoiceId: string }>> {
   const db = createAdminClient();
@@ -75,6 +86,7 @@ export async function createInvoice(workOrderId: string, actorId: string): Promi
 
   if (wo.status !== 'ready') await db.from('work_orders').update({ status: 'ready', completed_at: new Date().toISOString() }).eq('id', wo.id);
   await db.from('work_orders').update({ status: 'invoiced' }).eq('id', wo.id);
+  await attributeRecentEvents(db, wo.id, actorId);
   await db.from('audit_log').insert({ actor_id: actorId, entity: 'invoice', entity_id: invoice.id, action: 'created', data: { total_cents: totals.totalCents } });
 
   await emit({ name: 'invoice.created', subjectType: 'invoice', subjectId: invoice.id });

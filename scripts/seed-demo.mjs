@@ -287,6 +287,22 @@ async function main() {
     if (customerIndex === 0) codyJob = wo;
   }
 
+  // An unpaid invoice from last week's service, so the customer portal demo can show "Pay".
+  {
+    const openedAt = shopTime(-6, 9);
+    const wo = await must(db.from('work_orders').insert({
+      customer_id: cody.id, vehicle_id: codyTruck.id, status: 'invoiced', title: JOBS.maintenance.title, assigned_tech_id: dreId,
+      mileage_in: codyTruck.mileage - 400, started_at: iso(openedAt), completed_at: iso(openedAt + 3 * HOUR), created_at: iso(openedAt - HOUR), bay: 'Bay 2',
+    }).select().single(), 'cody service');
+    const lines = lineRows(wo.id, 'maintenance');
+    await must(db.from('line_items').insert(lines), 'cody service lines');
+    const t = totals(lines);
+    await must(db.from('invoices').insert({
+      work_order_id: wo.id, customer_id: cody.id, subtotal_cents: t.subtotal, tax_cents: t.tax, total_cents: t.total,
+      status: 'open', line_snapshot: lines, created_at: iso(openedAt + 3 * HOUR), due_at: iso(openedAt + 10 * DAY),
+    }), 'cody open invoice');
+  }
+
   console.log('Cody’s inspection…');
   const inspection = await must(db.from('inspections').insert({
     work_order_id: codyJob.id, tech_id: jakeId, status: 'sent', sent_at: iso(now - 40 * 60_000),

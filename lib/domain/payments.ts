@@ -1,7 +1,7 @@
 import 'server-only';
 import { emit } from '@/lib/automations/engine';
 import { createAdminClient } from '@/lib/supabase/admin';
-import type { DomainResult } from './work-orders';
+import { attributeRecentEvents, type DomainResult } from './work-orders';
 
 /**
  * Records full payment of an invoice (card via Stripe webhook, cash/check at
@@ -34,6 +34,7 @@ export async function recordPayment(
 
   await db.from('invoices').update({ status: 'paid', paid_at: paidAt }).eq('id', invoice.id).neq('status', 'paid');
   await db.from('work_orders').update({ status: 'paid' }).eq('id', invoice.work_order_id);
+  await attributeRecentEvents(db, invoice.work_order_id, options.actorId);
   await db.from('audit_log').insert({ actor_id: options.actorId ?? null, entity: 'invoice', entity_id: invoice.id, action: 'paid', data: { method, amount_cents: invoice.total_cents } });
 
   await emit({ name: 'invoice.paid', subjectType: 'invoice', subjectId: invoice.id });

@@ -118,7 +118,9 @@ async function workOrderContext(db: Db, id: string, automationKey: string): Prom
   }
 
   let skipReason: string | null = null;
-  if (automationKey === 'estimate_nudge' && (wo.approvals?.length ?? 0) > 0) skipReason = 'estimate already answered';
+  if (automationKey === 'estimate_nudge' && ((wo.approvals?.length ?? 0) > 0 || wo.status !== 'awaiting_approval')) {
+    skipReason = `estimate no longer waiting (job is ${wo.status.replace('_', ' ')})`;
+  }
   if (automationKey === 'declined_work_follow_up' && declined.length === 0) skipReason = 'nothing was declined';
   if (wo.status === 'cancelled') skipReason = 'job cancelled';
 
