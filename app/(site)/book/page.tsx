@@ -1,0 +1,57 @@
+import type { Metadata } from 'next';
+import { BookingForm } from '@/components/booking/BookingForm';
+import { BUSINESS } from '@/lib/site';
+import { createAdminClient } from '@/lib/supabase/admin';
+
+export const metadata: Metadata = {
+  title: `Book Diesel Service Online | Lucky Diesel ${BUSINESS.city}`,
+  description: `Pick a day and time for tuning, diagnostics or repair on your Duramax, Powerstroke or Cummins. ${BUSINESS.city}, ${BUSINESS.region}.`,
+  alternates: { canonical: '/book' },
+};
+
+export const dynamic = 'force-dynamic';
+
+const DAYS_AHEAD = 21;
+
+/** The next bookable shop days, as YYYY-MM-DD in shop time. */
+async function openDates(): Promise<{ value: string; weekday: string; day: string; month: string }[]> {
+  const { data: settings } = await createAdminClient().from('shop_settings').select('open_days').eq('id', 1).maybeSingle();
+  const openDays = settings?.open_days ?? [1, 2, 3, 4, 5];
+  const fmt = (options: Intl.DateTimeFormatOptions, at: Date) => new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'America/New_York' }).format(at);
+  const dates = [];
+  for (let offset = 0; offset < DAYS_AHEAD && dates.length < 12; offset += 1) {
+    const at = new Date(Date.now() + offset * 86_400_000);
+    const value = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(at);
+    if (!openDays.includes(new Date(`${value}T12:00:00Z`).getUTCDay())) continue;
+    dates.push({ value, weekday: fmt({ weekday: 'short' }, at), day: fmt({ day: 'numeric' }, at), month: fmt({ month: 'short' }, at) });
+  }
+  return dates;
+}
+
+export default async function BookPage() {
+  const dates = await openDates();
+  return (
+    <section className="grain relative isolate overflow-hidden pb-24 pt-32 sm:pt-40">
+      <div aria-hidden="true" className="absolute -left-40 top-20 -z-10 size-[36rem] rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, var(--clover-glow), transparent 65%)' }} />
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.4fr]">
+        <div>
+          <p className="kicker">Book online</p>
+          <h1 className="display mt-4 text-[length:var(--text-display)]">
+            Pick a time.
+            <span className="block text-clover">We’ll handle the rest.</span>
+          </h1>
+          <p className="mt-6 max-w-sm text-lg text-chalk/70">
+            Choose a day and time that works. You’ll get a confirmation right away and a reminder before your appointment.
+          </p>
+          <p className="mt-8 text-chalk/60">
+            Rather talk it through? Call or text{' '}
+            <a href={BUSINESS.phoneHref} className="font-semibold text-clover">{BUSINESS.phoneDisplay}</a>.
+          </p>
+        </div>
+        <div className="rounded-md border border-line bg-carbon-2/90 p-5 backdrop-blur sm:p-8">
+          <BookingForm dates={dates} />
+        </div>
+      </div>
+    </section>
+  );
+}

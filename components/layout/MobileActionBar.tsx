@@ -22,8 +22,8 @@ export function MobileActionBar() {
           </a>
         </li>
         <li>
-          <Link href="/#quote" className="btn-go flex h-12 items-center justify-center gap-2 rounded-sm text-sm font-bold">
-            <Wrench className="size-4" aria-hidden="true" /> Request service
+          <Link href="/book" className="btn-go flex h-12 items-center justify-center gap-2 rounded-sm text-sm font-bold">
+            <Wrench className="size-4" aria-hidden="true" /> Book online
           </Link>
         </li>
       </ul>

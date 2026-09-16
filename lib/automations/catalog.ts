@@ -95,6 +95,17 @@ export const AUTOMATIONS: readonly AutomationDefinition[] = [
       'Hey {{first_name}},\n\nYou’re on the schedule for {{service}} on {{appointment_time}}.\n\nYour portal: {{portal_link}}\n\nNeed to change it? Call or text {{shop_phone}}.\n\n— Lucky Diesel',
   },
   {
+    key: 'booking_owner_alert',
+    name: 'New booking alert',
+    description: 'Tell the owner when someone books online.',
+    triggerEvent: 'appointment.booked',
+    audience: 'owner',
+    channels: ['sms'],
+    anchor: 'event',
+    delayMinutes: 0,
+    sms: 'New booking: {{customer_name}} · {{vehicle}} · {{service}} · {{appointment_time}}. {{admin_link}}',
+  },
+  {
     key: 'appointment_reminder_24h',
     name: 'Appointment reminder (24h)',
     description: 'Cut no-shows with a reminder the day before.',

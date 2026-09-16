@@ -75,8 +75,8 @@ export function SiteHeader() {
             <Link href="/login" className="text-[0.95rem] font-semibold text-chalk/80 transition-colors hover:text-clover">
               Log in
             </Link>
-            <Link href="/#quote" className="btn-go display rounded-sm px-5 py-2.5 text-lg not-italic">
-              Get a quote
+            <Link href="/book" className="btn-go display rounded-sm px-5 py-2.5 text-lg not-italic">
+              Book online
             </Link>
           </div>
 
