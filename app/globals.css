@@ -1,115 +1,189 @@
 @import "tailwindcss";
 
+/*
+ * Lucky Diesel — "shop floor after dark".
+ * Carbon black and gunmetal from the turbo mark, clover green as the one
+ * signal colour (CTAs, focus, live state), purple only as the build-photo echo.
+ */
 :root {
-  /* Industrial Luxury Palette */
-  --background: #0f0f0f;
-  --foreground: #f5f5f5;
-  --accent: #ff6b35;
-  --accent-dark: #e55100;
-  --surface: #1a1a1a;
-  --surface-hover: #252525;
-  --border: rgba(255, 255, 255, 0.1);
+  --carbon: #0a0c0b;
+  --carbon-2: #121614;
+  --gunmetal: #1c2220;
+  --steel: #8c9590;
+  --chalk: #eef2ef;
+  --clover: #1fbf3f;
+  --clover-deep: #0f8a2a;
+  --clover-glow: rgb(31 191 63 / 0.35);
+  --violet: #6b2cf5;
+  --line: rgb(238 242 239 / 0.1);
+  --danger: #ff6b5b;
 
-  /* Typography */
-  --text-hero: clamp(3rem, 2rem + 7vw, 7rem);
-  --text-h1: clamp(2.5rem, 1.5rem + 4vw, 4rem);
-  --text-h2: clamp(2rem, 1.25rem + 3vw, 3rem);
-  --text-h3: clamp(1.5rem, 1rem + 2vw, 2rem);
-  --text-base: clamp(1rem, 0.9rem + 0.4vw, 1.125rem);
+  --text-mega: clamp(4.4rem, 0.8rem + 12vw, 10.5rem);
+  --text-display: clamp(2.5rem, 1.2rem + 5vw, 5.5rem);
 
-  /* Spacing */
-  --space-section: clamp(4rem, 3rem + 5vw, 10rem);
-  --space-gutter: clamp(1rem, 0.5rem + 2vw, 2rem);
-
-  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 150ms;
   --duration-normal: 300ms;
-  --duration-slow: 600ms;
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-slow: 700ms;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  --color-carbon: var(--carbon);
+  --color-carbon-2: var(--carbon-2);
+  --color-gunmetal: var(--gunmetal);
+  --color-steel: var(--steel);
+  --color-chalk: var(--chalk);
+  --color-clover: var(--clover);
+  --color-clover-deep: var(--clover-deep);
+  --color-violet: var(--violet);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-condensed), "Arial Narrow", sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  background: var(--carbon);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
-  position: relative;
+  background: var(--carbon);
+  color: var(--chalk);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-dark);
-}
-
-/* Selection */
 ::selection {
-  background: var(--accent);
-  color: var(--background);
+  background: var(--clover);
+  color: var(--carbon);
 }
 
-/* Utility classes */
-.prose-invert {
-  color: var(--foreground);
+:focus-visible {
+  outline: 2px solid var(--clover);
+  outline-offset: 3px;
 }
 
-/* Glass effect */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
+/* Condensed italic slab, matching the LUCKY DIESEL wordmark. */
+.display {
+  font-family: var(--font-condensed), "Arial Narrow", sans-serif;
+  font-style: italic;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.86;
 }
 
-/* Smooth transitions */
-.transition-smooth {
-  transition: all var(--duration-normal) var(--ease-out-quad);
+.kicker {
+  font-family: var(--font-condensed), "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--clover);
 }
 
-/* Hero gradient overlay */
-.gradient-mesh {
-  position: relative;
-  overflow: hidden;
-}
-
-.gradient-mesh::before {
-  content: '';
+/* Film grain so the black reads as a surface, not a void. */
+.grain::after {
+  content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 800px 600px at 20% 50%, rgba(255, 107, 53, 0.15), transparent 40%),
-    radial-gradient(ellipse 600px 800px at 80% 40%, rgba(255, 107, 53, 0.08), transparent 40%);
   pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The swoosh bands from the business card, as a repeatable motif. */
+.speed-stripes {
+  background: repeating-linear-gradient(
+    -62deg,
+    var(--clover) 0 14px,
+    transparent 14px 34px
+  );
+}
+
+/* Primary action: clover slab with a skewed sheen on hover. */
+.btn-go {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--clover);
+  color: var(--carbon);
+  transition: transform var(--duration-fast) ease, box-shadow var(--duration-normal) ease;
+}
+.btn-go::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 45%;
+  z-index: -1;
+  background: rgb(255 255 255 / 0.35);
+  transform: skewX(-24deg) translateX(0);
+  transition: transform var(--duration-slow) var(--ease-out-expo);
+}
+.btn-go:hover {
+  box-shadow: 0 10px 40px -8px var(--clover-glow);
+}
+.btn-go:hover::before {
+  transform: skewX(-24deg) translateX(420%);
+}
+.btn-go:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Scroll reveal — toggled by <Reveal>. */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity var(--duration-slow) var(--ease-out-expo),
+    transform var(--duration-slow) var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes spool {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spool {
+  animation: spool 14s linear infinite;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em) skewY(3deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 900ms var(--ease-out-expo) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .rise,
+  .spool {
+    animation: none;
+  }
+  .btn-go::before {
+    display: none;
+  }
 }
