@@ -6,13 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
+    "db:types": "node --env-file=.env.local scripts/gen-types.mjs",
+    "db:seed": "node --env-file=.env.local scripts/seed-demo.mjs",
+    "test:rls": "node --env-file=.env.local node_modules/vitest/vitest.mjs run tests/rls.integration.test.ts --config /dev/null"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^1.39.0",
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -21,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "postgres": "^3.4.9",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.4"
