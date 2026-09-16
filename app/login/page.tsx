@@ -15,7 +15,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const [viewer, params] = await Promise.all([getViewer(), searchParams]);
   if (viewer) redirect(HOME_BY_ROLE[viewer.profile.role]);
 
-  const isDemo = process.env.DEMO_MODE !== 'false';
+  // Demo shortcuts are opt-in: set DEMO_MODE=true and DEMO_PASSWORD for pitch deployments only.
+  const demoPassword = process.env.DEMO_MODE === 'true' ? (process.env.DEMO_PASSWORD ?? null) : null;
 
   return (
     <main className="grain relative isolate grid min-h-dvh lg:grid-cols-2">
@@ -40,7 +41,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {params.error === 'link' && (
             <p role="alert" className="mt-5 rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm">That sign-in link expired. Request a new one below.</p>
           )}
-          <LoginForm next={params.next ?? ''} isDemo={isDemo} />
+          <LoginForm next={params.next ?? ''} demoPassword={demoPassword} />
         </div>
       </div>
     </main>

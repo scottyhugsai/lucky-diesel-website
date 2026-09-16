@@ -15,6 +15,9 @@ export type DomainResult<T = undefined> = { ok: true; data: T } | { ok: false; e
  * Callers must have already checked the actor may touch this job.
  */
 export async function changeWorkOrderStatus(workOrderId: string, to: Status, actorId: string, note?: string): Promise<DomainResult> {
+  // Billing states are only reachable through createInvoice / recordPayment, which create the matching records.
+  if (to === 'invoiced' || to === 'paid') return { ok: false, error: 'Use Create invoice or Record payment for billing.' };
+
   const db = createAdminClient();
   const { data: wo, error } = await db.from('work_orders').select('status, started_at').eq('id', workOrderId).maybeSingle();
   if (error || !wo) return { ok: false, error: 'Job not found.' };

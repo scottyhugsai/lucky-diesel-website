@@ -106,6 +106,38 @@ describe('employee (Jake)', () => {
     expect(automations ?? []).toHaveLength(0);
   });
 
+  test('cannot change a line the customer already approved', async () => {
+    const { data: line } = await tech.from('line_items').select('id, unit_price_cents').eq('approval', 'approved').limit(1).single();
+    const { data } = await tech.from('line_items').update({ unit_price_cents: line!.unit_price_cents + 100 }).eq('id', line!.id).select();
+    expect(data ?? []).toHaveLength(0);
+    const { data: after } = await owner.from('line_items').select('unit_price_cents').eq('id', line!.id).single();
+    expect(after!.unit_price_cents).toBe(line!.unit_price_cents);
+  });
+
+  test('cannot approve a line on the customer’s behalf', async () => {
+    const { data: line } = await tech.from('line_items').select('id').eq('approval', 'pending').limit(1).single();
+    const { data } = await tech.from('line_items').update({ approval: 'approved' }).eq('id', line!.id).select();
+    expect(data ?? []).toHaveLength(0);
+  });
+
+  test('cannot mark a job paid directly', async () => {
+    const { data: job } = await tech.from('work_orders').select('id').eq('status', 'in_progress').limit(1).single();
+    const { data } = await tech.from('work_orders').update({ status: 'paid' }).eq('id', job!.id).select();
+    expect(data ?? []).toHaveLength(0);
+  });
+
+  test('can still add and remove a pending recommendation on an open job', async () => {
+    const { data: job } = await tech.from('work_orders').select('id').eq('status', 'in_progress').limit(1).single();
+    const { data: added, error } = await tech
+      .from('line_items')
+      .insert({ work_order_id: job!.id, kind: 'part', description: 'RLS test line', unit_price_cents: 100, approval: 'pending' })
+      .select('id')
+      .single();
+    expect(error).toBeNull();
+    const { data: removed } = await tech.from('line_items').delete().eq('id', added!.id).select();
+    expect(removed).toHaveLength(1);
+  });
+
   test('cannot read the audit log', async () => {
     expect((await tech.from('audit_log').select('id')).data ?? []).toHaveLength(0);
   });

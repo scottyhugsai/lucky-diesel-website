@@ -58,8 +58,11 @@ async function reset() {
       await db.auth.admin.deleteUser(user.id);
     }
   }
-  const { data: objects } = await db.storage.from('media').list('demo', { limit: 1000 });
-  if (objects?.length) await db.storage.from('media').remove(objects.map((o) => `demo/${o.name}`));
+  const { data: folders } = await db.storage.from('media').list('work-orders', { limit: 1000 });
+  for (const folder of folders ?? []) {
+    const { data: files } = await db.storage.from('media').list(`work-orders/${folder.name}`, { limit: 1000 });
+    if (files?.length) await db.storage.from('media').remove(files.map((f) => `work-orders/${folder.name}/${f.name}`));
+  }
 }
 
 async function createUser({ email, fullName, role, phone, title, color }) {
@@ -391,6 +394,46 @@ async function main() {
       parts: ['Reman CP3 injection pump', 'Fuel filter set', 'Rail pressure datalog'], published: true, is_sample: true,
     },
   ]), 'builds');
+
+  console.log('automation history…');
+  // Status history reads as people doing the work, not "System".
+  await sql`update work_order_events e set actor_id = coalesce(w.assigned_tech_id, ${ownerId}::uuid)
+    from work_orders w where w.id = e.work_order_id and e.actor_id is null`;
+
+  const RUNS = [];
+  const run = (automation_key, subject_type, subject_id, status, at, detail = null) =>
+    RUNS.push({ automation_key, subject_type, subject_id, status, scheduled_for: iso(at), executed_at: status === 'scheduled' ? null : iso(at), detail,
+      dedupe_key: `${automation_key}:${subject_type}:${subject_id}:seed` });
+
+  const { data: seededLeads } = await db.from('leads').select('id, status, created_at');
+  for (const lead of seededLeads ?? []) {
+    const created = Date.parse(lead.created_at);
+    run('lead_owner_alert', 'lead', lead.id, 'sent', created, 'sms: simulated · email: sent');
+    run('lead_auto_reply', 'lead', lead.id, 'sent', created, 'sms: simulated · email: sent');
+    const open = ['new', 'contacted'].includes(lead.status);
+    for (const [key, delay] of [['lead_follow_up_1d', DAY], ['lead_follow_up_3d', 3 * DAY]]) {
+      const due = created + delay;
+      if (due > now) run(key, 'lead', lead.id, open ? 'scheduled' : 'cancelled', due);
+      else run(key, 'lead', lead.id, open ? 'sent' : 'skipped', due, open ? 'sms: simulated' : `lead is ${lead.status}`);
+    }
+  }
+  const { data: upcoming } = await db.from('appointments').select('id, starts_at, created_at').gt('starts_at', iso(now));
+  for (const appt of upcoming ?? []) {
+    const start = Date.parse(appt.starts_at);
+    run('appointment_confirmation', 'appointment', appt.id, 'sent', Date.parse(appt.created_at), 'sms: simulated · email: sent');
+    for (const [key, before] of [['appointment_reminder_24h', DAY], ['appointment_reminder_2h', 2 * HOUR]]) {
+      if (start - before > now) run(key, 'appointment', appt.id, 'scheduled', start - before);
+    }
+  }
+  for (const invoice of invoicesForReview) {
+    const paid = Date.parse(invoice.paid_at);
+    run('payment_receipt', 'invoice', invoice.id, 'sent', paid, 'email: sent');
+    run('review_request', 'invoice', invoice.id, paid + DAY > now ? 'scheduled' : 'sent', paid + DAY, paid + DAY > now ? null : 'sms: simulated');
+    run('review_reminder', 'invoice', invoice.id, paid + 4 * DAY > now ? 'scheduled' : 'sent', paid + 4 * DAY, paid + 4 * DAY > now ? null : 'email: sent');
+  }
+  run('inspection_ready', 'work_order', codyJob.id, 'sent', now - 40 * 60_000, 'sms: simulated · email: sent');
+  run('estimate_nudge', 'work_order', codyJob.id, 'scheduled', now + 200 * 60_000);
+  await must(db.from('automation_runs').insert(RUNS), 'automation runs');
 
   await sql`insert into audit_log (actor_id, entity, action, data) values (${ownerId}, 'demo', 'seeded', ${sql.json({ at: iso(now) })})`;
   const hash = createHash('sha256').update(String(now)).digest('hex').slice(0, 8);

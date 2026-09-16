@@ -11,9 +11,9 @@ const DEMO_ACCOUNTS = [
   { role: 'Customer', email: 'cody@luckydiesel.demo' },
 ] as const;
 
-const DEMO_PASSWORD = 'DieselDemo2026!';
-
-export function LoginForm({ next, isDemo }: { next: string; isDemo: boolean }) {
+/** `demoPassword` is only passed from the server while DEMO_MODE is on, so it never ships in the bundle otherwise. */
+export function LoginForm({ next, demoPassword }: { next: string; demoPassword: string | null }) {
+  const isDemo = demoPassword !== null;
   const [mode, setMode] = useState<'password' | 'link'>('password');
   const [passwordState, passwordAction] = useActionState<LoginState, FormData>(signInWithPassword, {});
   const [linkState, linkAction] = useActionState<LoginState, FormData>(sendMagicLink, {});
@@ -27,7 +27,7 @@ export function LoginForm({ next, isDemo }: { next: string; isDemo: boolean }) {
     setMode('password');
     requestAnimationFrame(() => {
       if (emailRef.current) emailRef.current.value = email;
-      if (passwordRef.current) passwordRef.current.value = DEMO_PASSWORD;
+      if (passwordRef.current) passwordRef.current.value = demoPassword ?? '';
       formRef.current?.requestSubmit();
     });
   }

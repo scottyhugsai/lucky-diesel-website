@@ -70,7 +70,7 @@ export function NewJobForm({ customers, techs, bays, laborRateCents, initialCust
     `inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-sm text-sm font-semibold sm:flex-none sm:px-4 ${mode === value ? 'bg-gunmetal text-chalk' : 'text-steel hover:text-chalk'}`;
 
   return (
-    <ActionForm action={createJob} className="grid gap-5">
+    <ActionForm action={createJob} className="grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0">
       <input type="hidden" name="customer_mode" value={mode} />
       <input type="hidden" name="template" value={templateId} />
 
@@ -86,7 +86,7 @@ export function NewJobForm({ customers, techs, bays, laborRateCents, initialCust
         </div>
 
         {mode === 'existing' ? (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 [&>*]:min-w-0">
             <div>
               <label htmlFor="customer-search" className={labelClass}>Find customer</label>
               <div className="relative">
@@ -113,7 +113,7 @@ export function NewJobForm({ customers, techs, bays, laborRateCents, initialCust
                 {!matches.length && <li className="px-3 py-4 text-sm text-steel">No match. Use Quick add.</li>}
               </ul>
             </div>
-            <fieldset>
+            <fieldset className="min-w-0">
               <legend className={labelClass}>Truck</legend>
               <input type="hidden" name="customer_id" value={customerId ?? ''} />
               {selected ? (
