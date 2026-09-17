@@ -33,6 +33,10 @@ export const MEDIA_EXTENSIONS: Record<string, { ext: string; kind: 'photo' | 'vi
 
 export const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
-export function mediaPathPattern(workOrderId: string): RegExp {
-  return new RegExp(`^work-orders/${workOrderId}/[0-9a-f-]{36}\\.(jpg|png|webp|heic|mp4|mov)$`);
+const MEDIA_FILE_NAME = /^[0-9a-f-]{36}\.(jpg|png|webp|heic|mp4|mov)$/;
+
+/** True when `path` is an upload for this job: work-orders/<job id>/<uuid>.<ext>. Fixed pattern, no dynamic RegExp. */
+export function isJobMediaPath(workOrderId: string, path: string): boolean {
+  const prefix = `work-orders/${workOrderId}/`;
+  return path.startsWith(prefix) && MEDIA_FILE_NAME.test(path.slice(prefix.length));
 }

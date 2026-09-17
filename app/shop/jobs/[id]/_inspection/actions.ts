@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { checked, fail, isUuid, num, ok, oneOf, text, type ActionState } from '@/app/shop/_lib/form';
-import { INSPECTION_CATEGORIES, RATINGS, mediaPathPattern } from '@/app/shop/_lib/inspection';
+import { INSPECTION_CATEGORIES, RATINGS, isJobMediaPath } from '@/app/shop/_lib/inspection';
 import { emit } from '@/lib/automations/engine';
 import { requireRole } from '@/lib/auth';
 import { changeWorkOrderStatus } from '@/lib/domain/work-orders';
@@ -103,7 +103,7 @@ export async function deleteInspectionItem(_prev: ActionState, formData: FormDat
 export async function attachMedia(input: { workOrderId: string; itemId: string; path: string; kind: string }): Promise<ActionState> {
   const viewer = await requireRole('employee', 'admin');
   const { workOrderId, itemId, path, kind } = input;
-  if (!isUuid(workOrderId) || typeof path !== 'string' || !mediaPathPattern(workOrderId).test(path)) return fail('Upload path is invalid.');
+  if (!isUuid(workOrderId) || typeof path !== 'string' || !isJobMediaPath(workOrderId, path)) return fail('Upload path is invalid.');
   if (kind !== 'photo' && kind !== 'video') return fail('Only photos and videos can be attached.');
 
   const db = await createClient();
