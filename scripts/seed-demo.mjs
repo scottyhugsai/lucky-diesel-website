@@ -48,7 +48,7 @@ async function must(promise, label) {
 async function reset() {
   await sql`truncate table audit_log, automation_runs, messages, payments, invoices, build_items, dyno_runs, tune_records,
     part_requests, work_order_notes, time_entries, acknowledgements, approvals, media, line_items, inspection_items,
-    inspections, appointments, work_order_events, work_orders, leads, vehicles, customers, builds, automations, shop_settings
+    inspections, appointments, work_order_events, work_orders, leads, vehicles, customers, gallery_items, builds, automations, shop_settings
     restart identity cascade`;
   await sql`alter sequence work_order_number_seq restart with 1041`;
   await sql`alter sequence invoice_number_seq restart with 2201`;
@@ -394,6 +394,16 @@ async function main() {
       parts: ['Reman CP3 injection pump', 'Fuel filter set', 'Rail pressure datalog'], published: true, is_sample: true,
     },
   ]), 'builds');
+
+  const { data: showcase } = await db.from('builds').select('id, slug');
+  const buildId = (slug) => showcase?.find((b) => b.slug === slug)?.id ?? null;
+  await must(db.from('gallery_items').insert([
+    { title: 'Purple-piped L5P', caption: 'Coated intake and charge pipes.', category: 'builds', platform: 'duramax', vehicle_label: 'GMC Sierra 2500HD · L5P', image_url: '/images/build-l5p-purple.jpg', width: 1300, height: 1400, build_id: buildId('l5p-duramax-purple-intake'), sort: 1, is_sample: true },
+    { title: 'Lucky on the engine bay', caption: 'The card that started it.', category: 'shop', platform: null, vehicle_label: null, image_url: '/images/shop-card.jpg', width: 1600, height: 900, sort: 2, is_sample: true },
+    { title: 'DDP Stage 2 turbo', caption: 'Staged for install.', category: 'parts', platform: 'duramax', vehicle_label: 'L5P Duramax', image_url: '/images/part-turbo.png', width: 900, height: 599, sort: 3, is_sample: true },
+    { title: 'Performance injectors', caption: 'A fresh set, ready to code.', category: 'parts', platform: null, vehicle_label: null, image_url: '/images/part-injectors.png', width: 900, height: 600, sort: 4, is_sample: true },
+    { title: 'Cummins CP3 refresh', caption: 'Full rail pressure again.', category: 'builds', platform: 'cummins', vehicle_label: 'Ram 2500 · 5.9 Common Rail', image_url: '/images/part-cp3.png', width: 900, height: 597, build_id: buildId('cummins-cp3-fuel-upgrade'), sort: 5, is_sample: true },
+  ]), 'gallery');
 
   console.log('automation history…');
   // Status history reads as people doing the work, not "System".

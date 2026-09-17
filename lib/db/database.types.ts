@@ -566,6 +566,68 @@ export interface Database {
           },
         ];
       };
+      gallery_items: {
+        Row: {
+          id: string;
+          title: string;
+          caption: string | null;
+          category: string;
+          platform: string | null;
+          vehicle_label: string | null;
+          image_url: string;
+          storage_path: string | null;
+          width: number;
+          height: number;
+          build_id: string | null;
+          sort: number;
+          published: boolean;
+          is_sample: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          caption?: string | null;
+          category?: string;
+          platform?: string | null;
+          vehicle_label?: string | null;
+          image_url: string;
+          storage_path?: string | null;
+          width?: number;
+          height?: number;
+          build_id?: string | null;
+          sort?: number;
+          published?: boolean;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          caption?: string | null;
+          category?: string;
+          platform?: string | null;
+          vehicle_label?: string | null;
+          image_url?: string;
+          storage_path?: string | null;
+          width?: number;
+          height?: number;
+          build_id?: string | null;
+          sort?: number;
+          published?: boolean;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'gallery_items_build_id_fkey';
+            columns: ['build_id'];
+            isOneToOne: false;
+            referencedRelation: 'builds';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       inspection_items: {
         Row: {
           id: string;

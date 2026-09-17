@@ -193,3 +193,40 @@ input[type='radio'] {
     display: none;
   }
 }
+
+/* ─── Design v2 "Showroom": Apple-style presentation, same palette ─────────────
+ * Scoped to [data-design='v2'] (set by the public site layout). Pages that are
+ * shared between designs pick this up automatically; the v2 home, header and
+ * footer are separate components.
+ */
+[data-design='v2'] {
+  --font-v2: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --radius-v2: 1.5rem;
+  font-family: var(--font-v2);
+  letter-spacing: -0.011em;
+}
+[data-design='v2'] .display {
+  font-family: var(--font-v2);
+  font-style: normal;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+[data-design='v2'] .kicker {
+  font-family: var(--font-v2);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+[data-design='v2'] .btn-go {
+  border-radius: 999px !important;
+  font-family: var(--font-v2);
+  font-style: normal;
+  text-transform: none;
+  font-weight: 500;
+}
+[data-design='v2'] .btn-go::before { display: none; }
+[data-design='v2'] .grain::after { display: none; }
+[data-design='v2'] .speed-stripes { display: none; }

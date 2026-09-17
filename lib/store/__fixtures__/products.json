@@ -1,0 +1,609 @@
+{
+ "products": [
+  {
+   "id": 15365156274221,
+   "title": "DDP 2017-Present L5P Duramax CP3 Conversion Kit",
+   "handle": "ddp-2017-present-l5p-duramax-cp3-conversion-kit",
+   "body_html": "<p><strong>DDP 2017-Present L5P Duramax CP3 Conversion Kit</strong> converts the factory high-pressure fuel system to a Dan's Diesel Performance CP3 setup.</p><p>Choose a 10mm, 12mm, or 14mm pump based on injector size and horsepower goals. The kit includes the CP3 pump with mounting flange and drive gear, nickel-treated high-pressure lines, feed and return fittings, rail-port cap, and FCA extension harness.</p><ul>\n<li>\n<strong>Fitment:</strong> 2017-present GM 6.6L L5P Duramax</li>\n<li>\n<strong>10mm:</strong> intended for moderate performance combinations</li>\n<li>\n<strong>12mm:</strong> rated around 1,050 HP and recommended for trucks with 100-200% over injectors</li>\n<li>\n<strong>14mm:</strong> intended for competition trucks with built engines and very large injectors</li>\n<li>\n<strong>Warranty:</strong> Manufacturer warranty varies by pump selection</li>\n</ul><p>Contact Lucky Diesel before ordering if you need help confirming fitment or supporting fuel-system requirements.</p>",
+   "published_at": "2026-09-05T12:39:24-04:00",
+   "created_at": "2026-09-05T12:39:24-04:00",
+   "updated_at": "2026-09-16T21:51:23-04:00",
+   "vendor": "Dan's Diesel Performance",
+   "product_type": "CP3 Conversion Kit",
+   "tags": [
+    "2017-Present L5P",
+    "CP3 Conversion Kit",
+    "CP3 Pump",
+    "Dan's Diesel Performance",
+    "DDP",
+    "Duramax",
+    "Duramax 2017-Present L5P",
+    "Fuel System",
+    "L5P",
+    "Parts"
+   ],
+   "variants": [
+    {
+     "id": 67488799850541,
+     "title": "10mm CP3",
+     "option1": "10mm CP3",
+     "option2": null,
+     "option3": null,
+     "sku": "D06-C10-146",
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": {
+      "id": 40971216584749,
+      "product_id": 15365156274221,
+      "position": 1,
+      "created_at": "2026-09-05T13:10:04-04:00",
+      "updated_at": "2026-09-05T13:10:06-04:00",
+      "alt": "DDP 2017-Present L5P Duramax CP3 Conversion Kit - 10mm CP3",
+      "width": 1200,
+      "height": 799,
+      "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661840.jpg?v=1788628206",
+      "variant_ids": [
+       67488799850541
+      ]
+     },
+     "available": true,
+     "price": "3250.00",
+     "grams": 8618,
+     "compare_at_price": null,
+     "position": 1,
+     "product_id": 15365156274221,
+     "created_at": "2026-09-05T12:39:24-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    },
+    {
+     "id": 67488799883309,
+     "title": "12mm CP3",
+     "option1": "12mm CP3",
+     "option2": null,
+     "option3": null,
+     "sku": "D06-C12-146",
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": {
+      "id": 40971216617517,
+      "product_id": 15365156274221,
+      "position": 2,
+      "created_at": "2026-09-05T13:10:04-04:00",
+      "updated_at": "2026-09-05T13:10:06-04:00",
+      "alt": "DDP 2017-Present L5P Duramax CP3 Conversion Kit - 12mm CP3",
+      "width": 1200,
+      "height": 799,
+      "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661845.jpg?v=1788628206",
+      "variant_ids": [
+       67488799883309
+      ]
+     },
+     "available": true,
+     "price": "3750.00",
+     "grams": 8618,
+     "compare_at_price": null,
+     "position": 2,
+     "product_id": 15365156274221,
+     "created_at": "2026-09-05T12:39:24-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    },
+    {
+     "id": 67488930955309,
+     "title": "14mm CP3",
+     "option1": "14mm CP3",
+     "option2": null,
+     "option3": null,
+     "sku": "D06-C14-146",
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": {
+      "id": 40971216650285,
+      "product_id": 15365156274221,
+      "position": 3,
+      "created_at": "2026-09-05T13:10:04-04:00",
+      "updated_at": "2026-09-05T13:10:06-04:00",
+      "alt": "DDP 2017-Present L5P Duramax CP3 Conversion Kit - 14mm CP3",
+      "width": 1200,
+      "height": 799,
+      "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661848.jpg?v=1788628206",
+      "variant_ids": [
+       67488930955309
+      ]
+     },
+     "available": true,
+     "price": "4250.00",
+     "grams": 5443,
+     "compare_at_price": null,
+     "position": 3,
+     "product_id": 15365156274221,
+     "created_at": "2026-09-05T13:10:04-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    }
+   ],
+   "images": [
+    {
+     "id": 40971216584749,
+     "created_at": "2026-09-05T13:10:04-04:00",
+     "position": 1,
+     "updated_at": "2026-09-05T13:10:06-04:00",
+     "product_id": 15365156274221,
+     "variant_ids": [
+      67488799850541
+     ],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661840.jpg?v=1788628206",
+     "width": 1200,
+     "height": 799
+    },
+    {
+     "id": 40971216617517,
+     "created_at": "2026-09-05T13:10:04-04:00",
+     "position": 2,
+     "updated_at": "2026-09-05T13:10:06-04:00",
+     "product_id": 15365156274221,
+     "variant_ids": [
+      67488799883309
+     ],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661845.jpg?v=1788628206",
+     "width": 1200,
+     "height": 799
+    }
+   ],
+   "options": [
+    {
+     "name": "Pump Configuration",
+     "position": 1,
+     "values": [
+      "10mm CP3",
+      "12mm CP3",
+      "14mm CP3"
+     ]
+    }
+   ]
+  },
+  {
+   "id": 15364341760045,
+   "title": "DDP Dominator 72mm Turbocharger 05-10",
+   "handle": "ddp-dominator-72mm-turbocharger-05-10",
+   "body_html": "<p>DDP Dominator 72mm Turbocharger 05-10</p>\r\n<p>This charger fits 2005-2010 Chevrolet/GMC 6.6L LLY, LBZ, and LMM Duramax Diesel trucks.</p>\r\n<p><span style=\"font-size: small;\">The Dominator 72mm Turbocharger is engineered using all-new, enhanced castings for superior durability and performance. Designed to support up to 900-950 horsepower with the proper fuel modifications. If you want to win, you have to push the limits. That is what we have done in order to bring the 72mm Dominator to market. This turbo has spent over three years in development and has proven to dominate in the Work Stock and Stock Appearing turbo truck classes. If you're looking for the best drop-in turbo on the market for your truck, nothing beats a DDP Dominator.</span></p>\r\n<p><span style=\"font-size: small;\">  Benefits of this turbo include:</span></p>\r\n<ul style=\"list-style: inside none square;\">\r\n<li><span style=\"font-size: small;\">Brand New Turbo.  No core charge.</span></li>\r\n<li><span style=\"font-size: small;\">New vane actuator</span></li>\r\n<li><span style=\"font-size: small;\">New vane position sensor</span></li>\r\n<li><span style=\"font-size: small;\">100% Drop-In</span></li>\r\n<li><span style=\"font-size: small;\">Heavy-Duty shaft bearings with outer oil groove for improved lubrication and cooling properties</span></li>\r\n<li><span style=\"font-size: small;\">360* Jetted Thrust bearing</span></li>\r\n<li><span style=\"font-size: small;\">Billet High Flow vane package</span></li>\r\n<li><span style=\"font-size: small;\">DDP <span style=\"text-decoration: underline;\">Exclusive</span> 80x74mm turbine made out of Mar-M alloy, thick blades and 8mm shaft.  Available in 9 or 10 blade.</span></li>\r\n<li><span style=\"font-size: small;\">DDP <span style=\"text-decoration: underline;\">Exclusive</span> 72mm Billet 7075 Compressor Wheel</span></li>\r\n<li><span style=\"font-size: small;\">CNC Ported Exhaust Housing Inlets</span></li>\r\n<li><span style=\"font-size: small;\">Improved Compressor cover design with better placed MAP groove, thick bore to prevent cracking, and ribbed outlet for anti-slip surface for boot.  </span></li>\r\n<li><span style=\"font-size: small;\">Stock Appearing Class Legal</span></li>\r\n<li><span style=\"font-size: small;\">VSR Balanced to ISO specification.</span></li>\r\n<li><span style=\"font-size: small;\">Limited Lifetime Warranty</span></li>\r\n</ul>\r\n<p><span style=\"font-size: small;\">Recommended fuel setup to maximize the power potential of this turbo would be 250-300% injectors paired with a 14mm CP3. All available from Dan's Diesel Performance. </span></p><span class=\"ddp-config-data\" hidden>W3sibGFiZWwiOiJHYXNrZXQgSW5zdGFsbCBLaXQ/IiwicmVxdWlyZWQiOmZhbHNlLCJ2YWx1ZXMiOlt7Im5hbWUiOiJOb25lIiwiZGVsdGFDZW50cyI6MCwiZGVmYXVsdCI6dHJ1ZSwic291cmNlSWQiOiIifSx7Im5hbWUiOiJHYXNrZXRzIiwiZGVsdGFDZW50cyI6OTAwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5NzEyIn1dfSx7ImxhYmVsIjoiQWRkIEhEIFVwLVBpcGUgQm9sdHM/IiwicmVxdWlyZWQiOnRydWUsInZhbHVlcyI6W3sibmFtZSI6Ik5vbmUiLCJkZWx0YUNlbnRzIjowLCJkZWZhdWx0Ijp0cnVlLCJzb3VyY2VJZCI6IjgxOTg4MiJ9LHsibmFtZSI6IjMiLCJkZWx0YUNlbnRzIjoxNjcyLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTk4ODMifSx7Im5hbWUiOiI2IiwiZGVsdGFDZW50cyI6MzM0NCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5ODg0In0seyJuYW1lIjoiOSIsImRlbHRhQ2VudHMiOjQ3MTYsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTg4NSJ9LHsibmFtZSI6IjEyIiwiZGVsdGFDZW50cyI6NjM4OCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5ODg2In1dfSx7ImxhYmVsIjoiUmVtb3RlIE9pbCBMaW5lIEtpdD8iLCJyZXF1aXJlZCI6ZmFsc2UsInZhbHVlcyI6W3sibmFtZSI6Ik5vbmUiLCJkZWx0YUNlbnRzIjowLCJkZWZhdWx0Ijp0cnVlLCJzb3VyY2VJZCI6IiJ9LHsibmFtZSI6IkxpbmUgS2l0IiwiZGVsdGFDZW50cyI6MTEwMDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTcxMSJ9XX0seyJsYWJlbCI6IlBvd2RlcmNvYXQgQ29sb3I/IiwicmVxdWlyZWQiOnRydWUsInZhbHVlcyI6W3sibmFtZSI6IlJhdyIsImRlbHRhQ2VudHMiOjAsImRlZmF1bHQiOnRydWUsInNvdXJjZUlkIjoiODE5MDYwIn0seyJuYW1lIjoiR2xvc3MgQmxhY2siLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwMzUifSx7Im5hbWUiOiJXaGl0ZSIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTAzNyJ9LHsibmFtZSI6IldldCBSZWQiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwMzYifSx7Im5hbWUiOiJJbGx1c2lvbiBDaGVycnkiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwMzgifSx7Im5hbWUiOiJJbGx1c2lvbiBSZWQiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwNTYifSx7Im5hbWUiOiJDYW5keSBSZWQiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTk2MjUifSx7Im5hbWUiOiJXZXQgQmx1ZSIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTAzOSJ9LHsibmFtZSI6Ik9yYW5nZSIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTA0MCJ9LHsibmFtZSI6IktpbmdzcG9ydCBHcmV5IiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDQxIn0seyJuYW1lIjoiQ2FuZHkgQmx1ZSIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTA0MiJ9LHsibmFtZSI6IlRpZmZhbnkgQmx1ZSIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTA0MyJ9LHsibmFtZSI6IkNhbmR5IENvcHBlciIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTA0NCJ9LHsibmFtZSI6Ik5lb24gR3JlZW4iLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwNDUifSx7Im5hbWUiOiJDYW5keSBQdXJwbGUiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwNDYifSx7Im5hbWUiOiJJbGx1c2lvbiBCbHVlYmVycnkiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwNDcifSx7Im5hbWUiOiJJbGx1c2lvbiBQdXJwbGUiLCJkZWx0YUNlbnRzIjo4NTAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTkwNDgifSx7Im5hbWUiOiJTYXNzeSBHb2xkIiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDQ5In0seyJuYW1lIjoiSWxsdXNpb24gTWFsYmVjIiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDUwIn0seyJuYW1lIjoiWWVsbG93IiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDUxIn0seyJuYW1lIjoiSWxsdXNpb24gT3JhbmdlIiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDUyIn0seyJuYW1lIjoiRmlyZWxpZ2h0cyIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTA1MyJ9LHsibmFtZSI6IlNhdGluIEJsYWNrIiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDU0In0seyJuYW1lIjoiRm9ycmVzdCBHcmVlbiIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTA1OCJ9LHsibmFtZSI6IkhvdCBQaW5rIiwiZGVsdGFDZW50cyI6ODUwMCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5MDU5In0seyJuYW1lIjoiSWxsdXNpb24gQmx1ZSIsImRlbHRhQ2VudHMiOjg1MDAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTc1NCJ9LHsibmFtZSI6IkN1c3RvbSIsImRlbHRhQ2VudHMiOjEwMDAwLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTk5OTIifV19LHsibGFiZWwiOiJWZWhpY2xlIFllYXIgKFZHVCBUdXJibykiLCJyZXF1aXJlZCI6dHJ1ZSwidmFsdWVzIjpbeyJuYW1lIjoiMjAwNSIsImRlbHRhQ2VudHMiOjAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTk2NSJ9LHsibmFtZSI6IjIwMDYiLCJkZWx0YUNlbnRzIjowLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTk5NjYifSx7Im5hbWUiOiIyMDA3IiwiZGVsdGFDZW50cyI6MCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5OTY3In0seyJuYW1lIjoiMjAwOCIsImRlbHRhQ2VudHMiOjAsImRlZmF1bHQiOmZhbHNlLCJzb3VyY2VJZCI6IjgxOTk2OCJ9LHsibmFtZSI6IjIwMDkiLCJkZWx0YUNlbnRzIjowLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTk5NjkifSx7Im5hbWUiOiIyMDEwIiwiZGVsdGFDZW50cyI6MCwiZGVmYXVsdCI6ZmFsc2UsInNvdXJjZUlkIjoiODE5OTcwIn1dfSx7ImxhYmVsIjoiVHVyYmluZSBTZWxlY3Rpb24iLCJyZXF1aXJlZCI6dHJ1ZSwidmFsdWVzIjpbeyJuYW1lIjoiMTAgQmxhZGUiLCJkZWx0YUNlbnRzIjowLCJkZWZhdWx0Ijp0cnVlLCJzb3VyY2VJZCI6IjgxOTg4MCJ9LHsibmFtZSI6IjkgQmxhZGUiLCJkZWx0YUNlbnRzIjowLCJkZWZhdWx0IjpmYWxzZSwic291cmNlSWQiOiI4MTk4ODEifV19XQ==</span>",
+   "published_at": "2026-09-04T10:35:28-04:00",
+   "created_at": "2026-09-04T09:26:12-04:00",
+   "updated_at": "2026-09-16T21:51:23-04:00",
+   "vendor": "Dan's Diesel Performance",
+   "product_type": "Turbocharger",
+   "tags": [
+    "2004.5-2005 LLY",
+    "2006-2007 LBZ",
+    "2007.5-2010 LMM",
+    "Dan's Diesel Performance",
+    "DDP Turbo",
+    "Duramax",
+    "Duramax 2004.5-2005 LLY",
+    "Duramax 2006-2007 LBZ",
+    "Duramax 2007.5-2010 LMM",
+    "Turbocharger"
+   ],
+   "variants": [
+    {
+     "id": 67486286610477,
+     "title": "Base price",
+     "option1": "Base price",
+     "option2": null,
+     "option3": null,
+     "sku": "D02-DT72-001",
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "3495.00",
+     "grams": 0,
+     "compare_at_price": null,
+     "position": 1,
+     "product_id": 15364341760045,
+     "created_at": "2026-09-04T09:26:12-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    },
+    {
+     "id": 67486286643245,
+     "title": "+$16.72",
+     "option1": "+$16.72",
+     "option2": null,
+     "option3": null,
+     "sku": "D02-DT72-001-CFG-1672",
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "3511.72",
+     "grams": 0,
+     "compare_at_price": null,
+     "position": 2,
+     "product_id": 15364341760045,
+     "created_at": "2026-09-04T09:26:12-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    },
+    {
+     "id": 67486286676013,
+     "title": "+$33.44",
+     "option1": "+$33.44",
+     "option2": null,
+     "option3": null,
+     "sku": "D02-DT72-001-CFG-3344",
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "3528.44",
+     "grams": 0,
+     "compare_at_price": null,
+     "position": 3,
+     "product_id": 15364341760045,
+     "created_at": "2026-09-04T09:26:12-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    }
+   ],
+   "images": [
+    {
+     "id": 40955228880941,
+     "created_at": "2026-09-04T10:32:42-04:00",
+     "position": 1,
+     "updated_at": "2026-09-04T10:32:45-04:00",
+     "product_id": 15364341760045,
+     "variant_ids": [],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661971.jpg?v=1788532365",
+     "width": 1200,
+     "height": 799
+    },
+    {
+     "id": 40955228913709,
+     "created_at": "2026-09-04T10:32:42-04:00",
+     "position": 2,
+     "updated_at": "2026-09-04T10:32:44-04:00",
+     "product_id": 15364341760045,
+     "variant_ids": [],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/F198661970.jpg?v=1788532364",
+     "width": 1200,
+     "height": 799
+    }
+   ],
+   "options": [
+    {
+     "name": "Configuration price",
+     "position": 1,
+     "values": [
+      "Base price",
+      "+$16.72",
+      "+$33.44",
+      "+$47.16",
+      "+$63.88",
+      "+$85.00",
+      "+$90.00",
+      "+$100.00",
+      "+$101.72",
+      "+$106.72",
+      "+$110.00",
+      "+$116.72",
+      "+$118.44",
+      "+$123.44",
+      "+$126.72",
+      "+$132.16",
+      "+$133.44",
+      "+$137.16",
+      "+$143.44",
+      "+$147.16",
+      "+$148.88",
+      "+$153.88",
+      "+$157.16",
+      "+$163.88",
+      "+$173.88",
+      "+$175.00",
+      "+$190.00",
+      "+$191.72",
+      "+$195.00",
+      "+$200.00",
+      "+$206.72",
+      "+$208.44",
+      "+$210.00",
+      "+$211.72",
+      "+$216.72",
+      "+$222.16",
+      "+$223.44",
+      "+$226.72",
+      "+$228.44",
+      "+$233.44",
+      "+$237.16",
+      "+$238.88",
+      "+$242.16",
+      "+$243.44",
+      "+$247.16",
+      "+$253.88",
+      "+$257.16",
+      "+$258.88",
+      "+$263.88",
+      "+$273.88",
+      "+$285.00",
+      "+$300.00",
+      "+$301.72",
+      "+$316.72",
+      "+$318.44",
+      "+$332.16",
+      "+$333.44",
+      "+$347.16",
+      "+$348.88",
+      "+$363.88"
+     ]
+    }
+   ]
+  },
+  {
+   "id": 15363980296237,
+   "title": "AMDP 2020-2022 6.7L Powerstroke EZ LYNK Transmission Tuning",
+   "handle": "amdp-2020-6-7l-powerstroke-ez-lynk-transmission-tuning",
+   "body_html": "<p>AMDP custom transmission tuning for 2020-2022 Ford 6.7L Powerstroke trucks using EZ LYNK. Transmission tuning improves power delivery and is strongly recommended with engine tuning above the 50 HP setting.</p> <h3>Calibration changes</h3><ul>\n<li>Shift firmness and pressure</li>\n<li>Shift points</li>\n<li>Torque-converter lockup</li>\n<li>Torque management</li>\n</ul> <p><strong>VIN required:</strong> Lucky Diesel needs the vehicle VIN to fulfill this tuning product and will contact you if it is not supplied with the order.</p>",
+   "published_at": "2026-09-03T23:01:30-04:00",
+   "created_at": "2026-09-03T22:27:45-04:00",
+   "updated_at": "2026-09-16T21:51:23-04:00",
+   "vendor": "AMDP",
+   "product_type": "Tuning",
+   "tags": [
+    "AMDP",
+    "EZ LYNK",
+    "Ford",
+    "Off-Road Use Only",
+    "Powerstroke",
+    "Tuning"
+   ],
+   "variants": [
+    {
+     "id": 67485105618989,
+     "title": "Default Title",
+     "option1": "Default Title",
+     "option2": null,
+     "option3": null,
+     "sku": "67P-20TRANS-EZ",
+     "requires_shipping": false,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "444.24",
+     "grams": 0,
+     "compare_at_price": null,
+     "position": 1,
+     "product_id": 15363980296237,
+     "created_at": "2026-09-03T22:27:45-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    }
+   ],
+   "images": [
+    {
+     "id": 40945822892077,
+     "created_at": "2026-09-03T22:27:45-04:00",
+     "position": 1,
+     "updated_at": "2026-09-03T22:27:47-04:00",
+     "product_id": 15363980296237,
+     "variant_ids": [],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/AMDP_EZLYNK_TRANS_TUNING.jpg?v=1788488867",
+     "width": 1000,
+     "height": 1000
+    }
+   ],
+   "options": [
+    {
+     "name": "Title",
+     "position": 1,
+     "values": [
+      "Default Title"
+     ]
+    }
+   ]
+  },
+  {
+   "id": 8445238640685,
+   "title": "Teal Lucky Diesel Tee",
+   "handle": "teal-lucky-diesel-tee",
+   "body_html": "",
+   "published_at": "2026-03-26T10:24:38-04:00",
+   "created_at": "2026-03-26T10:24:37-04:00",
+   "updated_at": "2026-09-16T21:51:23-04:00",
+   "vendor": "Lucky Diesel",
+   "product_type": "",
+   "tags": [],
+   "variants": [
+    {
+     "id": 44750479065133,
+     "title": "M",
+     "option1": "M",
+     "option2": null,
+     "option3": null,
+     "sku": null,
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "25.00",
+     "grams": 227,
+     "compare_at_price": null,
+     "position": 1,
+     "product_id": 8445238640685,
+     "created_at": "2026-03-26T10:24:37-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    },
+    {
+     "id": 44750479097901,
+     "title": "L",
+     "option1": "L",
+     "option2": null,
+     "option3": null,
+     "sku": null,
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "25.00",
+     "grams": 227,
+     "compare_at_price": null,
+     "position": 2,
+     "product_id": 8445238640685,
+     "created_at": "2026-03-26T10:24:37-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    },
+    {
+     "id": 44750479130669,
+     "title": "XL",
+     "option1": "XL",
+     "option2": null,
+     "option3": null,
+     "sku": null,
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "25.00",
+     "grams": 227,
+     "compare_at_price": null,
+     "position": 3,
+     "product_id": 8445238640685,
+     "created_at": "2026-03-26T10:24:37-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    }
+   ],
+   "images": [
+    {
+     "id": 37739415371821,
+     "created_at": "2026-03-26T10:15:39-04:00",
+     "position": 1,
+     "updated_at": "2026-03-26T10:15:41-04:00",
+     "product_id": 8445238640685,
+     "variant_ids": [],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/Tealluckydieselteefront.png?v=1774534541",
+     "width": 1400,
+     "height": 1400
+    },
+    {
+     "id": 37739417698349,
+     "created_at": "2026-03-26T10:15:48-04:00",
+     "position": 2,
+     "updated_at": "2026-03-26T10:15:50-04:00",
+     "product_id": 8445238640685,
+     "variant_ids": [],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/Teal_lucky_diesel_tee_back.png?v=1774534550",
+     "width": 1400,
+     "height": 1400
+    }
+   ],
+   "options": [
+    {
+     "name": "Size",
+     "position": 1,
+     "values": [
+      "M",
+      "L",
+      "XL",
+      "2XL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": 8458526195757,
+   "title": "11-26 6.7 Powerstroke 5\" stainless exhaust",
+   "handle": "11-26-6-7-powerstroke-5-stainless-exhaust",
+   "body_html": "",
+   "published_at": "2026-04-06T11:36:22-04:00",
+   "created_at": "2026-04-06T11:36:21-04:00",
+   "updated_at": "2026-09-16T21:51:23-04:00",
+   "vendor": "Lucky Diesel",
+   "product_type": "",
+   "tags": [],
+   "variants": [
+    {
+     "id": 44803387162669,
+     "title": "Default Title",
+     "option1": "Default Title",
+     "option2": null,
+     "option3": null,
+     "sku": null,
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "650.00",
+     "grams": 27216,
+     "compare_at_price": null,
+     "position": 1,
+     "product_id": 8458526195757,
+     "created_at": "2026-04-06T11:36:21-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    }
+   ],
+   "images": [
+    {
+     "id": 37981442441261,
+     "created_at": "2026-04-06T11:34:45-04:00",
+     "position": 1,
+     "updated_at": "2026-04-06T11:34:46-04:00",
+     "product_id": 8458526195757,
+     "variant_ids": [],
+     "src": "https://cdn.shopify.com/s/files/1/0744/6423/1469/files/156-530125-Dieselr_Aluminized_5-inch_Downpipe_Back_Exhaust-Ford_6.7L_F250-F350_Powerstroke_2020-2022-without-muffler.webp?v=1775489686",
+     "width": 713,
+     "height": 713
+    }
+   ],
+   "options": [
+    {
+     "name": "Title",
+     "position": 1,
+     "values": [
+      "Default Title"
+     ]
+    }
+   ]
+  },
+  {
+   "id": 15364372955181,
+   "title": "EZ-lynk AutoAgent 3",
+   "handle": "ez-lynk-autoagent-3",
+   "body_html": "<p>The<span>\u00a0</span><strong>EZ Lynk Auto Agent 3</strong><span>\u00a0</span>is a cloud-based tuning and monitoring device for diesel trucks. It plugs into the OBDII port and pairs with the EZ Lynk app on a phone or tablet, so tune files, live data and diagnostics are all handled from the driver's seat. No laptop, and no trip to a shop to change a tune.</p>\n<p>This listing is the<span>\u00a0</span><strong>blank</strong><span>\u00a0</span>device: hardware only, with<span>\u00a0</span><strong>no tune files loaded</strong>. Tuning is purchased separately.</p>",
+   "published_at": "2026-09-05T13:29:52-04:00",
+   "created_at": "2026-09-04T11:46:53-04:00",
+   "updated_at": "2026-09-16T21:51:23-04:00",
+   "vendor": "Lucky Diesel",
+   "product_type": "",
+   "tags": [
+    "EZ LYNK",
+    "Powerstroke",
+    "Tuning"
+   ],
+   "variants": [
+    {
+     "id": 67486619140141,
+     "title": "Default Title",
+     "option1": "Default Title",
+     "option2": null,
+     "option3": null,
+     "sku": null,
+     "requires_shipping": true,
+     "taxable": true,
+     "featured_image": null,
+     "available": true,
+     "price": "549.99",
+     "grams": 907,
+     "compare_at_price": null,
+     "position": 1,
+     "product_id": 15364372955181,
+     "created_at": "2026-09-04T11:46:53-04:00",
+     "updated_at": "2026-09-16T21:51:23-04:00"
+    }
+   ],
+   "images": [],
+   "options": [
+    {
+     "name": "Title",
+     "position": 1,
+     "values": [
+      "Default Title"
+     ]
+    }
+   ]
+  }
+ ]
+}
