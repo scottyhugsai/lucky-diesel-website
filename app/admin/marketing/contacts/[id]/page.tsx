@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { loadContactDetail, type TimelineKind } from '@/components/admin/marketing/core-ui/contact-detail-data';
 import { ConsentDots } from '@/components/admin/marketing/core-ui/ContactList';
-import { CampaignPanel, ConsentLedger, ReferralPanel, TagsPanel } from '@/components/admin/marketing/core-ui/ContactPanels';
+import { CampaignPanel, ConsentLedger, PrivacyPanel, ReferralPanel, TagsPanel, TruckPanel } from '@/components/admin/marketing/core-ui/ContactPanels';
 import { ContactTimeline, TIMELINE_FILTERS } from '@/components/admin/marketing/core-ui/ContactTimeline';
 import { STAGE_LABEL, STAGE_TONE, sourceLabel } from '@/components/admin/marketing/core-ui/labels';
 import { UUID_RE } from '@/components/admin/core/parse';
@@ -78,9 +78,11 @@ export default async function ContactDetailPage({ params, searchParams }: { para
 
         <div className="grid content-start gap-6">
           <TagsPanel id={customer.id} tags={customer.tags} />
+          <TruckPanel id={customer.id} trucks={detail.trucks} />
           <CampaignPanel id={customer.id} campaigns={detail.campaigns} enrolledIds={detail.enrolledIds} />
           <ReferralPanel id={customer.id} referral={detail.referral} referrals={detail.referrals} />
           <ConsentLedger id={customer.id} events={detail.consent} />
+          <PrivacyPanel id={customer.id} erasedAt={customer.anonymized_at} />
           {detail.segments.length > 0 && (
             <Card title="In segments">
               <ul className="flex flex-wrap gap-1.5">

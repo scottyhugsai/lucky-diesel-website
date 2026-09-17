@@ -1,5 +1,7 @@
 import 'server-only';
 import { money } from '@/lib/format';
+import { costCentsFromSnapshot, creatorCommissionCents, promoRoi, type Roi } from '@/lib/marketing/core/promotions';
+import { loadProgramSettings, type ProgramSettings } from '@/lib/marketing/core/redemption';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export interface OfferRow {
@@ -16,18 +18,50 @@ export interface OfferRow {
   discountCents: number;
   segment: string | null;
   terms: string | null;
+  singleUse: boolean;
+  isPublic: boolean;
+  bundleItems: string[];
+  bundlePriceCents: number | null;
+  giftItem: string | null;
+  creatorName: string | null;
+  commissionPercent: number;
+  commissionCents: number;
+  codes: { total: number; used: number };
+  roi: Roi;
 }
 
+/** Offers with redemption roll-ups: money given, revenue, margin and ROI. */
 export async function loadOffers(now = new Date()): Promise<OfferRow[]> {
-  const { data, error } = await createAdminClient().from('offers').select('*, offer_redemptions(discount_cents), segments(name)').order('created_at', { ascending: false });
+  const db = createAdminClient();
+  const { data, error } = await db.from('offers').select('*, offer_redemptions(discount_cents, invoice_id), offer_codes(redeemed_at), segments(name)').order('created_at', { ascending: false });
   if (error) throw new Error(`Could not load offers: ${error.message}`);
-  return (data ?? []).map((o) => ({
-    id: o.id, code: o.code, name: o.name, endsAt: o.ends_at, active: o.active, terms: o.terms,
-    valueLabel: o.kind === 'percent' ? `${o.value}% off` : o.kind === 'amount' ? `${money(o.value, { whole: true })} off` : `Free (${money(o.value, { whole: true })})`,
-    expired: Boolean(o.ends_at && new Date(o.ends_at) < now),
-    redemptions: o.offer_redemptions.length, limit: o.max_redemptions, perCustomer: o.per_customer_limit,
-    discountCents: o.offer_redemptions.reduce((t, r) => t + r.discount_cents, 0), segment: o.segments?.name ?? null,
-  }));
+  const offers = data ?? [];
+  const invoiceIds = [...new Set(offers.flatMap((o) => o.offer_redemptions.flatMap((r) => (r.invoice_id ? [r.invoice_id] : []))))];
+  const { data: invoices } = invoiceIds.length ? await db.from('invoices').select('id, subtotal_cents, line_snapshot').in('id', invoiceIds) : { data: [] };
+  const invoiceById = new Map((invoices ?? []).map((i) => [i.id, { subtotal: i.subtotal_cents, cost: costCentsFromSnapshot(i.line_snapshot) }]));
+  return offers.map((o) => {
+    const roi = promoRoi(o.offer_redemptions.flatMap((r) => {
+      const invoice = r.invoice_id ? invoiceById.get(r.invoice_id) : undefined;
+      return invoice ? [{ discountCents: r.discount_cents, invoiceSubtotalCents: invoice.subtotal, invoiceCostCents: invoice.cost }] : [];
+    }));
+    return {
+      id: o.id, code: o.code, name: o.name, endsAt: o.ends_at, active: o.active, terms: o.terms,
+      valueLabel: o.bundle_price_cents !== null ? `${money(o.bundle_price_cents, { whole: true })} bundle` : o.kind === 'percent' ? `${o.value}% off` : o.kind === 'amount' ? `${money(o.value, { whole: true })} off` : o.gift_item ? `Free ${o.gift_item}` : `Free (${money(o.value, { whole: true })})`,
+      expired: Boolean(o.ends_at && new Date(o.ends_at) < now),
+      redemptions: o.offer_redemptions.length, limit: o.max_redemptions, perCustomer: o.per_customer_limit,
+      discountCents: o.offer_redemptions.reduce((t, r) => t + r.discount_cents, 0), segment: o.segments?.name ?? null,
+      singleUse: o.single_use, isPublic: o.public, bundleItems: o.bundle_items, bundlePriceCents: o.bundle_price_cents,
+      giftItem: o.gift_item, creatorName: o.creator_name, commissionPercent: o.creator_commission_percent,
+      commissionCents: o.creator_name ? creatorCommissionCents(roi.revenueCents, o.creator_commission_percent) : 0,
+      codes: { total: o.offer_codes.length, used: o.offer_codes.filter((c) => c.redeemed_at).length },
+      roi,
+    };
+  });
+}
+
+/** Point value, tier perks, fleet volume tiers and military percent. */
+export async function loadPricingPrograms(): Promise<ProgramSettings> {
+  return loadProgramSettings(createAdminClient());
 }
 
 export interface EventRow {
@@ -67,6 +101,14 @@ export interface FleetRow {
   email: string | null;
   phone: string | null;
   billingTerms: string;
+  stage: string;
+  source: string | null;
+  city: string | null;
+  website: string | null;
+  truckCount: number | null;
+  priority: boolean;
+  slaHours: number;
+  laborDiscountPct: number;
   pmDays: number;
   pmMiles: number;
   notes: string | null;
@@ -88,6 +130,8 @@ export async function loadFleets(now = new Date()): Promise<FleetRow[]> {
   }
   return (fleets ?? []).map((f) => ({
     id: f.id, name: f.name, contactName: f.contact_name, email: f.email, phone: f.phone, billingTerms: f.billing_terms,
+    stage: f.stage, source: f.source, city: f.city, website: f.website, truckCount: f.truck_count,
+    priority: f.priority, slaHours: f.sla_hours, laborDiscountPct: f.labor_discount_pct,
     pmDays: f.pm_interval_days, pmMiles: f.pm_interval_miles, notes: f.notes,
     trucks: f.customers.flatMap((c) => c.vehicles.map((v) => {
       const last = lastByVehicle.get(v.id) ?? null;

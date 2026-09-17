@@ -31,6 +31,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     title: 'Lucky Diesel',
     links: [
       { href: '/builds', label: 'Builds & dyno' },
+      { href: '/fleet', label: 'Fleet service' },
       { href: '/gallery', label: 'Gallery' },
       { href: '/book', label: 'Book online' },
       { href: '/login', label: 'Customer & staff login' },

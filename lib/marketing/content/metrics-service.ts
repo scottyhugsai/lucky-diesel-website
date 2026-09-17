@@ -1,4 +1,7 @@
 import 'server-only';
+import { siteUrl } from '@/lib/site-url';
+import { evaluateAdAlerts, type MetricDay } from './ad-alerts';
+import { ownerContact, sendContentMessage } from './alerts';
 import { pacing, shouldPauseForCpl } from './budget';
 import { demoAdAdapter } from './channels/demo';
 import { adAdapterFor } from './channels/registry';
@@ -10,6 +13,7 @@ export interface SyncSummary {
   rows: number;
   simulatedRows: number;
   paused: { campaignId: string; reason: string }[];
+  alerts: number;
   errors: string[];
 }
 
@@ -22,7 +26,7 @@ function yesterday(): string {
  * flagged so), then enforces pacing and cost-per-lead auto-pause.
  */
 export async function syncAdMetrics(date: string = yesterday(), db: Db = adminDb()): Promise<SyncSummary> {
-  const summary: SyncSummary = { campaigns: 0, rows: 0, simulatedRows: 0, paused: [], errors: [] };
+  const summary: SyncSummary = { campaigns: 0, rows: 0, simulatedRows: 0, paused: [], alerts: 0, errors: [] };
   const { data: campaigns } = await db.from('ad_campaigns').select('*, ad_publications(*)').eq('status', 'live');
   const guards = await loadGuards(db);
 
@@ -56,10 +60,17 @@ export async function syncAdMetrics(date: string = yesterday(), db: Db = adminDb
       }
 
       const reason = await autoPauseReason(db, campaign, guards.find((g) => g.platform === campaign.platform)?.autoPauseCplCents ?? null, guards.find((g) => g.platform === campaign.platform)?.pacingTolerance ?? 1.2, date);
+      const simulated = campaign.ad_publications.every((p) => p.simulated);
       if (reason) {
         const paused = await pauseCampaign(campaign.id, reason, db);
-        if (paused.ok) summary.paused.push({ campaignId: campaign.id, reason });
-        else summary.errors.push(`${campaign.name}: could not pause (${paused.error})`);
+        if (paused.ok) {
+          summary.paused.push({ campaignId: campaign.id, reason });
+          if (await recordAlert(db, { campaignId: campaign.id, name: campaign.name, kind: 'paused', message: reason, date, simulated })) summary.alerts += 1;
+        } else summary.errors.push(`${campaign.name}: could not pause (${paused.error})`);
+      } else {
+        for (const alert of evaluateAdAlerts(await campaignDays(db, campaign.id, date))) {
+          if (await recordAlert(db, { campaignId: campaign.id, name: campaign.name, kind: alert.kind, message: alert.message, date, simulated })) summary.alerts += 1;
+        }
       }
     } catch (error) {
       summary.errors.push(`${campaign.name}: ${error instanceof Error ? error.message : String(error)}`);
@@ -67,6 +78,48 @@ export async function syncAdMetrics(date: string = yesterday(), db: Db = adminDb
   }
   if (summary.errors.length) console.error(`[marketing/metrics] ${summary.errors.join(' | ')}`);
   return summary;
+}
+
+/** One row per day for a campaign, up to `date`, summed across its ads. */
+async function campaignDays(db: Db, campaignId: string, date: string): Promise<MetricDay[]> {
+  const { data } = await db.from('ad_metrics_daily').select('date, spend_cents, impressions, clicks, leads, ad_publications!inner(campaign_id)').eq('ad_publications.campaign_id', campaignId).lte('date', date).order('date');
+  const byDate = new Map<string, MetricDay>();
+  for (const r of data ?? []) {
+    const d = byDate.get(r.date) ?? { date: r.date, spendCents: 0, impressions: 0, clicks: 0, leads: 0 };
+    byDate.set(r.date, { date: r.date, spendCents: d.spendCents + r.spend_cents, impressions: d.impressions + r.impressions, clicks: d.clicks + r.clicks, leads: d.leads + r.leads });
+  }
+  return [...byDate.values()];
+}
+
+/**
+ * Stores an alert once per campaign, kind and day, then texts/emails the owner.
+ * For demo campaigns only the pause is sent; demo metric alerts just show on Performance.
+ */
+async function recordAlert(db: Db, alert: { campaignId: string; name: string; kind: 'cpl_spike' | 'zero_leads' | 'fatigue' | 'paused'; message: string; date: string; simulated: boolean }): Promise<boolean> {
+  const { data, error } = await db.from('ad_alerts')
+    .upsert({ campaign_id: alert.campaignId, kind: alert.kind, alert_date: alert.date, message: alert.message, simulated: alert.simulated }, { onConflict: 'campaign_id,kind,alert_date', ignoreDuplicates: true })
+    .select('id');
+  if (error || !data?.length) return false;
+  if (alert.simulated && alert.kind !== 'paused') return true;
+  const key = alert.kind === 'paused' ? 'content_campaign_paused' : 'content_ad_alert';
+  const outcome = await sendContentMessage(db, key, await ownerContact(db), { campaign: alert.name, reason: alert.message, alert: alert.message, admin_link: `${siteUrl()}/admin/marketing/ads/performance` });
+  await db.from('ad_alerts').update({ sent: outcome.sent > 0 }).eq('id', data[0]!.id);
+  return true;
+}
+
+export interface AlertView {
+  id: string;
+  campaign: string;
+  kind: string;
+  message: string;
+  date: string;
+  simulated: boolean;
+  sent: boolean;
+}
+
+export async function recentAdAlerts(limit = 12, db: Db = adminDb()): Promise<AlertView[]> {
+  const { data } = await db.from('ad_alerts').select('id, kind, message, alert_date, simulated, sent, ad_campaigns(name)').order('created_at', { ascending: false }).limit(limit);
+  return (data ?? []).map((a) => ({ id: a.id, campaign: a.ad_campaigns?.name ?? 'Campaign', kind: a.kind, message: a.message, date: a.alert_date, simulated: a.simulated, sent: a.sent }));
 }
 
 async function autoPauseReason(

@@ -26,6 +26,15 @@ export interface RunContext {
   skipReason: string | null;
 }
 
+/** Declined line items that affect safety get a faster follow-up. */
+const SAFETY_ITEM = /\b(brake|rotor|caliper|steering|tie rod|ball joint|death wobble|tire|wheel bearing|fuel leak|coolant leak)/i;
+/** Extra link/text vars a customer event may carry (set by our own emitters, never by users). */
+const PASS_THROUGH_VARS = ['store_link', 'referral_link', 'review_link', 'planner_link', 'upload_link', 'detail'] as const;
+
+function passThroughVars(context: Record<string, unknown>): TemplateVars {
+  return Object.fromEntries(PASS_THROUGH_VARS.flatMap((key) => (typeof context[key] === 'string' ? [[key, context[key] as string]] : [])));
+}
+
 async function settings(db: Db): Promise<Tables<'shop_settings'> | null> {
   const { data } = await db.from('shop_settings').select('*').eq('id', 1).maybeSingle();
   return data;
@@ -121,7 +130,8 @@ async function workOrderContext(db: Db, id: string, automationKey: string): Prom
   if (automationKey === 'estimate_nudge' && ((wo.approvals?.length ?? 0) > 0 || wo.status !== 'awaiting_approval')) {
     skipReason = `estimate no longer waiting (job is ${wo.status.replace('_', ' ')})`;
   }
-  if (automationKey === 'declined_work_follow_up' && declined.length === 0) skipReason = 'nothing was declined';
+  if (automationKey.startsWith('declined_work_') && declined.length === 0) skipReason = 'nothing was declined';
+  if (automationKey === 'declined_work_safety_3d' && !declined.some((l) => SAFETY_ITEM.test(l.description))) skipReason = 'no declined safety item';
   if (wo.status === 'cancelled') skipReason = 'job cancelled';
 
   return {
@@ -187,6 +197,7 @@ async function customerContext(db: Db, id: string, context: Record<string, unkno
       first_name: firstName(customer.full_name),
       vehicle: vehicleLabel(vehicle),
       due_service: typeof context.due_service === 'string' ? context.due_service : 'service',
+      ...passThroughVars(context),
     },
     customer: customerRecipient(customer),
     tech: null,

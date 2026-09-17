@@ -1,4 +1,5 @@
-import { ChannelError, type AdAdapter, type Credentials, type DailyMetrics, type PostAdapter } from './types';
+import { googleAdSchedule } from '../ad-presets';
+import { ChannelError, type AdAdapter, type AdCampaignPayload, type Credentials, type DailyMetrics, type PostAdapter } from './types';
 
 /**
  * Google Ads (Performance Max), Local Services Ads (read-only) and Google
@@ -32,6 +33,37 @@ async function gaql(credentials: Credentials, query: string, platform: 'google_a
   return data.flatMap((chunk) => chunk.results ?? []);
 }
 
+const MICRO = 1_000_000;
+
+/** Location (proximity), exclusions, negative keywords and call-hour schedule for a new campaign. */
+export function campaignCriteria(camp: string, campaign: AdCampaignPayload): Record<string, unknown>[] {
+  const proximity = (c: { latitude: number; longitude: number; radiusMiles: number }, negative: boolean) => ({
+    campaignCriterionOperation: { create: { campaign: camp, negative, proximity: { geoPoint: { latitudeInMicroDegrees: Math.round(c.latitude * MICRO), longitudeInMicroDegrees: Math.round(c.longitude * MICRO) }, radius: c.radiusMiles, radiusUnits: 'MILES' } } },
+  });
+  return [
+    ...campaign.geo.include.map((c) => proximity(c, false)),
+    ...campaign.geo.exclude.map((c) => proximity(c, true)),
+    ...campaign.negativeKeywords.map((text) => ({ campaignCriterionOperation: { create: { campaign: camp, negative: true, keyword: { text, matchType: 'PHRASE' } } } })),
+    ...googleAdSchedule(campaign.callHours).map((adSchedule) => ({ campaignCriterionOperation: { create: { campaign: camp, adSchedule } } })),
+  ];
+}
+
+/** Call and sitelink assets from shop facts, linked at campaign level. */
+export function extensionAssets(cid: string, camp: string, campaign: AdCampaignPayload, nextTemp: () => number): Record<string, unknown>[] {
+  const link = (asset: Record<string, unknown>, fieldType: string) => {
+    const resourceName = `customers/${cid}/assets/${nextTemp()}`;
+    return [
+      { assetOperation: { create: { resourceName, ...asset } } },
+      { campaignAssetOperation: { create: { campaign: camp, asset: resourceName, fieldType } } },
+    ];
+  };
+  const digits = campaign.extensions.phone.replace(/\D/g, '');
+  return [
+    ...(digits.length >= 10 ? link({ callAsset: { countryCode: 'US', phoneNumber: digits.slice(-10) } }, 'CALL') : []),
+    ...campaign.extensions.sitelinks.slice(0, 4).flatMap((s) => link({ finalUrls: [s.url], sitelinkAsset: { linkText: s.text.slice(0, 25) } }, 'SITELINK')),
+  ];
+}
+
 export function googlePmaxAdapter(credentials: Credentials): AdAdapter {
   return {
     platform: 'google_ads',
@@ -54,18 +86,30 @@ export function googlePmaxAdapter(credentials: Credentials): AdAdapter {
       };
       const mutateOperations = [
         { campaignBudgetOperation: { create: { resourceName: budget, name: `${campaign.name} budget ${attemptKey.slice(0, 8)}`, amountMicros: campaign.dailyBudgetCents * 10_000, explicitlyShared: false } } },
-        { campaignOperation: { create: { resourceName: camp, name: `${campaign.name} [${attemptKey.slice(0, 8)}]`, status: 'PAUSED', advertisingChannelType: 'PERFORMANCE_MAX', campaignBudget: budget, maximizeConversions: {}, startDate: campaign.startsOn.replace(/-/g, ''), endDate: campaign.endsOn.replace(/-/g, '') } } },
+        { campaignOperation: { create: {
+          resourceName: camp, name: `${campaign.name} [${attemptKey.slice(0, 8)}]`, status: 'PAUSED', advertisingChannelType: 'PERFORMANCE_MAX', campaignBudget: budget, maximizeConversions: {},
+          startDate: campaign.startsOn.replace(/-/g, ''), endDate: campaign.endsOn.replace(/-/g, ''),
+          // Google may not rewrite approved text unless the owner turned AI edits on.
+          assetAutomationSettings: [{ assetAutomationType: 'TEXT_ASSET_AUTOMATION', assetAutomationStatus: campaign.aiEnhancements ? 'OPTED_IN' : 'OPTED_OUT' }],
+        } } },
+        ...campaignCriteria(camp, campaign),
         { assetGroupOperation: { create: { resourceName: group, name: campaign.name, campaign: camp, finalUrls: [variants[0]!.landingUrl], status: 'PAUSED' } } },
         ...headlines.flatMap((h) => textAsset(h, 'HEADLINE')),
         ...textAsset(variants[0]!.longHeadline ?? variants[0]!.headline, 'LONG_HEADLINE'),
         ...descriptions.flatMap((d) => textAsset(d, 'DESCRIPTION')),
         ...textAsset('Lucky Diesel', 'BUSINESS_NAME'),
+        ...extensionAssets(cid, camp, campaign, () => temp--),
       ];
       // Image and logo assets are uploaded from the rendered PNGs by the owner step in the UI when required by policy.
       const data = await ads<{ mutateOperationResponses?: Record<string, { resourceName?: string }>[] }>(credentials, `customers/${cid}/googleAds:mutate`, { mutateOperations }, 'google_ads');
       const names = (data.mutateOperationResponses ?? []).flatMap((r) => Object.values(r).map((x) => x.resourceName ?? ''));
       const campaignName = names.find((n) => n.includes('/campaigns/')) ?? '';
-      return { externalIds: { campaign: campaignName, customer: cid }, statusOnPlatform: 'PAUSED', simulated: false, requestPreview: { operations: mutateOperations.length, headlines, descriptions } };
+      const budgetName = names.find((n) => n.includes('/campaignBudgets/')) ?? '';
+      return { externalIds: { campaign: campaignName, budget: budgetName, customer: cid }, statusOnPlatform: 'PAUSED', simulated: false, requestPreview: { operations: mutateOperations.length, headlines, descriptions, geo: campaign.geo, negativeKeywords: campaign.negativeKeywords.length } };
+    },
+    async setBudget(externalIds, dailyBudgetCents) {
+      if (!externalIds.budget) throw new ChannelError('Google Ads: no budget id stored for this campaign', 'google_ads');
+      await ads(credentials, `customers/${customerId(credentials, 'google_ads')}/campaignBudgets:mutate`, { operations: [{ update: { resourceName: externalIds.budget, amountMicros: dailyBudgetCents * 10_000 }, updateMask: 'amount_micros' }] }, 'google_ads');
     },
     async setStatus(externalIds, status) {
       if (!externalIds.campaign) return;
@@ -91,12 +135,28 @@ export function lsaAdapter(credentials: Credentials): AdAdapter {
     async setStatus() {
       throw new ChannelError('Local Services Ads are read-only by API.', 'lsa');
     },
+    async setBudget() {
+      throw new ChannelError('Change Local Services Ads budgets in the LSA dashboard.', 'lsa');
+    },
     async insights(_ids, date): Promise<DailyMetrics | null> {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
       const rows = await gaql(credentials, `SELECT local_services_lead.lead_type, local_services_lead.creation_date_time FROM local_services_lead WHERE local_services_lead.creation_date_time >= '${date} 00:00:00' AND local_services_lead.creation_date_time <= '${date} 23:59:59'`, 'lsa');
       return { date, impressions: 0, clicks: 0, spendCents: 0, leads: rows.length, conversions: 0, conversionValueCents: 0 };
     },
   };
+}
+
+/** Adds the image to the profile's Photos tab too. A failed photo never fails the post. */
+async function uploadGbpPhoto(token: string, location: string, sourceUrl: string): Promise<string> {
+  try {
+    const response = await fetch(`https://mybusiness.googleapis.com/v4/${location}/media`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mediaFormat: 'PHOTO', locationAssociation: { category: 'ADDITIONAL' }, sourceUrl }), signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    return response.ok ? 'uploaded' : `photo upload failed: HTTP ${response.status}`;
+  } catch (error) {
+    return `photo upload failed: ${error instanceof Error ? error.message : String(error)}`;
+  }
 }
 
 export function gbpPostAdapter(credentials: Credentials): PostAdapter {
@@ -119,7 +179,8 @@ export function gbpPostAdapter(credentials: Credentials): PostAdapter {
       });
       const data = (await response.json().catch(() => ({}))) as { name?: string; searchUrl?: string; error?: { message?: string } };
       if (!response.ok) throw new ChannelError(`GBP: ${data.error?.message ?? `HTTP ${response.status}`}`, 'gbp');
-      return { externalId: data.name ?? null, permalink: data.searchUrl ?? null, status: 'published', simulated: false, requestPreview: { location, topicType: body.topicType } };
+      const photo = request.options.addToPhotos === true && request.imageUrl ? await uploadGbpPhoto(credentials.accessToken, location, request.imageUrl) : null;
+      return { externalId: data.name ?? null, permalink: data.searchUrl ?? null, status: 'published', simulated: false, requestPreview: { location, topicType: body.topicType, photo } };
     },
   };
 }

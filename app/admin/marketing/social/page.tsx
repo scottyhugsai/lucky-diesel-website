@@ -2,6 +2,7 @@ import { CalendarPlus, Layers, Sparkles } from 'lucide-react';
 import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
 import { ButtonLink, Card, PageHeader, fieldClass } from '@/components/app/ui';
 import { SectionTabs } from '@/components/admin/marketing/studio/Bits';
+import { IdeasPanel } from '@/components/admin/marketing/studio/IdeasPanel';
 import { DemoBanner } from '@/components/admin/marketing/studio/DemoBanner';
 import { SOCIAL_LABEL, SOCIAL_PLATFORMS, SOCIAL_TABS } from '@/components/admin/marketing/studio/labels';
 import { CalendarNav, MonthView, WeekView } from '@/components/admin/marketing/studio/SocialCalendar';
@@ -76,6 +77,8 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
             </ul>
             <ActionForm action={draftPillars}><PendingButton size="sm" variant="secondary">Draft next 2 weeks</PendingButton></ActionForm>
           </Card>
+
+          <IdeasPanel />
 
           <Card title="Best times to post">
             <ul className="grid gap-2 text-sm">

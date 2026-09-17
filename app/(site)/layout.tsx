@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { ClosureBanner } from '@/components/seo/ClosureBanner';
 import { DesignToggle } from '@/components/design/DesignToggle';
 import { MobileActionBar } from '@/components/layout/MobileActionBar';
 import { MarketingWidgets } from '@/components/marketing-public/MarketingWidgets';
@@ -37,6 +38,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
             <MobileActionBar />
           </>
         )}
+        <ClosureBanner />
         <CartDrawer />
         <MarketingWidgets design={design} />
         <Suspense>

@@ -80,6 +80,8 @@ export async function bookOnline(_prev: BookingState, formData: FormData): Promi
     details: details || null,
     sms_consent: lead.smsConsent,
     consent_ip: lead.smsConsent ? ip : null,
+    heard_about: lead.heardAbout ?? null,
+    vin: lead.vin ?? null,
     status: 'booked',
     source: 'online booking',
     converted_at: new Date().toISOString(),

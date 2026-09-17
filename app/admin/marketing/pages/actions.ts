@@ -147,3 +147,36 @@ export async function setMagnetPublished(_prev: ActionState, form: FormData): Pr
     return { notice: published ? 'Live.' : 'Hidden.' };
   });
 }
+
+/** Adds a button to the link-in-bio page, backed by a counted short link. */
+export async function addBioLinkAction(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireRole('admin');
+  return guard(async () => {
+    const label = requiredText(form, 'label', 'Label', 60);
+    const target = requiredText(form, 'target', 'Link', 500);
+    if (!target.startsWith('/')) return { error: 'Use a path on this site, like /offers.' };
+    const link = await createShortLink({ targetUrl: target, utmSource: 'instagram', utmMedium: 'bio' });
+    if (!link.ok) return { error: link.error };
+    const db = createAdminClient();
+    const { data: row } = await db.from('short_links').select('id').eq('code', link.url.split('/r/')[1] ?? '').maybeSingle();
+    if (!row) return { error: 'Couldn’t save the link.' };
+    const { error } = await db.from('bio_links').insert({ label, short_link_id: row.id, sort: Number(form.get('sort') ?? 0) || 0 });
+    if (error) return { error: 'Couldn’t save the button.' };
+    revalidatePath('/admin/marketing/pages');
+    revalidatePath('/links');
+    return { notice: 'Button added to /links.' };
+  });
+}
+
+/** Hides a link-in-bio button. The short link keeps its click history. */
+export async function removeBioLinkAction(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireRole('admin');
+  return guard(async () => {
+    const id = requiredText(form, 'id', 'Button', 40);
+    const { error } = await createAdminClient().from('bio_links').update({ active: false }).eq('id', id);
+    if (error) return { error: 'Couldn’t remove it.' };
+    revalidatePath('/admin/marketing/pages');
+    revalidatePath('/links');
+    return { notice: 'Removed.' };
+  });
+}

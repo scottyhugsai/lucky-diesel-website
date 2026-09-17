@@ -26,11 +26,17 @@ export function LineSummary({ line, showApproval = true }: { line: PortalLine; s
   );
 }
 
-export function TotalsRows({ subtotal, tax, total, taxLabel = 'Tax' }: { subtotal: number; tax: number; total: number; taxLabel?: string }) {
+export function TotalsRows({ subtotal, tax, total, taxLabel = 'Tax', discount = 0 }: { subtotal: number; tax: number; total: number; taxLabel?: string; discount?: number }) {
   return (
     <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-sm">
       <dt className="text-chalk/65">Subtotal</dt>
       <dd className="text-right tabular-nums">{money(subtotal)}</dd>
+      {discount > 0 && (
+        <>
+          <dt className="text-clover">Discounts</dt>
+          <dd className="text-right tabular-nums text-clover">−{money(discount)}</dd>
+        </>
+      )}
       <dt className="text-chalk/65">{taxLabel}</dt>
       <dd className="text-right tabular-nums">{money(tax)}</dd>
       <dt className="display pt-2 text-2xl not-italic">Total</dt>

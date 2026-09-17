@@ -1,3 +1,4 @@
+import type { CallHours, GeoCircle, SpecialCategory } from '../ad-presets';
 import type { AdFormat, SocialPlatform } from '../types';
 
 /** Connection rows in `channel_connections`. */
@@ -47,6 +48,18 @@ export interface AdCampaignPayload {
   radiusMiles: number;
   latitude: number;
   longitude: number;
+  /** Shop radius plus chosen towns, and towns to leave out. */
+  geo: { include: GeoCircle[]; exclude: GeoCircle[] };
+  /** Google negative keywords (empty when the guard list is off). */
+  negativeKeywords: string[];
+  /** Ad schedule; null = all day. */
+  callHours: CallHours | null;
+  /** Meta special ad category (financing/credit wording). */
+  specialCategory: SpecialCategory;
+  /** Platform AI rewrites/crops of approved creative. Off unless the owner turns it on. */
+  aiEnhancements: boolean;
+  /** Call/sitelink extensions built from shop facts. */
+  extensions: { phone: string; sitelinks: { text: string; url: string }[] };
 }
 
 export interface AdPublishRequest {
@@ -78,6 +91,8 @@ export interface AdAdapter {
   platform: ConnectionPlatform;
   publish(request: AdPublishRequest): Promise<AdPublishResult>;
   setStatus(externalIds: Record<string, string>, status: 'ACTIVE' | 'PAUSED'): Promise<void>;
+  /** Changes the daily budget of an existing campaign (approved seasonal change). */
+  setBudget(externalIds: Record<string, string>, dailyBudgetCents: number): Promise<void>;
   insights(externalIds: Record<string, string>, date: string, dailyBudgetCents: number): Promise<DailyMetrics | null>;
 }
 

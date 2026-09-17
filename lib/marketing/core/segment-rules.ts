@@ -12,9 +12,12 @@ export type ServiceCategory = (typeof SERVICE_CATEGORIES)[number];
 export const LIFECYCLE_STAGES = ['subscriber', 'lead', 'customer', 'repeat', 'vip', 'lapsed', 'lost'] as const;
 export const LOYALTY_TIERS = ['stock', 'stage_1', 'stage_2', 'full_build'] as const;
 export type LoyaltyTier = (typeof LOYALTY_TIERS)[number];
+/** How a truck is used. Mirrors the check constraint on `vehicles.usage`. */
+export const TRUCK_USAGES = ['towing', 'daily', 'work', 'show', 'fleet', 'offroad'] as const;
+export type TruckUsage = (typeof TRUCK_USAGES)[number];
 
-type NumericField = 'mileage' | 'days_since_last_visit' | 'lifetime_value_cents' | 'paid_visits';
-type ListField = 'platform' | 'generation' | 'lifecycle_stage' | 'loyalty_tier' | 'source';
+type NumericField = 'mileage' | 'days_since_last_visit' | 'lifetime_value_cents' | 'paid_visits' | 'overdue_ratio';
+type ListField = 'platform' | 'generation' | 'lifecycle_stage' | 'loyalty_tier' | 'source' | 'usage';
 
 export type SegmentCondition =
   | { field: ListField; op: 'in' | 'not_in'; values: string[] }
@@ -47,13 +50,17 @@ export interface ContactFacts {
   source: string;
   isFleet: boolean;
   services: { category: ServiceCategory; at: Date }[];
+  /** Usage across trucks the customer still owns. */
+  usage: string[];
+  /** Days since last visit ÷ usual visit interval; null without a rhythm. */
+  overdueRatio: number | null;
 }
 
 const MAX_CONDITIONS = 25;
 const MAX_VALUES = 50;
 const MAX_VALUE_LENGTH = 64;
-const LIST_FIELDS = new Set<string>(['platform', 'generation', 'lifecycle_stage', 'loyalty_tier', 'source']);
-const NUMERIC_FIELDS = new Set<string>(['mileage', 'days_since_last_visit', 'lifetime_value_cents', 'paid_visits']);
+const LIST_FIELDS = new Set<string>(['platform', 'generation', 'lifecycle_stage', 'loyalty_tier', 'source', 'usage']);
+const NUMERIC_FIELDS = new Set<string>(['mileage', 'days_since_last_visit', 'lifetime_value_cents', 'paid_visits', 'overdue_ratio']);
 const DAY_MS = 86_400_000;
 
 const SERVICE_PATTERNS: [ServiceCategory, RegExp][] = [
@@ -99,7 +106,7 @@ function parseCondition(raw: unknown): SegmentCondition | string {
 
   if (LIST_FIELDS.has(field)) {
     if (op !== 'in' && op !== 'not_in') return `${field}: op must be in or not_in`;
-    const allowed = field === 'lifecycle_stage' ? LIFECYCLE_STAGES : field === 'loyalty_tier' ? LOYALTY_TIERS : undefined;
+    const allowed = field === 'lifecycle_stage' ? LIFECYCLE_STAGES : field === 'loyalty_tier' ? LOYALTY_TIERS : field === 'usage' ? TRUCK_USAGES : undefined;
     const values = stringList(c.values, allowed);
     return values ? { field: field as ListField, op, values } : `${field}: values must be a list of known strings`;
   }
@@ -154,6 +161,7 @@ function numericValue(field: NumericField, facts: ContactFacts, now: Date): numb
     case 'days_since_last_visit': return facts.lastVisitAt ? Math.floor((now.getTime() - facts.lastVisitAt.getTime()) / DAY_MS) : null;
     case 'lifetime_value_cents': return facts.lifetimeValueCents;
     case 'paid_visits': return facts.paidVisits;
+    case 'overdue_ratio': return facts.overdueRatio;
   }
 }
 
@@ -164,18 +172,19 @@ function listValues(field: ListField, facts: ContactFacts): string[] {
     case 'lifecycle_stage': return [facts.lifecycleStage];
     case 'loyalty_tier': return [facts.loyaltyTier];
     case 'source': return [facts.source.toLowerCase()];
+    case 'usage': return facts.usage;
   }
 }
 
 export function matchesCondition(condition: SegmentCondition, facts: ContactFacts, now: Date): boolean {
   switch (condition.field) {
-    case 'platform': case 'generation': case 'lifecycle_stage': case 'loyalty_tier': case 'source': {
+    case 'platform': case 'generation': case 'lifecycle_stage': case 'loyalty_tier': case 'source': case 'usage': {
       const have = listValues(condition.field, facts);
       // Generations match by substring so “l5p” finds “2017–Present L5P 6.6L”.
       const hit = condition.values.some((v) => have.some((h) => (condition.field === 'generation' ? h.includes(v) : h === v)));
       return condition.op === 'in' ? hit : !hit;
     }
-    case 'mileage': case 'days_since_last_visit': case 'lifetime_value_cents': case 'paid_visits': {
+    case 'mileage': case 'days_since_last_visit': case 'lifetime_value_cents': case 'paid_visits': case 'overdue_ratio': {
       const value = numericValue(condition.field, facts, now);
       if (value === null) return false;
       if (condition.op === 'between') return value >= condition.min && value <= condition.max;

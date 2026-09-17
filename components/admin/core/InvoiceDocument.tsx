@@ -11,12 +11,14 @@ interface InvoiceDocumentProps {
   };
   lines: InvoiceLine[];
   overdue: boolean;
+  /** Discount lines (invoice_discounts); subtotal stays pre-discount. */
+  discounts?: { id: string; label: string; amountCents: number }[];
 }
 
 const KIND_LABEL = { labor: 'Labor', part: 'Part', fee: 'Fee' } as const;
 
 /** The invoice as paper: light sheet on screen, prints edge to edge on white. */
-export function InvoiceDocument({ invoice, lines, overdue }: InvoiceDocumentProps) {
+export function InvoiceDocument({ invoice, lines, overdue, discounts = [] }: InvoiceDocumentProps) {
   const vehicle = invoice.work_orders?.vehicles;
   const stamp = invoice.status === 'paid' ? { text: 'Paid', className: 'border-[#0f8a2a] text-[#0f8a2a]' } : invoice.status === 'void' ? { text: 'Void', className: 'border-neutral-500 text-neutral-500' } : overdue ? { text: 'Overdue', className: 'border-[#c43d2f] text-[#c43d2f]' } : { text: 'Due', className: 'border-neutral-800 text-neutral-800' };
 
@@ -90,6 +92,9 @@ export function InvoiceDocument({ invoice, lines, overdue }: InvoiceDocumentProp
 
         <dl className="ml-auto mt-5 grid max-w-xs gap-1.5 text-sm">
           <div className="flex justify-between gap-6"><dt className="text-neutral-600">Subtotal</dt><dd className="tabular-nums">{money(invoice.subtotal_cents)}</dd></div>
+          {discounts.map((d) => (
+            <div key={d.id} className="flex justify-between gap-6 text-[#0f8a2a]"><dt>{d.label}</dt><dd className="shrink-0 tabular-nums">{d.amountCents ? `−${money(d.amountCents)}` : '$0.00'}</dd></div>
+          ))}
           <div className="flex justify-between gap-6"><dt className="text-neutral-600">Sales tax</dt><dd className="tabular-nums">{money(invoice.tax_cents)}</dd></div>
           <div className="flex justify-between gap-6 border-t-2 border-[#111412] pt-2 text-lg font-bold"><dt>Total</dt><dd className="tabular-nums">{money(invoice.total_cents)}</dd></div>
           {invoice.payments.map((p) => (

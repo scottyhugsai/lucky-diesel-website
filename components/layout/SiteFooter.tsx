@@ -45,6 +45,7 @@ export function SiteFooter() {
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-sm text-steel">
           <p>© {new Date().getFullYear()} {BUSINESS.legalName} · {BUSINESS.city}, {BUSINESS.region}</p>
           <ul className="flex gap-5">
+            <li><Link href="/fleet" className="hover:text-clover">Fleet service</Link></li>
             <li><Link href="/emissions-policy" className="hover:text-clover">Emissions policy</Link></li>
             <li><Link href="/privacy" className="hover:text-clover">Privacy</Link></li>
             <li><Link href="/login" className="hover:text-clover">Customer &amp; staff login</Link></li>

@@ -22,6 +22,7 @@ export interface CampaignView {
   simulated: boolean;
   notes: string | null;
   radiusMiles: number | null;
+  targeting: string | null;
   publications: number;
 }
 
@@ -44,7 +45,7 @@ export function CampaignCard({ campaign, creatives, actions }: { campaign: Campa
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-semibold">{campaign.name}</p>
-          <p className="text-sm text-chalk/60">{CAMPAIGN_PLATFORM_LABEL[campaign.platform]} · {campaign.objective} · {campaign.radiusMiles ?? 30} mi</p>
+          <p className="text-sm text-chalk/60">{CAMPAIGN_PLATFORM_LABEL[campaign.platform]} · {campaign.objective} · {campaign.targeting ?? `${campaign.radiusMiles ?? 30} mi`}</p>
         </div>
         <div className="flex flex-wrap gap-1.5">
           <StatusBadge status={campaign.status} />

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { makeShortLink } from '@/app/admin/marketing/pages/actions';
 import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
 import { fieldClass } from '@/components/app/ui';
+import { encodeQr, qrSvgPath } from '@/lib/marketing/engage/qr';
 import { CopyButton } from './CopyButton';
 import { Field } from './kit';
 
@@ -21,8 +22,12 @@ export function UtmBuilder({ slug, baseUrl }: { slug: string; baseUrl: string })
   const [source, setSource] = useState('facebook');
   const [medium, setMedium] = useState('social');
   const [campaign, setCampaign] = useState(slug);
+  const [showQr, setShowQr] = useState(false);
   const params = new URLSearchParams({ utm_source: clean(source), utm_medium: clean(medium), utm_campaign: clean(campaign) });
   const path = `/l/${slug}?${params.toString()}`;
+  const fullUrl = `${baseUrl}${path}`;
+  const matrix = showQr ? encodeQr(fullUrl) : null;
+  const svg = matrix ? qrSvgPath(matrix) : null;
 
   return (
     <div className="grid gap-3">
@@ -45,9 +50,29 @@ export function UtmBuilder({ slug, baseUrl }: { slug: string; baseUrl: string })
         <input type="hidden" name="target" value={path} />
         <input type="hidden" name="utm_source" value={clean(source)} />
         <input type="hidden" name="utm_medium" value={clean(medium)} />
-        <CopyButton value={`${baseUrl}${path}`} label="Copy full link" />
+        <CopyButton value={fullUrl} label="Copy full link" />
         <PendingButton size="sm" variant="secondary">Make short link</PendingButton>
+        <button
+          type="button"
+          onClick={() => setShowQr((open) => !open)}
+          aria-expanded={showQr}
+          className="inline-flex h-9 items-center rounded-sm border border-line px-2.5 text-xs font-semibold text-chalk/80 hover:border-clover hover:text-clover"
+        >
+          {showQr ? 'Hide QR' : 'QR code'}
+        </button>
       </ActionForm>
+      {showQr && (
+        svg ? (
+          <figure className="grid justify-items-start gap-2">
+            <svg viewBox={`0 0 ${svg.viewBox} ${svg.viewBox}`} width={168} height={168} role="img" aria-label={`QR code for ${fullUrl}`} className="rounded-sm bg-white p-1.5">
+              <path d={svg.path} fill="#000" />
+            </svg>
+            <figcaption className="text-xs text-steel">Print it on a flyer or window cling. It carries this placement’s UTMs.</figcaption>
+          </figure>
+        ) : (
+          <p className="text-xs text-danger">That link is too long for a QR code. Make a short link first.</p>
+        )
+      )}
     </div>
   );
 }

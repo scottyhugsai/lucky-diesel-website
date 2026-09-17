@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
+import { RelatedLinks } from '@/components/seo/RelatedLinks';
+import { loadRelatedLinks } from '@/lib/marketing/content/seo-public';
 import { BUSINESS } from '@/lib/site';
 import { createClient } from '@/lib/supabase/server';
 
@@ -55,6 +57,7 @@ function DynoBar({ label, before, after, unit }: { label: string; before: number
 export default async function BuildPage({ params }: BuildPageProps) {
   const build = await loadBuild((await params).slug);
   if (!build) notFound();
+  const related = await loadRelatedLinks(build.platform, `/builds/${build.slug}`);
 
   return (
     <article className="pb-24 pt-28 sm:pt-36">
@@ -88,6 +91,7 @@ export default async function BuildPage({ params }: BuildPageProps) {
             <p className="text-sm text-steel">Dyno results vary by truck, fuel, conditions and parts. Ask us what’s realistic for yours: {BUSINESS.phoneDisplay}.</p>
           </div>
         </div>
+        <RelatedLinks links={related} />
       </div>
     </article>
   );

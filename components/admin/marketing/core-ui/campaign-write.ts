@@ -1,4 +1,5 @@
 import 'server-only';
+import { policyBlockMessage } from '@/lib/marketing/content/compliance';
 import { createClient } from '@/lib/supabase/server';
 import type { CampaignDraft, StepDraft } from './campaign-input';
 
@@ -28,6 +29,8 @@ export async function insertCampaign(supabase: Supabase, draft: CampaignDraft, u
 }
 
 export async function replaceSteps(supabase: Supabase, campaignId: string, steps: StepDraft[]): Promise<{ ok: true } | { error: string }> {
+  const blocked = policyBlockMessage(steps.flatMap((s) => [s.subject, s.body])); // review policy + Reg Z lint on save (B8)
+  if (blocked) return { error: blocked };
   const { error: deleteError } = await supabase.from('campaign_steps').delete().eq('campaign_id', campaignId);
   if (deleteError) return { error: deleteError.message };
   const { error } = await supabase.from('campaign_steps').insert(

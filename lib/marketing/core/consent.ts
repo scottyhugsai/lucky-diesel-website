@@ -1,10 +1,13 @@
 import 'server-only';
 import type { Enums, Json, TablesUpdate } from '@/lib/db/database.types';
+import { SMS_CONSENT_VERSION } from '@/lib/lead';
 import { BUSINESS } from '@/lib/site';
 import { classifyInboundSms, type InboundIntent } from './compliance';
 import { normalizeAddress, normalizeEmail, phoneTail } from './policy';
 import type { Db } from './settings';
 import { verifyToken } from './tokens';
+import { ensureOptInReply, matchKeyword } from './topics';
+import { SOLD_TAG, isTruckSoldMessage } from './truck-sold';
 
 type Channel = Enums<'message_channel'>;
 type Purpose = Enums<'mkt_consent_purpose'>;
@@ -71,13 +74,25 @@ function customerPatch(input: ConsentInput, at: string): TablesUpdate<'customers
   return granted ? { sms_consent: true, sms_consent_at: at, sms_opted_out_at: null } : { sms_consent: false, sms_opted_out_at: at, sms_marketing_opted_out_at: at };
 }
 
+/** Settings flag: one opt-out revokes every purpose on that address (FCC revoke-all, C4). */
+export async function revokeAllEnabled(db: Db): Promise<boolean> {
+  const { data, error } = await db.from('marketing_settings').select('revoke_all_on_opt_out').eq('id', 1).maybeSingle();
+  if (error) console.error(`[marketing] revoke-all flag unavailable: ${error.message}`);
+  return Boolean(data?.revoke_all_on_opt_out);
+}
+
 /**
  * Appends to the consent ledger, then mirrors the state onto the customer and
  * the suppression list. Revoking transactional SMS (STOP) revokes marketing too.
+ * With revoke-all on, a marketing opt-out is widened to every purpose.
  */
-export async function recordConsent(db: Db, input: ConsentInput): Promise<{ ok: boolean; error?: string }> {
-  const address = normalizeAddress(input.channel, input.address);
+export async function recordConsent(db: Db, requested: ConsentInput): Promise<{ ok: boolean; error?: string }> {
+  const address = normalizeAddress(requested.channel, requested.address);
   if (!address) return { ok: false, error: 'A valid phone or email is required.' };
+  const widen = requested.action === 'revoked' && requested.purpose === 'marketing' && (await revokeAllEnabled(db));
+  const input: ConsentInput = widen
+    ? { ...requested, purpose: 'transactional', evidence: { ...requested.evidence, revoke_all: true, requested_purpose: 'marketing' } }
+    : requested;
   const at = new Date().toISOString();
   const { error } = await db.from('contact_consent_events').insert({
     customer_id: input.customerId,
@@ -116,6 +131,27 @@ export interface InboundResult {
   reply: string | null;
 }
 
+/**
+ * Owner-defined keywords: `opt_in` grants marketing SMS consent (CTIA
+ * confirmation added), `reply` just answers (HOURS, BOOK, PRICE). Carrier
+ * keywords are handled earlier and can't be defined here.
+ */
+async function handleKeyword(
+  db: Db,
+  input: { from: string; body: string; customerId: string | null; evidence: Record<string, string | null> },
+): Promise<string | null> {
+  const { data } = await db.from('sms_keywords').select('id, keyword, action, reply, active, hits').eq('active', true);
+  const hit = matchKeyword(input.body, data ?? []);
+  if (!hit) return null;
+  await db.from('sms_keywords').update({ hits: hit.hits + 1, last_hit_at: new Date().toISOString() }).eq('id', hit.id);
+  if (hit.action !== 'opt_in') return hit.reply;
+  await recordConsent(db, {
+    customerId: input.customerId, channel: 'sms', purpose: 'marketing', action: 'granted', method: 'keyword',
+    address: input.from, consentTextVersion: SMS_CONSENT_VERSION, evidence: { ...input.evidence, keyword: hit.keyword },
+  });
+  return ensureOptInReply(hit.reply, BUSINESS.name);
+}
+
 /** STOP / START / HELP (plus natural-language opt-outs) for an inbound text. Logs the message. */
 export async function handleInboundSms(db: Db, input: { from: string; body: string; messageSid: string | null }): Promise<InboundResult> {
   const intent = classifyInboundSms(input.body);
@@ -137,10 +173,70 @@ export async function handleInboundSms(db: Db, input: { from: string; body: stri
     await recordConsent(db, { customerId, channel: 'sms', purpose: 'transactional', action: 'granted', method: 'keyword_start', address: input.from, evidence });
     return { intent, customerId, reply: `${BUSINESS.name}: you're resubscribed to service texts. Reply STOP to opt out, HELP for help.` };
   }
+  if (intent === 'other') {
+    const keywordReply = await handleKeyword(db, { from: input.from, body: input.body, customerId, evidence });
+    if (keywordReply) return { intent, customerId, reply: keywordReply };
+  }
+  if (customerId && isTruckSoldMessage(input.body)) {
+    // Flag for the owner; sold trucks are marked by hand so a stray "sold" never drops a truck.
+    const { data: customer } = await db.from('customers').select('tags').eq('id', customerId).maybeSingle();
+    if (customer && !customer.tags.includes(SOLD_TAG)) await db.from('customers').update({ tags: [...customer.tags, SOLD_TAG] }).eq('id', customerId);
+    return { intent, customerId, reply: `${BUSINESS.name}: thanks for letting us know. Got a new truck? Reply with the year, make and model.` };
+  }
   if (intent === 'help') {
     return { intent, customerId, reply: `${BUSINESS.name}: service and appointment texts. Call ${BUSINESS.phoneDisplay} or email ${BUSINESS.email}. Msg & data rates may apply. Reply STOP to opt out.` };
   }
   return { intent, customerId, reply: null };
+}
+
+export interface PreferenceState {
+  address: string;
+  customerId: string | null;
+  /** Topic keys the customer has switched off. */
+  topicsOff: string[];
+  subscribed: boolean;
+}
+
+/** Reads the preference centre state for a signed unsubscribe/preferences token. */
+export async function preferencesForToken(db: Db, token: string | null): Promise<PreferenceState | null> {
+  const payload = verifyToken('unsubscribe', token);
+  if (!payload?.a || payload.c !== 'email') return null;
+  const address = normalizeEmail(payload.a);
+  if (!address) return null;
+  const customerId = payload.cid && /^[0-9a-f-]{36}$/i.test(payload.cid) ? payload.cid : await findCustomerByAddress(db, 'email', address);
+  if (!customerId) return { address, customerId: null, topicsOff: [], subscribed: true };
+  const { data } = await db.from('customers').select('email_topics_off, email_marketing_status').eq('id', customerId).maybeSingle();
+  return { address, customerId, topicsOff: data?.email_topics_off ?? [], subscribed: (data?.email_marketing_status ?? 'subscribed') === 'subscribed' };
+}
+
+/**
+ * Saves topic choices. Turning every topic off is a full unsubscribe, so it goes
+ * through the consent ledger; keeping at least one resubscribes the address.
+ */
+export async function saveEmailPreferences(
+  db: Db,
+  input: { token: string | null; topicsOff: string[]; allTopics: readonly string[]; meta: { ip: string | null; userAgent: string | null } },
+): Promise<{ ok: boolean; unsubscribed: boolean }> {
+  const state = await preferencesForToken(db, input.token);
+  if (!state) return { ok: false, unsubscribed: false };
+  const topicsOff = [...new Set(input.topicsOff.filter((t) => input.allTopics.includes(t)))];
+  const unsubscribed = topicsOff.length >= input.allTopics.length;
+  if (state.customerId) {
+    const { error } = await db.from('customers').update({ email_topics_off: topicsOff }).eq('id', state.customerId);
+    if (error) console.error(`[marketing] preference save failed: ${error.message}`);
+  }
+  const evidence = { ip: input.meta.ip, userAgent: input.meta.userAgent, topics_off: topicsOff.join(',') };
+  if (unsubscribed) {
+    const result = await recordConsent(db, { customerId: state.customerId, channel: 'email', purpose: 'marketing', action: 'revoked', method: 'preference_center', address: state.address, evidence });
+    return { ok: result.ok, unsubscribed: true };
+  }
+  // Re-subscribing from the link is fine, but a spam complaint or bounce stays put.
+  const suppression = await suppressionFor(db, 'email', state.address);
+  if (!state.subscribed && (!suppression || suppression.reason === 'preference_center' || suppression.reason === 'unsubscribe_link')) {
+    const result = await recordConsent(db, { customerId: state.customerId, channel: 'email', purpose: 'marketing', action: 'granted', method: 'preference_center', address: state.address, evidence });
+    return { ok: result.ok, unsubscribed: false };
+  }
+  return { ok: true, unsubscribed: false };
 }
 
 /** One-click / link unsubscribe from marketing email or SMS. */

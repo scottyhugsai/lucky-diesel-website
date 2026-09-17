@@ -5,6 +5,7 @@ import { guard, number, oneOf, requiredText, requiredUuid, text, checkbox, type 
 import { requireRole } from '@/lib/auth';
 import { decideApproval, submitForApproval } from '@/lib/marketing/content/approvals-service';
 import { checkReplyText } from '@/lib/marketing/content/reputation';
+import { createReviewSocialPost, decideVideoTestimonial, requestVideoTestimonial } from '@/lib/marketing/content/reputation-ops';
 import { draftReplyForReview, ingestReview, postReviewReply } from '@/lib/marketing/content/reputation-service';
 import { toJson } from '@/lib/marketing/content/db';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -69,5 +70,43 @@ export async function addReview(_prev: ActionState, form: FormData): Promise<Act
     if (!result.ok) return { error: result.error };
     revalidatePath(PATH);
     return { notice: result.data.alerted ? 'Saved. Owner alerted.' : 'Review saved.' };
+  });
+}
+
+/** Turns an approved review into a social post draft (never auto-published). */
+export async function draftReviewPost(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const viewer = await requireRole('admin');
+  return guard(async () => {
+    const id = requiredText(form, 'review_id', 'Review', 40);
+    const result = await createReviewSocialPost(id, viewer.userId);
+    if (!result.ok) return { error: result.error };
+    revalidatePath('/admin/marketing/reviews');
+    revalidatePath('/admin/marketing/social');
+    return { notice: result.data.created ? 'Draft ready in Social.' : 'A draft already exists in Social.' };
+  });
+}
+
+/** Asks a customer for a short video. They get a one-time upload link with the release. */
+export async function askForVideoTestimonial(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const viewer = await requireRole('admin');
+  return guard(async () => {
+    const customerId = requiredText(form, 'customer_id', 'Customer', 40);
+    const result = await requestVideoTestimonial(customerId, viewer.userId);
+    if (!result.ok) return { error: result.error };
+    revalidatePath('/admin/marketing/reviews');
+    return { notice: 'Link sent. It expires in 30 days.' };
+  });
+}
+
+/** Approves or rejects an uploaded video. Approval is required before any use. */
+export async function decideTestimonial(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireRole('admin');
+  return guard(async () => {
+    const id = requiredText(form, 'id', 'Video', 40);
+    const decision = form.get('decision') === 'approve' ? 'approved' : 'rejected';
+    const result = await decideVideoTestimonial(id, decision);
+    if (!result.ok) return { error: result.error };
+    revalidatePath('/admin/marketing/reviews');
+    return { notice: decision === 'approved' ? 'Approved.' : 'Rejected.' };
   });
 }

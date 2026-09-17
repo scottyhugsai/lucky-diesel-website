@@ -42,6 +42,9 @@ export function demoAdAdapter(platform: ConnectionPlatform): AdAdapter {
     async setStatus() {
       // Simulated: the caller records SIMULATED_ACTIVE / SIMULATED_PAUSED.
     },
+    async setBudget() {
+      // Simulated: the caller stores the new daily budget.
+    },
     async insights(externalIds, date, dailyBudgetCents) {
       return simulateDailyMetrics(externalIds.ad ?? externalIds.campaign ?? platform, date, dailyBudgetCents);
     },

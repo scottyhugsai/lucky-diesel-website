@@ -1,5 +1,6 @@
 import 'server-only';
 import type { Tables } from '@/lib/db/database.types';
+import { visitRhythm, type VisitRhythm } from '@/lib/marketing/core/scoring';
 import { createClient } from '@/lib/supabase/server';
 
 export type TimelineKind = 'touch' | 'message' | 'campaign' | 'conversion' | 'consent';
@@ -24,6 +25,8 @@ export interface ContactDetail {
   campaigns: { id: string; name: string; kind: string; status: string }[];
   enrolledIds: string[];
   segments: { id: string; name: string }[];
+  trucks: Pick<Tables<'vehicles'>, 'id' | 'year' | 'make' | 'model' | 'nickname' | 'platform' | 'usage' | 'sold_at'>[];
+  rhythm: VisitRhythm;
 }
 
 const CONVERSION_LABEL: Record<string, string> = { lead: 'Became a lead', booking: 'Booked', job_paid: 'Paid a job', store_checkout_click: 'Store checkout click' };
@@ -33,7 +36,7 @@ export async function loadContactDetail(id: string): Promise<ContactDetail | nul
   const { data: customer } = await supabase.from('customers').select('*').eq('id', id).maybeSingle();
   if (!customer) return null;
 
-  const [touches, messages, sends, conversions, consent, referral, referrals, invoices, campaigns, enrollments, members] = await Promise.all([
+  const [touches, messages, sends, conversions, consent, referral, referrals, invoices, campaigns, enrollments, members, trucks] = await Promise.all([
     supabase.from('attribution_touches').select('id, source, medium, campaign, landing_path, touch_type, occurred_at').eq('customer_id', id).order('occurred_at', { ascending: false }).limit(50),
     supabase.from('messages').select('id, channel, direction, subject, body, status, created_at').eq('customer_id', id).order('created_at', { ascending: false }).limit(50),
     supabase.from('campaign_sends').select('id, status, variant, step_order, clicked_at, converted_at, sent_at, scheduled_for, campaigns(name)').eq('customer_id', id).order('scheduled_for', { ascending: false }).limit(50),
@@ -41,10 +44,11 @@ export async function loadContactDetail(id: string): Promise<ContactDetail | nul
     supabase.from('contact_consent_events').select('*').eq('customer_id', id).order('created_at', { ascending: false }).limit(100),
     supabase.from('referral_codes').select('code, uses').eq('customer_id', id).maybeSingle(),
     supabase.from('referrals').select('id', { count: 'exact', head: true }).eq('referrer_customer_id', id),
-    supabase.from('invoices').select('total_cents').eq('customer_id', id).eq('status', 'paid'),
+    supabase.from('invoices').select('total_cents, paid_at').eq('customer_id', id).eq('status', 'paid'),
     supabase.from('campaigns').select('id, name, kind, status').in('status', ['draft', 'active', 'paused', 'scheduled']).order('created_at', { ascending: false }),
     supabase.from('campaign_enrollments').select('campaign_id').eq('customer_id', id),
     supabase.from('segment_members').select('segments(id, name)').eq('customer_id', id),
+    supabase.from('vehicles').select('id, year, make, model, nickname, platform, usage, sold_at').eq('customer_id', id).order('created_at'),
   ]);
 
   const timeline: TimelineEntry[] = [
@@ -83,5 +87,7 @@ export async function loadContactDetail(id: string): Promise<ContactDetail | nul
     campaigns: campaigns.data ?? [],
     enrolledIds: (enrollments.data ?? []).map((e) => e.campaign_id),
     segments: (members.data ?? []).flatMap((m) => (m.segments ? [m.segments] : [])),
+    trucks: trucks.data ?? [],
+    rhythm: visitRhythm((invoices.data ?? []).flatMap((i) => (i.paid_at ? [new Date(i.paid_at)] : [])), new Date()),
   };
 }

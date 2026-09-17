@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { CalendarDays, MapPin, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { EventRegisterForm } from '@/components/marketing-public/EventRegisterForm';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { eventSchema } from '@/lib/marketing/content/seo-schema';
 import { BUSINESS } from '@/lib/site';
+import { siteUrl } from '@/lib/site-url';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,6 +43,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
   return (
     <article className="pb-28 pt-28 sm:pt-36">
+      <JsonLd data={eventSchema({ name: event.name, description: event.description, startsAt: event.starts_at, endsAt: event.ends_at, url: `${siteUrl()}/events/${event.slug}`, location: event.location, priceCents: event.price_cents, isFull: left === 0, isPast, base: siteUrl() })} />
       <div className="mx-auto grid max-w-3xl gap-8 px-4 sm:px-6">
         <header className="grid gap-4">
           <p className="kicker">{event.kind === 'dyno_day' ? 'Dyno day' : 'Shop event'}</p>

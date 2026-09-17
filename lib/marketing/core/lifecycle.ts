@@ -2,6 +2,7 @@ import 'server-only';
 import { emit } from '@/lib/automations/engine';
 import { AUTOMATIONS } from '@/lib/automations/catalog';
 import { vehicleLabel } from '@/lib/format';
+import { siteUrl } from '@/lib/site-url';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { planLifecycleEmits, type LifecycleInput } from './lifecycle-rules';
 import { nextSendTime, quietHoursWindow } from './policy';
@@ -33,16 +34,30 @@ async function optional<T>(query: PromiseLike<{ data: T[] | null; error: { messa
   return data ?? [];
 }
 
+/** Customers with a portal login they never used, limited to those with a job in the last 10 days. */
+async function neverSignedIn(db: Db, customers: { id: string; profile_id: string | null }[], jobs: { customer_id: string; created_at: string }[], now: Date): Promise<string[]> {
+  const recent = new Set(jobs.filter((j) => now.getTime() - Date.parse(j.created_at) < 10 * DAY_MS).map((j) => j.customer_id));
+  const candidates = customers.filter((c) => c.profile_id && recent.has(c.id));
+  if (!candidates.length) return [];
+  const { data, error } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (error) {
+    console.error(`[marketing] sweep: auth users unavailable: ${error.message}`);
+    return [];
+  }
+  const never = new Set(data.users.filter((u) => !u.last_sign_in_at).map((u) => u.id));
+  return candidates.filter((c) => never.has(c.profile_id!)).map((c) => c.id);
+}
+
 /** Loads the facts the lifecycle rules need with fixed, bounded queries. */
 export async function loadLifecycleInput(db: Db, now: Date): Promise<LifecycleInput> {
   const settings = await getMarketingSettings(db);
   const twoYears = new Date(now.getTime() - 730 * DAY_MS).toISOString();
   const recent = new Date(now.getTime() - 60 * DAY_MS).toISOString();
-  const [customers, invoices, vehicles, workOrders, tunes, leads, appointments, clicks, nps, events, registrations, fleets] = await Promise.all([
-    optional(db.from('customers').select('id, birthday, tags, fleet_account_id'), 'customers'),
+  const [customers, invoices, vehicles, workOrders, tunes, leads, appointments, clicks, nps, events, registrations, fleets, lostLeads, buildItems] = await Promise.all([
+    optional(db.from('customers').select('id, birthday, tags, fleet_account_id, profile_id'), 'customers'),
     optional(db.from('invoices').select('customer_id, paid_at').eq('status', 'paid').not('paid_at', 'is', null), 'invoices'),
-    optional(db.from('vehicles').select('id, customer_id, mileage, created_at, year, make, model, engine_code, nickname'), 'vehicles'),
-    optional(db.from('work_orders').select('customer_id, vehicle_id, title, mileage_in, completed_at, created_at').neq('status', 'cancelled').gte('created_at', twoYears), 'work_orders'),
+    optional(db.from('vehicles').select('id, customer_id, mileage, mileage_updated_at, created_at, year, make, model, engine_code, generation, platform, nickname'), 'vehicles'),
+    optional(db.from('work_orders').select('id, customer_id, vehicle_id, title, mileage_in, completed_at, created_at').neq('status', 'cancelled').gte('created_at', twoYears), 'work_orders'),
     optional(db.from('tune_records').select('id, vehicle_id, flashed_at, vehicles(customer_id)').gte('flashed_at', recent), 'tune_records'),
     optional(db.from('leads').select('id, customer_id, created_at, status, details').gte('created_at', recent).like('details', 'Build planner request%'), 'leads'),
     optional(db.from('appointments').select('customer_id, created_at, starts_at, status').gte('created_at', twoYears), 'appointments'),
@@ -51,20 +66,27 @@ export async function loadLifecycleInput(db: Db, now: Date): Promise<LifecycleIn
     optional(db.from('events').select('id, name, kind, starts_at').eq('published', true).gte('starts_at', now.toISOString()), 'events'),
     optional(db.from('event_registrations').select('event_id, customer_id').neq('status', 'cancelled'), 'event_registrations'),
     optional(db.from('fleet_accounts').select('id, contact_customer_id, pm_interval_miles, pm_interval_days').eq('active', true), 'fleet_accounts'),
+    optional(db.from('leads').select('id, customer_id, created_at').eq('status', 'lost').gte('created_at', new Date(now.getTime() - 130 * DAY_MS).toISOString()), 'lost leads'),
+    optional(db.from('build_items').select('id, vehicle_id, part_name, installed_at, warranty_until, vehicles(customer_id)'), 'build_items'),
   ]);
+  const portalNeverSignedIn = await neverSignedIn(db, customers, workOrders, now);
 
   return {
     now, timeZone: settings.timeZone, winbackMonths: settings.winbackMonths, seasonal: settings.seasonal,
     customers: customers.map((c) => ({ id: c.id, birthday: c.birthday, tags: c.tags })),
     paidInvoices: invoices.map((i) => ({ customerId: i.customer_id, paidAt: new Date(i.paid_at!).toISOString() })),
-    vehicles: vehicles.map((v) => ({ id: v.id, customerId: v.customer_id, mileage: v.mileage, createdAt: v.created_at, label: vehicleLabel(v) })),
-    workOrders: workOrders.map((w) => ({ customerId: w.customer_id, vehicleId: w.vehicle_id, title: w.title, mileageIn: w.mileage_in, at: new Date(w.completed_at ?? w.created_at).toISOString() })),
+    vehicles: vehicles.map((v) => ({ id: v.id, customerId: v.customer_id, mileage: v.mileage, createdAt: v.created_at, label: vehicleLabel(v), platform: v.platform, generation: v.generation, engineCode: v.engine_code, mileageUpdatedAt: v.mileage_updated_at })),
+    workOrders: workOrders.map((w) => ({ id: w.id, customerId: w.customer_id, vehicleId: w.vehicle_id, title: w.title, mileageIn: w.mileage_in, at: new Date(w.completed_at ?? w.created_at).toISOString() })),
     tunes: tunes.flatMap((t) => (t.vehicles?.customer_id ? [{ id: t.id, customerId: t.vehicles.customer_id, vehicleId: t.vehicle_id, flashedAt: t.flashed_at }] : [])),
     plannerLeads: leads.map((l) => ({ id: l.id, customerId: l.customer_id, createdAt: l.created_at, status: l.status })),
     appointments: appointments.map((a) => ({ customerId: a.customer_id, createdAt: a.created_at, startsAt: a.starts_at, status: a.status })),
     checkoutClicks: clicks.map((c) => ({ id: c.id, customerId: c.customer_id!, occurredAt: c.occurred_at })),
     detractors: nps.map((n) => ({ id: n.id, customerId: n.customer_id!, respondedAt: n.responded_at! })),
     events: events.map((e) => ({ id: e.id, name: e.name, kind: e.kind, startsAt: e.starts_at, registeredCustomerIds: registrations.filter((r) => r.event_id === e.id && r.customer_id).map((r) => r.customer_id!) })),
+    lostLeads: lostLeads.map((l) => ({ id: l.id, customerId: l.customer_id, createdAt: l.created_at })),
+    buildItems: buildItems.flatMap((b) => (b.vehicles?.customer_id ? [{ id: b.id, vehicleId: b.vehicle_id, customerId: b.vehicles.customer_id, partName: b.part_name, installedAt: b.installed_at, warrantyUntil: b.warranty_until }] : [])),
+    portalNeverSignedIn,
+    siteBase: siteUrl(),
     fleets: fleets.map((f) => ({ id: f.id, contactCustomerId: f.contact_customer_id, pmIntervalMiles: f.pm_interval_miles, pmIntervalDays: f.pm_interval_days, memberCustomerIds: customers.filter((c) => c.fleet_account_id === f.id).map((c) => c.id) })),
   };
 }

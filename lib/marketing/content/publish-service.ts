@@ -1,6 +1,8 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
+import { BUSINESS } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
+import { NEGATIVE_KEYWORDS, SHOP_LOCATION, geoCircles, parseTargeting } from './ad-presets';
 import { canPublish, isApprovalValid, type ContentStatus } from './approvals';
 import { latestApproval, loadSubject } from './approvals-service';
 import { checkBudget, type CampaignBudgetPlan } from './budget';
@@ -9,8 +11,6 @@ import type { AdCampaignPayload } from './channels/types';
 import { adminDb, fail, isCampaignPlatform, loadGuards, toJson, type Db, type Result } from './db';
 import { isAdFormat } from './types';
 
-/** The shop, for radius targeting. Charleston city centre until the owner sets the street address. */
-const SHOP_LOCATION = { latitude: 32.7765, longitude: -79.9311, radiusMiles: 30 };
 const LIVE_CAMPAIGN = ['approved', 'scheduled', 'live', 'paused'];
 const CAMPAIGN_FOR_CREATIVE: Record<string, string> = { meta: 'meta', google_pmax: 'google', google_search: 'google', tiktok: 'tiktok' };
 
@@ -45,6 +45,30 @@ export async function budgetViolations(db: Db, campaign: { id: string; platform:
   const messages = [...platformCheck.violations, ...shopCheck.violations].filter((v) => v.code !== 'no_guard').map((v) => v.message);
   if (platformCheck.violations.some((v) => v.code === 'no_guard') && shopCheck.violations.some((v) => v.code === 'no_guard')) messages.unshift('Set a budget guard before publishing.');
   return [...new Set(messages)];
+}
+
+/** What adapters get: budget, dates and every app-side targeting setting the owner approved. */
+export function campaignPayload(campaign: { id: string; name: string; objective: string; daily_budget_cents: number; starts_on: string; ends_on: string; audience: unknown }): AdCampaignPayload {
+  const targeting = parseTargeting(campaign.audience);
+  const site = siteUrl();
+  return {
+    campaignId: campaign.id, name: campaign.name, objective: campaign.objective as AdCampaignPayload['objective'], dailyBudgetCents: campaign.daily_budget_cents,
+    startsOn: campaign.starts_on, endsOn: campaign.ends_on, ...SHOP_LOCATION, radiusMiles: targeting.radiusMiles,
+    geo: geoCircles(targeting),
+    negativeKeywords: targeting.negativeKeywords ? [...NEGATIVE_KEYWORDS] : [],
+    callHours: targeting.callHours,
+    specialCategory: targeting.specialCategory,
+    aiEnhancements: targeting.aiEnhancements,
+    extensions: {
+      phone: BUSINESS.phoneDisplay,
+      sitelinks: [
+        { text: 'Book a bay', url: `${site}/book` },
+        { text: 'Parts store', url: `${site}/store` },
+        { text: 'Customer builds', url: `${site}/builds` },
+        { text: 'Photo gallery', url: `${site}/gallery` },
+      ],
+    },
+  };
 }
 
 async function approvedCampaign(db: Db, campaignId: string) {
@@ -88,11 +112,7 @@ export async function publishCreative(input: { creativeId: string; campaignId: s
     if (!variants?.length || !creative) return { ok: false, error: 'No publishable variants.' };
 
     const { adapter, connection } = await adAdapterFor(campaign.platform, db);
-    const audience = (campaign.audience ?? {}) as { radiusMiles?: number };
-    const payload: AdCampaignPayload = {
-      campaignId: campaign.id, name: campaign.name, objective: campaign.objective as AdCampaignPayload['objective'], dailyBudgetCents: campaign.daily_budget_cents,
-      startsOn: campaign.starts_on, endsOn: campaign.ends_on, ...SHOP_LOCATION, radiusMiles: audience.radiusMiles ?? SHOP_LOCATION.radiusMiles,
-    };
+    const payload = campaignPayload(campaign as typeof campaign & { starts_on: string; ends_on: string });
     const result = await adapter.publish({
       attemptKey,
       campaign: payload,

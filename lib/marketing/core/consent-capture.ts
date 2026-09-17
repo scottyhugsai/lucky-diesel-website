@@ -3,6 +3,7 @@ import { sendMessage } from '@/lib/messaging/send';
 import { BUSINESS } from '@/lib/site';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { findCustomerByAddress, recordConsent, suppressionFor } from './consent';
+import { checkEmail } from './email-check';
 import { normalizeEmail, normalizePhone } from './policy';
 import type { Db } from './settings';
 
@@ -53,6 +54,11 @@ export async function captureConsent(input: ConsentCaptureInput, meta: { ip: str
   // A web form can't undo a STOP: carriers require the person to text START from that phone.
   if (input.action === 'granted' && input.channel === 'sms' && (await suppressionFor(db, 'sms', address))?.scope === 'all') {
     return { ok: false, error: 'This number opted out by text. Text START to us to resubscribe.', status: 409 };
+  }
+  // Typos and dead domains are caught before a grant is stored (revocations always go through).
+  if (input.action === 'granted' && input.channel === 'email') {
+    const email = await checkEmail(address);
+    if (!email.ok) return { ok: false, error: email.error, status: 422 };
   }
   let customerId = await findCustomerByAddress(db, input.channel, address);
 

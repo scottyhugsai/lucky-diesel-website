@@ -93,11 +93,14 @@ export const ADS_TABS = [
 
 export const CONTENT_TABS = [
   { href: '/admin/marketing/content', label: 'SEO + listings' },
+  { href: '/admin/marketing/content/copilot', label: 'Copilot' },
+  { href: '/admin/marketing/content/templates', label: 'Templates' },
   { href: '/admin/marketing/content/connections', label: 'Connections' },
 ] as const;
 
 export const SOCIAL_TABS = [
   { href: '/admin/marketing/social', label: 'Calendar' },
   { href: '/admin/marketing/social/new', label: 'New post' },
+  { href: '/admin/marketing/social/releases', label: 'Releases' },
   { href: '/admin/marketing/ads/approvals', label: 'Approvals' },
 ] as const;

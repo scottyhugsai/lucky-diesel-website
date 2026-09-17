@@ -3,7 +3,7 @@ import { FleetPanel } from '@/components/admin/marketing/growth-ui/FleetPanel';
 import { loadCustomerOptions, loadLoyalty, loadReferrals, loadSegments } from '@/components/admin/marketing/growth-ui/growth-data';
 import { SubTabs } from '@/components/admin/marketing/growth-ui/kit';
 import { LoyaltyPanel } from '@/components/admin/marketing/growth-ui/LoyaltyPanel';
-import { loadEvents, loadFleets, loadOffers } from '@/components/admin/marketing/growth-ui/offers-events-data';
+import { loadEvents, loadFleets, loadOffers, loadPricingPrograms } from '@/components/admin/marketing/growth-ui/offers-events-data';
 import { OffersPanel } from '@/components/admin/marketing/growth-ui/OffersPanel';
 import { ReferralsPanel } from '@/components/admin/marketing/growth-ui/ReferralsPanel';
 import { PageHeader } from '@/components/app/ui';
@@ -32,8 +32,8 @@ async function TabBody({ tab }: { tab: Tab }) {
       return <LoyaltyPanel data={data} customers={customers} />;
     }
     case 'offers': {
-      const [offers, segments] = await Promise.all([loadOffers(), loadSegments()]);
-      return <OffersPanel offers={offers} segments={segments} />;
+      const [offers, segments, program] = await Promise.all([loadOffers(), loadSegments(), loadPricingPrograms()]);
+      return <OffersPanel offers={offers} segments={segments} program={program} />;
     }
     case 'events': {
       const [events, segments] = await Promise.all([loadEvents(), loadSegments()]);

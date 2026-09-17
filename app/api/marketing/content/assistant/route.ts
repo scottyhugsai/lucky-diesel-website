@@ -1,18 +1,24 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { askCopilot } from '@/lib/marketing/content/copilot';
 import { suggestNextCampaign, summarizeLast30Days, writeFromPrompt } from '@/lib/marketing/content/assistant';
 import { badRequest, oneOf, readJson, requireAdmin, str } from '@/lib/marketing/content/http';
 
-/** POST { action: 'next_campaign' | 'summary' | 'write', kind?: 'caption' | 'email', prompt? } (owner only). */
+/** POST { action: 'next_campaign' | 'summary' | 'write' | 'chat', kind?: 'caption' | 'email', prompt?, message? } (owner only). */
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin();
   if ('response' in auth) return auth.response;
   const body = await readJson(request);
-  const action = body ? oneOf(body.action, ['next_campaign', 'summary', 'write'] as const) : null;
+  const action = body ? oneOf(body.action, ['next_campaign', 'summary', 'write', 'chat'] as const) : null;
   if (!body || !action) return badRequest('action is required.');
   try {
     if (action === 'next_campaign') return NextResponse.json({ ok: true, data: await suggestNextCampaign() });
     if (action === 'summary') return NextResponse.json({ ok: true, data: await summarizeLast30Days() });
+    if (action === 'chat') {
+      const message = str(body, 'message', 300);
+      if (!message) return badRequest('Ask a question (300 characters max).');
+      return NextResponse.json({ ok: true, data: await askCopilot({ question: message, requestedBy: auth.viewer.userId }) });
+    }
     const kind = oneOf(body.kind, ['caption', 'email'] as const);
     const prompt = str(body, 'prompt', 500);
     if (!kind || !prompt) return badRequest('kind and prompt are required.');

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { CopyPayLink, PrintButton } from '@/components/admin/core/InvoiceTools';
 import { InvoiceDocument } from '@/components/admin/core/InvoiceDocument';
+import { DiscountsCard } from '@/components/admin/invoices/DiscountsCard';
 import { PaymentForm } from '@/components/admin/core/JobControls';
 import { parseInvoiceLines } from '@/components/admin/core/invoice-lines';
 import { UUID_RE } from '@/components/admin/core/parse';
@@ -10,6 +11,7 @@ import { requestNow } from '@/components/admin/core/time';
 import { Card } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
 import { dateTime, money } from '@/lib/format';
+import { loadInvoiceDiscountState } from '@/lib/marketing/core/redemption';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata = { title: 'Invoice | Lucky Diesel Admin' };
@@ -40,6 +42,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   if (!invoice) notFound();
 
   const lines = parseInvoiceLines(invoice.line_snapshot);
+  const discounts = await loadInvoiceDiscountState(invoice.id);
   const payLink = `/portal/invoices/${invoice.id}`;
   const overdue = invoice.status === 'open' && Boolean(invoice.due_at && new Date(invoice.due_at).getTime() < requestNow());
 
@@ -51,7 +54,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-        <InvoiceDocument invoice={invoice} lines={lines} overdue={overdue} />
+        <InvoiceDocument invoice={invoice} lines={lines} overdue={overdue} discounts={discounts?.applied ?? []} />
 
         <div className="grid gap-4 print:hidden">
           <Card title="Actions">
@@ -61,6 +64,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             </div>
             <p className="mt-3 break-all text-xs text-steel">Customer pays online at <span className="font-mono text-chalk/70">{payLink}</span></p>
           </Card>
+
+          {discounts && (discounts.editable || discounts.applied.length > 0) && <DiscountsCard invoiceId={invoice.id} state={discounts} />}
 
           {invoice.status === 'open' ? (
             <Card title="Record payment">

@@ -2,6 +2,7 @@ import { AD_LIMITS, fitText, type BrandVoice } from './brand';
 import { checkContent } from './compliance';
 import { gatewayAuth, gatewayImage, gatewayText, type GatewayAuth } from './ai-gateway';
 import { generateDemoVariants } from './demo-generator';
+import { findUnverifiedClaims } from './fabrication';
 import type { Facts } from './copy-library';
 import type { AdFormat, CreativeBrief, Generator, VariantDraft } from './types';
 
@@ -76,7 +77,9 @@ export function parseAiVariants(raw: string, brief: CreativeBrief, template: Var
       generator: 'ai',
     };
     const report = checkContent([draft.headline, draft.longHeadline, draft.primaryText, draft.description]);
-    const issues = [...report.issues, ...template.complianceIssues.filter((x) => x.term === 'off-road-only SKU')];
+    const facts = findUnverifiedClaims([draft.headline, draft.longHeadline, draft.primaryText, draft.description].filter(Boolean).join('\n'), [template.imageParams, brief]);
+    const fabricated = facts.ok ? [] : [{ term: 'unverified number', reason: `Not in shop data: ${facts.unverified.join(', ')}. Confirm or edit.`, severity: 'warn' as const }];
+    const issues = [...report.issues, ...fabricated, ...template.complianceIssues.filter((x) => x.term === 'off-road-only SKU')];
     const status = issues.some((x) => x.severity === 'block') ? 'block' : issues.length ? 'warn' : 'pass';
     return [{ ...draft, imageParams: { ...template.imageParams, headline: draft.headline }, complianceStatus: status, complianceIssues: issues }];
   });
@@ -123,9 +126,9 @@ export async function generateAdVariants(
 export async function writeCopy(
   request: { task: string; facts: Record<string, unknown>; maxChars: number; voice: BrandVoice; fallback: string },
   env: Record<string, string | undefined> = process.env,
-): Promise<{ text: string; meta: GenerationMeta }> {
+): Promise<{ text: string; meta: GenerationMeta; unverified: string[] }> {
   const mode = resolveAiMode(env);
-  if (!mode.live) return { text: request.fallback, meta: DEMO_META };
+  if (!mode.live) return { text: request.fallback, meta: DEMO_META, unverified: [] };
   try {
     const result = await gatewayText(mode.auth, {
       model: mode.model,
@@ -136,9 +139,14 @@ export async function writeCopy(
         { role: 'user', content: `${request.task}\nFacts: ${JSON.stringify(request.facts)}\nMaximum ${request.maxChars} characters. Plain text only.` },
       ],
     });
-    return { text: fitText(result.text, request.maxChars), meta: { generator: 'ai', model: result.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: result.costUsd, fallbackReason: null } };
+    const text = fitText(result.text, request.maxChars);
+    const meta: GenerationMeta = { generator: 'ai', model: result.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: result.costUsd, fallbackReason: null };
+    // No-fabrication rule: numbers the facts don't support send the owner the data-only version instead.
+    const check = findUnverifiedClaims(text, [request.facts, request.fallback]);
+    if (!check.ok) return { text: request.fallback, meta: { ...meta, generator: 'demo', fallbackReason: `AI used unverified numbers: ${check.unverified.join(', ')}` }, unverified: check.unverified };
+    return { text, meta, unverified: [] };
   } catch (error) {
-    return { text: request.fallback, meta: { ...DEMO_META, fallbackReason: error instanceof Error ? error.message : String(error) } };
+    return { text: request.fallback, meta: { ...DEMO_META, fallbackReason: error instanceof Error ? error.message : String(error) }, unverified: [] };
   }
 }
 

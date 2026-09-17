@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { FunnelChart, ModelToggle, SourceRevenue } from '@/components/admin/marketing/core-ui/FunnelChart';
+import { MarketingSectionTabs } from '@/components/admin/marketing/core-ui/MarketingNav';
 import { AssistantCard, CompliancePulseCard, NeedsYouQueue } from '@/components/admin/marketing/core-ui/OverviewPanels';
 import { loadOverview } from '@/components/admin/marketing/core-ui/overview-data';
 import { ButtonLink, Card, PageHeader } from '@/components/app/ui';
@@ -34,6 +35,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
 
   return (
     <>
+      <MarketingSectionTabs active="/admin/marketing" />
       <PageHeader
         kicker="Marketing"
         title="What’s working"

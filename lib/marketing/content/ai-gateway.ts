@@ -57,7 +57,18 @@ interface ChatResponse {
   error?: { message?: string; type?: string };
 }
 
+/**
+ * Monthly spend cap, checked before every paid request. Loaded lazily so this
+ * file stays importable from pure code and tests; throws GatewayError 'spend_cap'.
+ */
+async function enforceSpendCap(): Promise<void> {
+  const { monthlyAiSpend } = await import('./spend-cap');
+  const status = await monthlyAiSpend();
+  if (status.over) throw new GatewayError(`Monthly AI cap reached ($${status.spentUsd.toFixed(2)} of $${status.capUsd.toFixed(2)}). Using templates.`, 402, 'spend_cap');
+}
+
 async function post(auth: GatewayAuth, body: Record<string, unknown>, timeoutMs: number, base = DEFAULT_BASE): Promise<ChatResponse> {
+  await enforceSpendCap();
   const response = await fetch(`${base}/chat/completions`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${auth.token}`, 'Content-Type': 'application/json' },

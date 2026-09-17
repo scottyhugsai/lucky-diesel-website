@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { approveAndPost, draftReply } from '@/app/admin/marketing/reviews/actions';
+import { approveAndPost, draftReply, draftReviewPost } from '@/app/admin/marketing/reviews/actions';
 import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
 import { Badge } from '@/components/app/ui';
 import { SampleTag, Stars, areaClass, shortDate } from './kit';
@@ -69,6 +69,12 @@ export function ReviewItem({ review }: { review: ReviewView }) {
         </ActionForm>
       )}
       {canReply && !reply && review.replied && <p className="mt-3 text-xs text-steel">Replied outside the app.</p>}
+      {canReply && review.rating >= 4 && (
+        <ActionForm action={draftReviewPost} className="mt-2" feedback="below">
+          <input type="hidden" name="review_id" value={review.id} />
+          <PendingButton size="sm" variant="ghost">Make a post from this</PendingButton>
+        </ActionForm>
+      )}
       {!canReply && <p className="mt-3 text-xs text-steel">Private feedback. Not public, no reply.</p>}
     </li>
   );

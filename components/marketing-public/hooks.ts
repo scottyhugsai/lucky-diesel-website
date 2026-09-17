@@ -89,3 +89,70 @@ export function useReferralCapture(): void {
     fetch(`/api/marketing/referral?code=${encodeURIComponent(code)}`, { redirect: 'manual', credentials: 'same-origin' }).catch(() => undefined);
   }, []);
 }
+
+const POPUP_SEEN_PREFIX = 'ld_popup_';
+
+/**
+ * Fires a page popup after N seconds on the page ('time') or N% scrolled
+ * ('scroll'). Once per popup per browser per 7 days.
+ */
+export function usePopupTrigger(popup: { id: string; trigger: 'time' | 'scroll'; triggerValue: number } | null): [boolean, () => void] {
+  const [isTriggered, setIsTriggered] = useState(false);
+
+  useEffect(() => {
+    if (!popup) return;
+    const key = `${POPUP_SEEN_PREFIX}${popup.id}`;
+    try {
+      const at = Number(window.localStorage.getItem(key));
+      if (Number.isFinite(at) && Date.now() - at < WEEK_MS) return;
+    } catch {
+      return; // Storage blocked: never nag.
+    }
+    const fire = () => {
+      try {
+        window.localStorage.setItem(key, String(Date.now()));
+      } catch {
+        // Fine: it may show again.
+      }
+      setIsTriggered(true);
+    };
+
+    if (popup.trigger === 'time') {
+      const timer = window.setTimeout(fire, Math.min(popup.triggerValue, 600) * 1000);
+      return () => window.clearTimeout(timer);
+    }
+    const depth = Math.min(Math.max(popup.triggerValue, 1), 100) / 100;
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max > 0 && window.scrollY / max >= depth) {
+        window.removeEventListener('scroll', onScroll);
+        fire();
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [popup]);
+
+  return [isTriggered, () => setIsTriggered(false)];
+}
+
+/**
+ * Dynamic number insertion: rewrites every `tel:`/`sms:` link to the tracking
+ * number mapped to this visitor's last-touch source, so calls are attributable.
+ */
+export function useDynamicNumber(phone: string | null): void {
+  useEffect(() => {
+    if (!phone) return;
+    const display = `(${phone.slice(2, 5)}) ${phone.slice(5, 8)}-${phone.slice(8)}`;
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"], a[href^="sms:"]')) {
+      const scheme = link.href.startsWith('sms:') ? 'sms' : 'tel';
+      const [, query] = link.href.split('?');
+      link.href = `${scheme}:${phone}${query ? `?${query}` : ''}`;
+      for (const node of Array.from(link.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent && /\(\d{3}\)\s?\d{3}-\d{4}/.test(node.textContent)) {
+          node.textContent = node.textContent.replace(/\(\d{3}\)\s?\d{3}-\d{4}/, display);
+        }
+      }
+    }
+  }, [phone]);
+}

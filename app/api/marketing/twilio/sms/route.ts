@@ -1,3 +1,4 @@
+import { autoReplyIfClosed } from '@/lib/marketing/core/after-hours';
 import { handleInboundSms } from '@/lib/marketing/core/consent';
 import { readTwilioRequest } from '@/lib/marketing/core/requests';
 import { twiml } from '@/lib/marketing/core/tokens';
@@ -13,7 +14,10 @@ export async function POST(request: Request) {
   if (!/\d{7,}/.test(from.replace(/\D/g, ''))) return new Response(twiml(), { headers: XML });
 
   try {
-    const result = await handleInboundSms(createAdminClient(), { from, body: (params.Body ?? '').slice(0, 1600), messageSid: params.MessageSid ?? null });
+    const db = createAdminClient();
+    const result = await handleInboundSms(db, { from, body: (params.Body ?? '').slice(0, 1600), messageSid: params.MessageSid ?? null });
+    // Real question outside shop hours: one auto-reply per number per 12 hours.
+    if (!result.reply && result.intent === 'other') await autoReplyIfClosed(db, { from, customerId: result.customerId });
     return new Response(twiml(result.reply ?? undefined), { headers: XML });
   } catch (error) {
     console.error(`[marketing] inbound SMS failed: ${error instanceof Error ? error.message : String(error)}`);

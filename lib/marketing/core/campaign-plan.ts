@@ -1,6 +1,6 @@
 /** Pure campaign scheduling rules: A/B assignment, winners, idempotency keys, drip timing and exits. */
 
-import { intersectWindows, nextSendTime, quietHoursWindow, type SendWindow } from './policy';
+import { intersectWindows, localClock, nextSendTime, quietHoursWindow, type SendWindow } from './policy';
 
 const MINUTE_MS = 60_000;
 
@@ -101,4 +101,40 @@ export function nextStepOrder(steps: readonly StepLike[], current: number): numb
 
 export function variantsOf(steps: readonly StepLike[], stepOrder = 1): string[] {
   return [...new Set(steps.filter((s) => s.step_order === stepOrder).map((s) => s.variant))].sort();
+}
+
+// ─── Send-time optimization ─────────────────────────────────────────────────
+
+/** Minimum opens/clicks/bookings before a personal send hour is trusted. */
+export const STO_MIN_SIGNALS = 2;
+
+/** Most common local hour of past engagement that falls inside the window; ties go earliest. */
+export function bestSendHour(engagedAt: readonly Date[], window: SendWindow): number | null {
+  const counts = new Map<number, number>();
+  for (const at of engagedAt) {
+    const { hour } = localClock(at, window.timeZone);
+    if (hour >= window.startHour && hour < window.endHour) counts.set(hour, (counts.get(hour) ?? 0) + 1);
+  }
+  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+  const top = ranked[0];
+  return top && [...counts.values()].reduce((a, b) => a + b, 0) >= STO_MIN_SIGNALS ? top[0] : null;
+}
+
+/** The first time at or after `scheduledAt` (within 24h) at the recipient's best hour. */
+export function optimizedSendTime(scheduledAt: Date, bestHour: number | null, window: SendWindow): Date {
+  if (bestHour === null) return nextSendTime(scheduledAt, window);
+  const { hour, minute } = localClock(scheduledAt, window.timeZone);
+  if (hour === bestHour) return nextSendTime(scheduledAt, window);
+  const hoursAhead = (bestHour - hour + 24) % 24;
+  const candidate = new Date(scheduledAt.getTime() + hoursAhead * 60 * MINUTE_MS - minute * MINUTE_MS);
+  candidate.setUTCSeconds(0, 0);
+  return nextSendTime(candidate, window);
+}
+
+// ─── SMS cost ───────────────────────────────────────────────────────────────
+
+/** Recipients × segments × per-segment fee (MMS is a flat per-message fee). Whole cents, rounded up. */
+export function estimateSmsCostCents(input: { recipients: number; segments: number; segmentFeeMillicents: number; mmsFeeMillicents: number; hasMedia: boolean }): number {
+  const perMessage = input.hasMedia ? input.mmsFeeMillicents : Math.max(1, input.segments) * input.segmentFeeMillicents;
+  return Math.ceil((Math.max(0, input.recipients) * perMessage) / 1000);
 }

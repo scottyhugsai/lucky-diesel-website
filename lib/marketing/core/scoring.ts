@@ -101,3 +101,31 @@ export function isServiceDue(predictedMiles: number | null, lastServiceMiles: nu
   if (predictedMiles === null || lastServiceMiles === null) return false;
   return predictedMiles - lastServiceMiles >= interval - buffer;
 }
+
+/** Overdue at this multiple of a customer's usual gap between visits. */
+export const CHURN_RISK_RATIO = 1.5;
+const MIN_INTERVAL_DAYS = 14;
+
+export interface VisitRhythm {
+  /** Median days between paid visits, or null with fewer than two visits. */
+  medianIntervalDays: number | null;
+  /** Days since the last visit divided by the median interval (e.g. 1.8 = 80% overdue). */
+  overdueRatio: number | null;
+  atRisk: boolean;
+}
+
+/**
+ * Per-customer churn signal: compares time since the last paid visit with that
+ * customer's own usual interval. Visits on the same day count once; gaps under
+ * two weeks (follow-up jobs) are ignored.
+ */
+export function visitRhythm(visits: readonly Date[], now: Date, riskRatio = CHURN_RISK_RATIO): VisitRhythm {
+  const days = [...new Set(visits.filter((d) => Number.isFinite(d.getTime()) && d.getTime() <= now.getTime()).map((d) => Math.floor(d.getTime() / DAY_MS)))].sort((a, b) => a - b);
+  const gaps = days.slice(1).map((day, i) => day - days[i]!).filter((gap) => gap >= MIN_INTERVAL_DAYS).sort((a, b) => a - b);
+  if (!gaps.length) return { medianIntervalDays: null, overdueRatio: null, atRisk: false };
+  const mid = Math.floor(gaps.length / 2);
+  const median = gaps.length % 2 ? gaps[mid]! : (gaps[mid - 1]! + gaps[mid]!) / 2;
+  const since = Math.floor(now.getTime() / DAY_MS) - days[days.length - 1]!;
+  const ratio = Math.round((since / median) * 100) / 100;
+  return { medianIntervalDays: Math.round(median), overdueRatio: ratio, atRisk: ratio >= riskRatio };
+}

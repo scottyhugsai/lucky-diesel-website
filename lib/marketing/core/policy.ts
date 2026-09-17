@@ -4,6 +4,8 @@
  * import from the proxy, route handlers, the send path and tests.
  */
 
+import { AREA_CODE_ZONES, EIGHT_PM_STATES } from './area-codes';
+
 export type MessagePurpose = 'transactional' | 'marketing';
 
 /** Automation keys that carry promotional content start with this prefix. */
@@ -103,4 +105,62 @@ export function normalizeEmail(email: string): string {
 
 export function normalizeAddress(channel: 'sms' | 'email', value: string): string {
   return channel === 'sms' ? normalizePhone(value) : normalizeEmail(value);
+}
+
+// ─── Recipient-local quiet hours ────────────────────────────────────────────
+
+/** FL, OK and MD end marketing texts at 8pm local. */
+export const STRICT_STATE_END_HOUR = 20;
+
+export interface RecipientRules {
+  timeZones: string[];
+  /** Two-letter state when an 8pm law applies. */
+  strictState: string | null;
+}
+
+/** Time zones and state rule for a phone number, from its US area code. */
+export function recipientRules(phone: string | null | undefined, fallbackTimeZone = DEFAULT_TIME_ZONE): RecipientRules {
+  const digits = (phone ?? '').replace(/\D/g, '');
+  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  const areaCode = national.length === 10 ? Number(national.slice(0, 3)) : NaN;
+  const zones = Number.isNaN(areaCode) ? undefined : AREA_CODE_ZONES.get(areaCode);
+  const strictState = Number.isNaN(areaCode) ? null : Object.entries(EIGHT_PM_STATES).find(([, codes]) => codes.includes(areaCode))?.[0] ?? null;
+  return { timeZones: zones ? [...zones] : [fallbackTimeZone], strictState };
+}
+
+/** The base window (hours) applied in every recipient zone, capped at 8pm in strict states. */
+export function recipientWindows(base: { startHour: number; endHour: number }, rules: RecipientRules): SendWindow[] {
+  const endHour = rules.strictState ? Math.min(base.endHour, STRICT_STATE_END_HOUR) : base.endHour;
+  return rules.timeZones.map((timeZone) => ({ startHour: base.startHour, endHour: Math.max(base.startHour + 1, endHour), timeZone }));
+}
+
+export function isWithinAll(at: Date, windows: readonly SendWindow[]): boolean {
+  return windows.every((window) => isWithinWindow(at, window));
+}
+
+/** The first time at or after `at` that is inside every window. */
+export function nextSendTimeAll(at: Date, windows: readonly SendWindow[]): Date {
+  let candidate = at;
+  for (let i = 0; i < 12; i += 1) {
+    const outside = windows.find((window) => !isWithinWindow(candidate, window));
+    if (!outside) return candidate;
+    candidate = nextSendTime(candidate, outside);
+  }
+  return candidate;
+}
+
+// ─── Daily caps and throughput ──────────────────────────────────────────────
+
+/** 0 turns the daily cap off. */
+export function isDailyCapReached(sentInLastDay: number, maxPerDay: number): boolean {
+  return maxPerDay > 0 && sentInLastDay >= maxPerDay;
+}
+
+export function dayAgo(now: Date): Date {
+  return new Date(now.getTime() - DAY_MS);
+}
+
+/** How many more sends fit this minute under the provider throughput limit. */
+export function throttleAllowance(ratePerMinute: number, sentInLastMinute: number, batchLimit: number): number {
+  return Math.max(0, Math.min(batchLimit, Math.floor(ratePerMinute) - sentInLastMinute));
 }

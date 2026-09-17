@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useRef, useState } from 'react';
+import { startTransition, useActionState, useRef, useState } from 'react';
 import { SubmitButton } from '@/components/app/SubmitButton';
 import { fieldClass, labelClass } from '@/components/app/ui';
 import { sendMagicLink, signInWithPassword, type LoginState } from '@/app/auth/actions';
@@ -23,13 +23,19 @@ export function LoginForm({ next, demoPassword }: { next: string; demoPassword: 
 
   const state = mode === 'password' ? passwordState : linkState;
 
+  /**
+   * Demo sign-in dispatches the action with its own FormData. Submitting the
+   * form from a rAF instead updated state on a form React had just re-rendered.
+   */
   function signInAsDemo(email: string) {
     setMode('password');
-    requestAnimationFrame(() => {
-      if (emailRef.current) emailRef.current.value = email;
-      if (passwordRef.current) passwordRef.current.value = demoPassword ?? '';
-      formRef.current?.requestSubmit();
-    });
+    if (emailRef.current) emailRef.current.value = email;
+    if (passwordRef.current) passwordRef.current.value = demoPassword ?? '';
+    const data = new FormData();
+    data.set('next', next);
+    data.set('email', email);
+    data.set('password', demoPassword ?? '');
+    startTransition(() => passwordAction(data));
   }
 
   return (

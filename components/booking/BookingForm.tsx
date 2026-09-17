@@ -4,6 +4,7 @@ import { Check, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useActionState, useEffect, useState } from 'react';
 import { bookOnline, type BookingState } from '@/app/(site)/book/actions';
+import { ReferFriendPrompt } from '@/components/marketing-public/ReferFriendPrompt';
 import { Field, inputClass } from '@/components/quote/Field';
 import { SMS_CONSENT_TEXT } from '@/lib/lead';
 import { OTHER_PLATFORM, PLATFORMS, SERVICES } from '@/lib/site';
@@ -56,6 +57,7 @@ export function BookingForm({ dates }: { dates: BookingDate[] }) {
         <p className="text-lg text-chalk/75">
           {state.confirmation.service} on <strong className="text-chalk">{state.confirmation.when}</strong>. A confirmation is on its way.
         </p>
+        <ReferFriendPrompt />
         <Link href="/" className="font-semibold text-clover">Back to the site</Link>
       </div>
     );

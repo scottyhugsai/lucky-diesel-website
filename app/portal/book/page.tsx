@@ -5,7 +5,7 @@ import { NotLinked } from '@/components/portal/NotLinked';
 import { bookingDates } from '@/components/portal/booking';
 import { getShopRules } from '@/components/portal/server';
 import { requireRole } from '@/lib/auth';
-import { getAvailableSlots } from '@/lib/domain/appointments';
+import { getAvailableSlots, isPriorityCustomer } from '@/lib/domain/appointments';
 import { dateTime, vehicleLabel } from '@/lib/format';
 import { BUSINESS, SERVICES } from '@/lib/site';
 import { createClient } from '@/lib/supabase/server';
@@ -29,10 +29,11 @@ export default async function BookPage({ searchParams }: BookPageProps) {
 
   const dates = bookingDates(openDays);
   let selectedDate = dates.find((d) => d.value === query.date)?.value ?? '';
-  let slots = selectedDate ? await getAvailableSlots(selectedDate) : [];
+  const priority = await isPriorityCustomer(viewer.customerId);
+  let slots = selectedDate ? await getAvailableSlots(selectedDate, { priority }) : [];
   // No day picked yet: open on the first day that still has an opening.
   for (const d of selectedDate ? [] : dates) {
-    slots = await getAvailableSlots(d.value);
+    slots = await getAvailableSlots(d.value, { priority });
     selectedDate = d.value;
     if (slots.length) break;
   }

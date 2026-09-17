@@ -1,10 +1,16 @@
 import { Download, FileText } from 'lucide-react';
 import { BrandVoiceForm, SeasonalToggles, SendingRulesForm } from '@/components/admin/marketing/core-ui/SettingsForms';
+import { RevokeAllForm } from '@/components/admin/marketing/core-ui/ContactPanels';
 import { SuppressionManager } from '@/components/admin/marketing/core-ui/SuppressionManager';
+import { loadCompliance } from '@/components/admin/marketing/store-ui/compliance-data';
+import { AiCapCard, ChecklistsCard, DeliverabilityCard, HealthCard, PolicyScanCard, TendlcCard } from '@/components/admin/marketing/ops/OpsPanels';
+import { loadOps } from '@/components/admin/marketing/ops/ops-data';
+import { CompliancePanel } from '@/components/admin/marketing/store-ui/CompliancePanel';
 import { Badge, buttonClass, Card, PageHeader } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
 import { dateOnly } from '@/lib/format';
 import { SMS_CONSENT_TEXT, SMS_CONSENT_VERSION } from '@/lib/lead';
+import { revokeAllEnabled } from '@/lib/marketing/core/consent';
 import { getMarketingSettings } from '@/lib/marketing/core/settings';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -17,6 +23,13 @@ const SECTIONS = [
   { id: 'voice', label: 'Brand voice' },
   { id: 'consent', label: 'Consent text' },
   { id: 'suppressions', label: 'Suppressions' },
+  { id: 'compliance', label: 'Part compliance' },
+  { id: 'policy', label: 'Policy scan' },
+  { id: 'tendlc', label: '10DLC' },
+  { id: 'deliverability', label: 'Deliverability' },
+  { id: 'ai', label: 'AI budget' },
+  { id: 'health', label: 'Health' },
+  { id: 'checklists', label: 'Checklists' },
   { id: 'exports', label: 'Exports' },
   { id: 'channels', label: 'Channels' },
 ];
@@ -26,8 +39,10 @@ const CHANNEL_TONE = { connected: 'good', demo: 'warn', not_connected: 'neutral'
 export default async function MarketingSettingsPage() {
   await requireRole('admin');
   const supabase = await createClient();
-  const [settings, { data: voice }, { data: suppressions }, { data: consentEvents }, { data: connections }] = await Promise.all([
+  const [settings, revokeAll, ops, { data: voice }, { data: suppressions }, { data: consentEvents }, { data: connections }] = await Promise.all([
     getMarketingSettings(createAdminClient()),
+    revokeAllEnabled(createAdminClient()),
+    loadOps(),
     supabase.from('brand_voice').select('*').eq('id', 1).maybeSingle(),
     supabase.from('suppressions').select('*').order('created_at', { ascending: false }).limit(200),
     supabase.from('contact_consent_events').select('consent_text_version, created_at, action').eq('action', 'granted').not('consent_text_version', 'is', null).limit(5000),
@@ -45,7 +60,7 @@ export default async function MarketingSettingsPage() {
   return (
     <>
       <PageHeader kicker="Marketing" title="Settings" description="Rules every campaign and automation follows." />
-      <nav aria-label="Settings sections" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <nav aria-label="Settings sections" className="mb-6 max-w-full overflow-x-auto">
         <ul className="flex w-max gap-1.5">
           {SECTIONS.map((s) => (
             <li key={s.id}><a href={`#${s.id}`} className="inline-flex h-8 items-center rounded-full border border-line px-3 text-xs font-semibold text-chalk/75 hover:border-clover hover:text-clover">{s.label}</a></li>
@@ -53,7 +68,7 @@ export default async function MarketingSettingsPage() {
         </ul>
       </nav>
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
         <section id="sending" className="scroll-mt-32"><Card title="Sending rules"><SendingRulesForm settings={settings} /></Card></section>
         <section id="seasonal" className="scroll-mt-32"><Card title="Seasonal plays"><SeasonalToggles settings={settings} /></Card></section>
         <section id="voice" className="scroll-mt-32"><Card title="Brand voice"><BrandVoiceForm voice={voice} /></Card></section>
@@ -74,10 +89,20 @@ export default async function MarketingSettingsPage() {
               {versions.size === 0 && <li className="bg-carbon px-3 py-2 text-sm text-steel">No opt-ins recorded yet.</li>}
             </ul>
             <p className="mt-2 text-xs text-steel">Every opt-in stores the version it agreed to. Change wording in the lead form, then bump the version.</p>
+            <div className="mt-4 border-t border-line pt-4"><RevokeAllForm on={revokeAll} /></div>
           </Card>
         </section>
 
         <section id="suppressions" className="scroll-mt-32"><Card title="Suppression list"><SuppressionManager rows={suppressions ?? []} /></Card></section>
+
+        <section id="compliance" className="scroll-mt-32"><Card title="Part compliance"><CompliancePanel {...await loadCompliance()} /></Card></section>
+
+        <section id="policy" className="scroll-mt-32"><Card title="Policy scan"><PolicyScanCard items={ops.policy} /></Card></section>
+        <section id="tendlc" className="scroll-mt-32"><Card title="10DLC registration"><TendlcCard tendlc={ops.tendlc} /></Card></section>
+        <section id="deliverability" className="scroll-mt-32"><Card title="Email deliverability"><DeliverabilityCard dns={ops.health.dns} /></Card></section>
+        <section id="ai" className="scroll-mt-32"><Card title="AI budget"><AiCapCard capUsd={ops.aiCapUsd} /></Card></section>
+        <section id="health" className="scroll-mt-32"><Card title="Integration health"><HealthCard health={ops.health} /></Card></section>
+        <section id="checklists" className="scroll-mt-32"><Card title="Checklists"><ChecklistsCard ticks={ops.ticks} /></Card></section>
 
         <section id="exports" className="scroll-mt-32">
           <Card title="Exports">

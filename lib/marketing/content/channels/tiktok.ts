@@ -1,3 +1,4 @@
+import { tiktokDayparting } from '../ad-presets';
 import { ChannelError, type AdAdapter, type Credentials, type DailyMetrics, type PostAdapter } from './types';
 
 /**
@@ -29,6 +30,17 @@ function advertiser(credentials: Credentials): string {
   return credentials.externalAccountId;
 }
 
+/**
+ * TikTok targets by its own location ids (not lat/long radius). Set
+ * TIKTOK_LOCATION_IDS to the Charleston-area ids from the TikTok Ads location
+ * search. Never publishes nationwide by accident.
+ */
+export function locationIds(env: Record<string, string | undefined> = process.env): string[] {
+  const ids = (env.TIKTOK_LOCATION_IDS ?? '').split(',').map((id) => id.trim()).filter((id) => /^\d+$/.test(id));
+  if (!ids.length) throw new ChannelError('TikTok: set TIKTOK_LOCATION_IDS (Charleston-area location ids) before publishing', 'tiktok_ads');
+  return ids;
+}
+
 export function tiktokAdAdapter(credentials: Credentials): AdAdapter {
   return {
     platform: 'tiktok_ads',
@@ -40,7 +52,8 @@ export function tiktokAdAdapter(credentials: Credentials): AdAdapter {
       const group = await business<{ adgroup_id: string }>(credentials, 'adgroup/create/', {
         advertiser_id, campaign_id: created.campaign_id, adgroup_name: campaign.name, operation_status: 'DISABLE', placement_type: 'PLACEMENT_TYPE_AUTOMATIC',
         budget_mode: 'BUDGET_MODE_DAY', budget: campaign.dailyBudgetCents / 100, schedule_type: 'SCHEDULE_START_END',
-        schedule_start_time: `${campaign.startsOn} 12:00:00`, schedule_end_time: `${campaign.endsOn} 23:00:00`, billing_event: 'CPC', optimization_goal: 'CLICK', location_ids: [],
+        schedule_start_time: `${campaign.startsOn} 12:00:00`, schedule_end_time: `${campaign.endsOn} 23:00:00`, billing_event: 'CPC', optimization_goal: 'CLICK', location_ids: locationIds(),
+        ...(campaign.callHours ? { dayparting: tiktokDayparting(campaign.callHours) } : {}),
       });
       const ids: Record<string, string> = { campaign: created.campaign_id, adgroup: group.adgroup_id };
       for (const variant of variants) {
@@ -52,6 +65,10 @@ export function tiktokAdAdapter(credentials: Credentials): AdAdapter {
         if (ad.ad_ids[0]) ids[`ad:${variant.variantId}`] = ad.ad_ids[0];
       }
       return { externalIds: ids, statusOnPlatform: 'PAUSED', simulated: false, requestPreview: { advertiser_id, campaign, variants: variants.map((v) => v.variantId) } };
+    },
+    async setBudget(externalIds, dailyBudgetCents) {
+      if (!externalIds.adgroup) throw new ChannelError('TikTok: no ad group id to update', 'tiktok_ads');
+      await business(credentials, 'adgroup/budget/update/', { advertiser_id: advertiser(credentials), budget: [{ adgroup_id: externalIds.adgroup, budget: dailyBudgetCents / 100 }] });
     },
     async setStatus(externalIds, status) {
       if (!externalIds.campaign) return;

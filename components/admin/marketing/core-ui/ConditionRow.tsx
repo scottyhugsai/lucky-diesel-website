@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { FIELDS, fieldMeta, newRow, toCondition, type RowState } from './segment-fields';
+import { FIELDS, fieldMeta, isNumericKind, newRow, toCondition, type RowState } from './segment-fields';
 
 const control = 'h-10 rounded-sm border border-line bg-carbon px-2.5 text-sm text-chalk focus:border-clover focus:outline-none focus:ring-2 focus:ring-clover/30';
 const GROUPS = [...new Set(FIELDS.map((f) => f.group))];
@@ -17,7 +17,7 @@ export function ConditionRow({ row, index, onChange, onRemove }: ConditionRowPro
   const meta = fieldMeta(row.field);
   const set = (patch: Partial<RowState>) => onChange({ ...row, ...patch });
   const complete = toCondition(row) !== null;
-  const numeric = meta.kind === 'number' || meta.kind === 'money';
+  const numeric = isNumericKind(meta.kind);
 
   function toggleValue(value: string) {
     set({ values: row.values.includes(value) ? row.values.filter((v) => v !== value) : [...row.values, value] });
@@ -83,7 +83,7 @@ export function ConditionRow({ row, index, onChange, onRemove }: ConditionRowPro
                 <input aria-label="Maximum" inputMode="numeric" value={row.max} onChange={(e) => set({ max: e.target.value })} placeholder="To" className={`${control} w-28`} />
               </>
             ) : (
-              <input aria-label="Value" inputMode="numeric" value={row.value} onChange={(e) => set({ value: e.target.value })} placeholder="Amount" className={`${control} w-32`} />
+              <input aria-label="Value" inputMode={meta.kind === 'ratio' ? 'decimal' : 'numeric'} value={row.value} onChange={(e) => set({ value: e.target.value })} placeholder="Amount" className={`${control} w-32`} />
             )}
             <span className="text-sm text-steel">{meta.unit}</span>
             {meta.presets?.map((p) => (

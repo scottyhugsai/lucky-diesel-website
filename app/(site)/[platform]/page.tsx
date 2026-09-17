@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { Reveal } from '@/components/ui/Reveal';
+import { serviceSchema } from '@/lib/marketing/content/seo-schema';
 import { BUSINESS, PLATFORMS, SERVICES } from '@/lib/site';
+import { siteUrl } from '@/lib/site-url';
 
 interface PlatformPageProps {
   params: Promise<{ platform: string }>;
@@ -36,8 +39,11 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
   const services = SERVICES.filter((service) => PLATFORM_SERVICES.includes(service.id));
   const others = PLATFORMS.filter((p) => p.id !== platform.id);
 
+  const base = siteUrl();
+
   return (
     <>
+      <JsonLd data={serviceSchema({ name: `${platform.name} diesel repair and tuning`, description: `${platform.make} ${platform.name} performance tuning, parts and repair. ${platform.tagline}`, url: `${base}/${platform.id}`, serviceType: 'Diesel truck repair and performance', base })} />
       <section aria-labelledby="platform-heading" className="grain relative isolate overflow-hidden pb-16 pt-32 sm:pb-24 sm:pt-40">
         <div
           aria-hidden="true"

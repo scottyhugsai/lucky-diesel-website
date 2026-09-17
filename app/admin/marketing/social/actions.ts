@@ -2,12 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { type ActionState, InputError, guard, requiredText, requiredUuid, shopDateTime } from '@/components/admin/core/parse';
+import { type ActionState, InputError, checkbox, guard, requiredText, requiredUuid, shopDateTime } from '@/components/admin/core/parse';
 import { requireRole } from '@/lib/auth';
 import { submitForApproval } from '@/lib/marketing/content/approvals-service';
 import { writeFromPrompt } from '@/lib/marketing/content/assistant';
 import { adminDb, toJson, type Db } from '@/lib/marketing/content/db';
 import { draftPillarPosts, draftPostsForBuild, draftPostsForDynoRun, publishSocialPost } from '@/lib/marketing/content/social-service';
+import { COMMUNITY_TASKS, weekPeriod } from '@/lib/marketing/content/social';
 import { PRIVACY_NOTE, parsePostForm } from './post-save';
 
 function refresh(postId?: string) {
@@ -156,4 +157,46 @@ export async function writeCaption(prompt: string): Promise<CaptionResult> {
   if (clean.length < 3 || clean.length > 300) return { error: 'Describe the post in 3–300 characters.' };
   const answer = await writeFromPrompt({ kind: 'caption', prompt: clean, requestedBy: viewer.userId });
   return { text: answer.text, status: answer.compliance.status, generator: answer.generator };
+}
+
+/** Runs an old evergreen post again as a fresh draft. Cooldown is 90 days. */
+export async function recycleEvergreenAction(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireRole('admin');
+  return guard(async () => {
+    const id = requiredUuid(form, 'post_id', 'Post');
+    const db = adminDb();
+    const { data: post } = await db.from('social_posts').select('*').eq('id', id).maybeSingle();
+    if (!post) return { error: 'Post not found.' };
+    const { error: insertError } = await db.from('social_posts').insert({
+      title: post.title, caption: post.caption, hashtags: post.hashtags, link_url: post.link_url,
+      asset_ids: post.asset_ids, image_template: post.image_template, image_params: post.image_params,
+      pillar: post.pillar, source_type: post.source_type, source_id: post.source_id,
+      status: 'draft', generator: post.generator, compliance_status: post.compliance_status,
+    });
+    if (insertError) return { error: 'Couldn’t copy the post.' };
+    const { error } = await db.from('social_posts').update({ last_recycled_at: new Date().toISOString() }).eq('id', id);
+    if (error) return { error: 'Copied, but couldn’t mark it recycled.' };
+    revalidatePath('/admin/marketing/social');
+    return { notice: 'Draft ready. Edit and reschedule it.' };
+  });
+}
+
+/** Ticks or unticks one community task for this week. */
+export async function toggleCommunityTaskAction(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const viewer = await requireRole('admin');
+  return guard(async () => {
+    const key = requiredText(form, 'task_key', 'Task', 60);
+    if (!COMMUNITY_TASKS.some((task) => task.key === key)) return { error: 'Unknown task.' };
+    const period = weekPeriod(new Date());
+    const db = adminDb();
+    if (checkbox(form, 'done')) {
+      const { error } = await db.from('social_task_log').delete().match({ task_key: key, period });
+      if (error) return { error: 'Couldn’t update that.' };
+    } else {
+      const { error } = await db.from('social_task_log').insert({ task_key: key, period, done_by: viewer.userId });
+      if (error && error.code !== '23505') return { error: 'Couldn’t update that.' };
+    }
+    revalidatePath('/admin/marketing/social');
+    return { notice: 'Saved.' };
+  });
 }

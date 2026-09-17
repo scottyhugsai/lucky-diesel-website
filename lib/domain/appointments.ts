@@ -22,15 +22,25 @@ async function rulesAndBookings(db: Db, date: string) {
       openDays: settings?.open_days ?? [1, 2, 3, 4, 5],
       slotMinutes: settings?.slot_minutes ?? 60,
       bayCount: settings?.bay_count ?? 3,
+      fleetReservedBays: settings?.fleet_reserved_bays ?? 0,
+      fleetReleaseHours: settings?.fleet_release_hours ?? 24,
     },
     booked: (booked ?? []).map((b) => ({ startsAt: new Date(b.starts_at), endsAt: new Date(b.ends_at) })),
   };
 }
 
-export async function getAvailableSlots(date: string): Promise<Slot[]> {
+export async function getAvailableSlots(date: string, { priority = false }: { priority?: boolean } = {}): Promise<Slot[]> {
   const db = createAdminClient();
   const { rules, booked } = await rulesAndBookings(db, date);
-  return availableSlots(date, rules, booked);
+  return availableSlots(date, rules, booked, new Date(), priority);
+}
+
+/** Customers on an active fleet account with priority service can use reserved fleet bays. */
+export async function isPriorityCustomer(customerId: string | null | undefined): Promise<boolean> {
+  if (!customerId) return false;
+  const { data } = await createAdminClient().from('customers').select('fleet_accounts!customers_fleet_account_id_fkey(priority, stage, active)').eq('id', customerId).maybeSingle();
+  const fleet = data?.fleet_accounts;
+  return Boolean(fleet?.priority && fleet.active && fleet.stage === 'active');
 }
 
 export interface BookingInput {
@@ -47,7 +57,7 @@ export interface BookingInput {
 /** Books a slot after re-checking it's still free, then sends confirmation and schedules reminders. */
 export async function bookAppointment(input: BookingInput): Promise<DomainResult<{ appointmentId: string }>> {
   const db = createAdminClient();
-  const slots = await getAvailableSlots(input.date);
+  const slots = await getAvailableSlots(input.date, { priority: await isPriorityCustomer(input.customerId) });
   const slot = slots.find((s) => s.startsAt.toISOString() === new Date(input.startsAt).toISOString());
   if (!slot) return { ok: false, error: 'That time was just taken. Pick another slot.' };
 

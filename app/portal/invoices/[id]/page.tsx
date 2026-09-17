@@ -91,7 +91,7 @@ export default async function InvoicePage({ params, searchParams }: InvoicePageP
               {lines.map((line) => <LineSummary key={line.id} line={line} showApproval={false} />)}
             </div>
             <div className="border-t border-line p-4 sm:p-5">
-              <TotalsRows subtotal={invoice.subtotal_cents} tax={invoice.tax_cents} total={invoice.total_cents} taxLabel="Tax (parts)" />
+              <TotalsRows subtotal={invoice.subtotal_cents} tax={invoice.tax_cents} total={invoice.total_cents} taxLabel="Tax (parts)" discount={invoice.discount_cents} />
             </div>
           </Card>
           <Card title="Payments">

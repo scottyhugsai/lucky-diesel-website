@@ -2,6 +2,8 @@ import 'server-only';
 import { emit } from '@/lib/automations/engine';
 import type { Enums } from '@/lib/db/database.types';
 import { NEXT_STATUSES } from '@/lib/format';
+import { dueDateForTerms } from '@/lib/marketing/fleet/fleet-math';
+import { applyAutomaticDiscounts } from '@/lib/marketing/core/redemption';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { computeTotals } from '@/lib/work-orders/totals';
 
@@ -56,6 +58,13 @@ export async function attributeRecentEvents(db: ReturnType<typeof createAdminCli
     .gte('created_at', new Date(Date.now() - 60_000).toISOString());
 }
 
+/** Billing terms of the customer's active fleet account (null = retail default). */
+async function fleetTermsFor(db: ReturnType<typeof createAdminClient>, customerId: string): Promise<string | null> {
+  const { data } = await db.from('customers').select('fleet_accounts!customers_fleet_account_id_fkey(billing_terms, stage, active)').eq('id', customerId).maybeSingle();
+  const fleet = data?.fleet_accounts;
+  return fleet && fleet.active && fleet.stage === 'active' ? fleet.billing_terms : null;
+}
+
 /** Freezes approved lines into an invoice, marks the job invoiced and sends the pickup/pay message. */
 export async function createInvoice(workOrderId: string, actorId: string): Promise<DomainResult<{ invoiceId: string }>> {
   const db = createAdminClient();
@@ -81,7 +90,7 @@ export async function createInvoice(workOrderId: string, actorId: string): Promi
       tax_cents: totals.taxCents,
       total_cents: totals.totalCents,
       line_snapshot: lines,
-      due_at: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+      due_at: dueDateForTerms(await fleetTermsFor(db, wo.customer_id), new Date()).toISOString(),
     })
     .select('id')
     .single();
@@ -92,6 +101,7 @@ export async function createInvoice(workOrderId: string, actorId: string): Promi
   await attributeRecentEvents(db, wo.id, actorId);
   await db.from('audit_log').insert({ actor_id: actorId, entity: 'invoice', entity_id: invoice.id, action: 'created', data: { total_cents: totals.totalCents } });
 
+  await applyAutomaticDiscounts(invoice.id, actorId);
   await emit({ name: 'invoice.created', subjectType: 'invoice', subjectId: invoice.id });
   return { ok: true, data: { invoiceId: invoice.id } };
 }

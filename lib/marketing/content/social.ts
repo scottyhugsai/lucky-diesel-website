@@ -122,3 +122,141 @@ export function draftProductPost(product: ProductRef, url: string): SocialDraft 
     privacyNote: null,
   });
 }
+
+// ─── Links, recycling, community and shot lists ────────────────────────────
+
+/** Adds social UTMs so clicks and bookings trace back to the post. Leaves other params alone. */
+export function withSocialUtm(url: string, platform: SocialPlatform, postId: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('utm_source', platform);
+    parsed.searchParams.set('utm_medium', 'social');
+    parsed.searchParams.set('utm_campaign', 'organic');
+    parsed.searchParams.set('utm_content', postId);
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
+export interface RecycleCandidate {
+  id: string;
+  sourceType: string;
+  publishedAt: string | null;
+  clicks: number;
+  complianceStatus: string;
+  needsPrivacyReview: boolean;
+  lastRecycledAt: string | null;
+}
+
+export const EVERGREEN = { minAgeDays: 90, cooldownDays: 90, sourceTypes: ['pillar', 'build', 'product'] } as const;
+
+/** Old posts worth another run: evergreen source, clean, not recycled lately. Most clicked first. */
+export function pickEvergreen(posts: readonly RecycleCandidate[], now: Date, limit = 2): RecycleCandidate[] {
+  const day = 86_400_000;
+  return posts
+    .filter((p) => p.publishedAt && now.getTime() - Date.parse(p.publishedAt) >= EVERGREEN.minAgeDays * day)
+    .filter((p) => (EVERGREEN.sourceTypes as readonly string[]).includes(p.sourceType) && p.complianceStatus === 'pass' && !p.needsPrivacyReview)
+    .filter((p) => !p.lastRecycledAt || now.getTime() - Date.parse(p.lastRecycledAt) >= EVERGREEN.cooldownDays * day)
+    .sort((a, b) => b.clicks - a.clicks || Date.parse(a.publishedAt!) - Date.parse(b.publishedAt!))
+    .slice(0, limit);
+}
+
+export interface CommunityTask {
+  key: string;
+  label: string;
+}
+
+/** Weekly engagement habits. Real conversations, never fake reviews or paid likes. */
+export const COMMUNITY_TASKS: readonly CommunityTask[] = [
+  { key: 'reply_comments', label: 'Reply to every comment and DM' },
+  { key: 'local_groups', label: 'Answer a question in a local truck group' },
+  { key: 'tag_partners', label: 'Share a local business or event post' },
+  { key: 'customer_shoutout', label: 'Thank a customer (with a release)' },
+  { key: 'story_shop', label: 'Post a shop-floor story' },
+];
+
+/** ISO week period key, e.g. 2026-W38. */
+export function weekPeriod(date: Date): string {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1);
+  const week = Math.ceil(((d.getTime() - yearStart) / 86_400_000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+export function monthPeriod(date: Date): string {
+  return date.toISOString().slice(0, 7);
+}
+
+/** Nextdoor has no posting API: a monthly copy-and-paste business post. */
+export function nextdoorPost(month: number, url: string): string {
+  const topics = [
+    'Winter mornings are hard on diesels. We load-test batteries and glow plugs while you wait.',
+    'Planning a spring trip with the camper? We do tow-ready checks: brakes, cooling, trans fluid.',
+    'Water in diesel fuel wrecks injectors. Ask us about fuel filter service before summer.',
+    'Hurricane season: a fuel filter, battery and coolant check now beats a no-start later.',
+    'Check engine light on your truck? We scan and diagnose before replacing any parts.',
+    'Towing this fall? Transmission temps and brakes are worth a look first.',
+  ];
+  return `Neighbors: Lucky Diesel is a diesel-only shop in Charleston for Duramax, Powerstroke and Cummins. ${topics[(month - 1) % topics.length]} Book online: ${url}`;
+}
+
+export interface Shot {
+  key: string;
+  label: string;
+  needsRelease: boolean;
+}
+
+const SHOTS: readonly { match: RegExp; shots: Shot[] }[] = [
+  { match: /tune|dyno|program|calibrat/i, shots: [{ key: 'dyno_pull', label: 'Dyno pull video (10–20 s)', needsRelease: false }, { key: 'dyno_sheet', label: 'Dyno sheet on the screen', needsRelease: false }] },
+  { match: /turbo|intake|exhaust|intercooler/i, shots: [{ key: 'old_part', label: 'Old part next to the new one', needsRelease: false }, { key: 'installed', label: 'Installed, engine bay wide', needsRelease: false }] },
+  { match: /injector|fuel|lift pump|cp4|cp3/i, shots: [{ key: 'injectors', label: 'Injectors or pump on the bench', needsRelease: false }, { key: 'filter', label: 'Dirty filter or water sample', needsRelease: false }] },
+  { match: /lift|level|wheel|tire|suspension/i, shots: [{ key: 'stance_before', label: 'Side view before (same angle after)', needsRelease: true }, { key: 'stance_after', label: 'Side view after', needsRelease: true }] },
+  { match: /trans|allison|10r|68rfe|aisin/i, shots: [{ key: 'trans_bench', label: 'Trans or parts on the bench', needsRelease: false }] },
+];
+
+const ALWAYS: readonly Shot[] = [
+  { key: 'arrival', label: 'Truck arriving, front three-quarter', needsRelease: true },
+  { key: 'work', label: 'Tech hands at work (no faces)', needsRelease: false },
+  { key: 'finished', label: 'Finished truck outside the bay', needsRelease: true },
+];
+
+/** Shot list for a job, from its title and line items. Shots showing the truck need consent. */
+export function shotListFor(texts: readonly (string | null | undefined)[]): Shot[] {
+  const haystack = texts.filter(Boolean).join(' ');
+  const extra = SHOTS.filter((s) => s.match.test(haystack)).flatMap((s) => s.shots);
+  const seen = new Set<string>();
+  return [ALWAYS[0]!, ...extra, ...ALWAYS.slice(1)].filter((s) => (seen.has(s.key) ? false : (seen.add(s.key), true)));
+}
+
+export interface UgcInput {
+  name: string;
+  handle: string | null;
+  truck: string | null;
+  caption: string | null;
+  creditOk: boolean;
+}
+
+/** Customer photo → post draft. Credit only with permission; always a privacy check. */
+export function draftUgcPost(input: UgcInput, url: string): SocialDraft {
+  const credit = input.creditOk ? (input.handle ? `@${input.handle.replace(/^@/, '')}` : input.name.split(' ')[0]) : null;
+  const truck = input.truck ?? 'customer truck';
+  const title = `Customer truck: ${truck}`;
+  const quote = input.caption ? `“${input.caption.slice(0, 200)}”` : null;
+  return finalize({
+    title,
+    caption: [`Customer truck: ${truck}.`, quote, credit ? `📸 ${credit}` : null, `Want yours featured? Share it at ${url}`].filter(Boolean).join('\n\n'),
+    alternates: [],
+    hashtags: hashtagsFor(null, ['#CustomerTruck']),
+    gbpSummary: `${title}. Diesel-only shop in Charleston. Book online.`,
+    tiktokCaption: fitText(`${title} #LuckyDiesel`, 150),
+    imageTemplate: 'photo',
+    imageParams: { truck: 'Customer truck', title: truck, imageSource: 'ugc', needsPrivacyReview: true },
+    platforms: ['instagram', 'facebook'],
+    pillar: null,
+    needsPrivacyReview: true,
+    privacyNote: PRIVACY_NOTE,
+  });
+}

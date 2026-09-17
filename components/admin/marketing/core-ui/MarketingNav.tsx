@@ -68,8 +68,9 @@ export function MarketingNav({ demoChip }: { demoChip?: React.ReactNode }) {
 }
 
 /** In-section tabs (e.g. Contacts: People · Pipeline · Segments). */
-export function SectionTabs({ items, label }: { items: readonly MarketingNavItem[]; label: string }) {
-  const pathname = usePathname();
+export function SectionTabs({ items, label, activeHref }: { items: readonly MarketingNavItem[]; label: string; /** Overrides the pathname match (for tabs rendered by a page). */ activeHref?: string }) {
+  const current = usePathname();
+  const pathname = activeHref ?? current;
   return (
     <nav aria-label={label} className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-6 border-b border-line">
@@ -92,4 +93,15 @@ export function SectionTabs({ items, label }: { items: readonly MarketingNavItem
       </ul>
     </nav>
   );
+}
+
+const OVERVIEW_TABS: readonly MarketingNavItem[] = [
+  { href: '/admin/marketing', label: 'Overview', exact: true },
+  { href: '/admin/marketing/reports', label: 'Reports' },
+  { href: '/admin/marketing/calendar', label: 'Calendar' },
+];
+
+/** Overview · Reports · Calendar. Rendered by those pages, not by a layout. */
+export function MarketingSectionTabs({ active }: { active?: string }) {
+  return <SectionTabs items={OVERVIEW_TABS} label="Overview sections" activeHref={active} />;
 }

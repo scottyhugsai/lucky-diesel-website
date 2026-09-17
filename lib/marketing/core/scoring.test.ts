@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { estimateMilesPerMonth, isServiceDue, lifecycleStageFor, predictMileage, scoreLead } from './scoring';
+import { estimateMilesPerMonth, isServiceDue, lifecycleStageFor, predictMileage, scoreLead, visitRhythm } from './scoring';
 
 const now = new Date('2026-09-17T15:00:00Z');
 const ago = (days: number) => new Date(now.getTime() - days * 86_400_000);
@@ -50,5 +50,23 @@ describe('lifecycle stage', () => {
     [{ lastPaidAt: ago(400), tier: 'full_build' as const }, 'lapsed'],
   ])('%o → %s', (patch, stage) => {
     expect(lifecycleStageFor({ ...base, ...patch })).toBe(stage);
+  });
+});
+
+describe('visitRhythm', () => {
+  const now = new Date('2026-09-17T12:00:00Z');
+  const ago = (d: number) => new Date(now.getTime() - d * 86_400_000);
+  test('flags a customer overdue beyond 1.5× their usual interval', () => {
+    const r = visitRhythm([ago(400), ago(300), ago(200)], now);
+    expect(r.medianIntervalDays).toBe(100);
+    expect(r.overdueRatio).toBe(2);
+    expect(r.atRisk).toBe(true);
+  });
+  test('on schedule is not at risk; one visit has no rhythm', () => {
+    expect(visitRhythm([ago(200), ago(100), ago(10)], now).atRisk).toBe(false);
+    expect(visitRhythm([ago(30)], now)).toEqual({ medianIntervalDays: null, overdueRatio: null, atRisk: false });
+  });
+  test('ignores same-day and follow-up visits', () => {
+    expect(visitRhythm([ago(100), ago(100), ago(95)], now).medianIntervalDays).toBeNull();
   });
 });

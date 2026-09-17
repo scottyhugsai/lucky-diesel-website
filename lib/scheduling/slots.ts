@@ -7,6 +7,9 @@ export interface SlotRules {
   openDays: number[];
   slotMinutes: number;
   bayCount: number;
+  /** Bays held for priority fleet accounts until `fleetReleaseHours` before the slot. */
+  fleetReservedBays?: number;
+  fleetReleaseHours?: number;
 }
 
 export interface BookedRange {
@@ -40,8 +43,16 @@ export function shopWallTime(date: string, hour: number, minute = 0, timeZone = 
   return new Date(guess.getTime() - zoneOffsetMinutes(guess, timeZone) * 60_000);
 }
 
+/** Bays a booking may use: priority fleets get all; others lose reserved bays until the release window. */
+export function bookableBays(rules: SlotRules, startsAt: Date, now: Date, isPriority: boolean): number {
+  const reserved = Math.min(Math.max(0, rules.fleetReservedBays ?? 0), Math.max(0, rules.bayCount - 1));
+  if (isPriority || reserved === 0) return rules.bayCount;
+  const released = startsAt.getTime() - now.getTime() <= (rules.fleetReleaseHours ?? 24) * 3_600_000;
+  return released ? rules.bayCount : rules.bayCount - reserved;
+}
+
 /** Open slots for one shop-local date, given existing bookings and bay capacity. */
-export function availableSlots(date: string, rules: SlotRules, booked: BookedRange[], now = new Date()): Slot[] {
+export function availableSlots(date: string, rules: SlotRules, booked: BookedRange[], now = new Date(), isPriority = false): Slot[] {
   if (!DATE_PATTERN.test(date)) return [];
   const noon = shopWallTime(date, 12);
   if (Number.isNaN(noon.getTime())) return [];
@@ -55,7 +66,7 @@ export function availableSlots(date: string, rules: SlotRules, booked: BookedRan
     const endsAt = new Date(startsAt.getTime() + rules.slotMinutes * 60_000);
     if (startsAt <= now) continue;
     const overlapping = booked.filter((b) => b.startsAt < endsAt && b.endsAt > startsAt).length;
-    if (overlapping >= rules.bayCount) continue;
+    if (overlapping >= bookableBays(rules, startsAt, now, isPriority)) continue;
     slots.push({ startsAt, endsAt, label: label.format(startsAt) });
   }
   return slots;

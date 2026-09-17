@@ -30,6 +30,23 @@ const OBJECTIVES: Record<AdCampaignPayload['objective'], string> = {
   leads: 'OUTCOME_LEADS', traffic: 'OUTCOME_TRAFFIC', calls: 'OUTCOME_LEADS', awareness: 'OUTCOME_AWARENESS', sales: 'OUTCOME_SALES',
 };
 
+const km = (miles: number) => Math.max(1, Math.round((miles * METERS_PER_MILE) / 1000));
+
+/** Financing/credit ads must declare the category; Meta then limits targeting. */
+export function specialCategories(campaign: AdCampaignPayload): { special_ad_categories: string[]; special_ad_category_country?: string[] } {
+  return campaign.specialCategory === 'financial' ? { special_ad_categories: ['FINANCIAL_PRODUCTS_SERVICES'], special_ad_category_country: ['US'] } : { special_ad_categories: [] };
+}
+
+/** Shop radius + towns, minus excluded towns. Special categories can't target by age. */
+export function metaTargeting(campaign: AdCampaignPayload): Record<string, unknown> {
+  const circle = (c: { latitude: number; longitude: number; radiusMiles: number }) => ({ latitude: c.latitude, longitude: c.longitude, radius: km(c.radiusMiles), distance_unit: 'kilometer' });
+  return {
+    geo_locations: { custom_locations: campaign.geo.include.map(circle) },
+    ...(campaign.geo.exclude.length ? { excluded_geo_locations: { custom_locations: campaign.geo.exclude.map(circle) } } : {}),
+    ...(campaign.specialCategory === 'financial' ? {} : { age_min: 21 }),
+  };
+}
+
 function requireAccount(credentials: Credentials): string {
   const id = credentials.externalAccountId;
   if (!id) throw new ChannelError('Meta: ad account id is not set on the connection', 'meta_ads');
@@ -44,13 +61,13 @@ export function metaAdAdapter(credentials: Credentials, pageId: string | null): 
       const account = requireAccount(credentials);
       if (!pageId) throw new ChannelError('Meta: connect the Facebook Page first (ads run from the Page)', 'meta_ads');
       const created = await graph<{ id: string }>(`${account}/campaigns`, token, {
-        name: `${campaign.name} [${attemptKey.slice(0, 8)}]`, objective: OBJECTIVES[campaign.objective], status: 'PAUSED', special_ad_categories: [],
+        name: `${campaign.name} [${attemptKey.slice(0, 8)}]`, objective: OBJECTIVES[campaign.objective], status: 'PAUSED', ...specialCategories(campaign),
       });
       const adset = await graph<{ id: string }>(`${account}/adsets`, token, {
         name: `${campaign.name} · ${campaign.radiusMiles}mi`, campaign_id: created.id, status: 'PAUSED',
         daily_budget: campaign.dailyBudgetCents, billing_event: 'IMPRESSIONS', optimization_goal: campaign.objective === 'traffic' ? 'LINK_CLICKS' : 'LEAD_GENERATION',
         start_time: `${campaign.startsOn}T08:00:00-0400`, end_time: `${campaign.endsOn}T23:00:00-0400`,
-        targeting: { geo_locations: { custom_locations: [{ latitude: campaign.latitude, longitude: campaign.longitude, radius: Math.round((campaign.radiusMiles * METERS_PER_MILE) / 1000), distance_unit: 'kilometer' }] }, age_min: 21 },
+        targeting: metaTargeting(campaign),
         promoted_object: { page_id: pageId },
       });
       const ids: Record<string, string> = { campaign: created.id, adset: adset.id };
@@ -58,17 +75,22 @@ export function metaAdAdapter(credentials: Credentials, pageId: string | null): 
         const creative = await graph<{ id: string }>(`${account}/adcreatives`, token, {
           name: variant.headline,
           object_story_spec: { page_id: pageId, link_data: { link: variant.landingUrl, message: variant.primaryText, name: variant.headline, description: variant.description ?? undefined, picture: variant.imageUrl, call_to_action: { type: variant.cta, value: { link: variant.landingUrl } } } },
-          degrees_of_freedom_spec: { creative_features_spec: { standard_enhancements: { enroll_status: 'OPT_OUT' } } },
+          degrees_of_freedom_spec: { creative_features_spec: { standard_enhancements: { enroll_status: campaign.aiEnhancements ? 'OPT_IN' : 'OPT_OUT' } } },
         });
         const ad = await graph<{ id: string }>(`${account}/ads`, token, { name: variant.headline, adset_id: adset.id, creative: { creative_id: creative.id }, status: 'PAUSED' });
         ids[`ad:${variant.variantId}`] = ad.id;
       }
-      return { externalIds: ids, statusOnPlatform: 'PAUSED', simulated: false, requestPreview: { account, campaign, variants: variants.map((v) => v.variantId) } };
+      // Meta ad scheduling only works with lifetime budgets; daily-budget campaigns run all day.
+      return { externalIds: ids, statusOnPlatform: 'PAUSED', simulated: false, requestPreview: { account, campaign, variants: variants.map((v) => v.variantId), dayparting: campaign.callHours ? 'not supported with daily budgets' : 'off' } };
     },
     async setStatus(externalIds, status) {
       for (const [key, id] of Object.entries(externalIds)) {
         if (key === 'campaign' || key === 'adset' || key.startsWith('ad:')) await graph(id, token, { status });
       }
+    },
+    async setBudget(externalIds, dailyBudgetCents) {
+      if (!externalIds.adset) throw new ChannelError('Meta: no ad set id to update', 'meta_ads');
+      await graph(externalIds.adset, token, { daily_budget: dailyBudgetCents });
     },
     async insights(externalIds, date): Promise<DailyMetrics | null> {
       if (!externalIds.campaign) return null;

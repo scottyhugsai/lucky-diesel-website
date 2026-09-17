@@ -61,3 +61,19 @@ export async function resolveShortLink(code: string, token: string | null, db: D
   }
   return withUtm(link.target_url, link);
 }
+
+/**
+ * The campaign's branded short link (`/r/<code>` → /book), created on first
+ * schedule so `{{link}}` is tracked per recipient and click reports and A/B
+ * click winners work.
+ */
+export async function ensureCampaignLink(campaignId: string, channel: string, db: Db = createAdminClient()): Promise<{ ok: true; code: string } | { ok: false; error: string }> {
+  const { data: existing } = await db.from('short_links').select('code').eq('campaign_id', campaignId).order('created_at').limit(1);
+  if (existing?.[0]) return { ok: true, code: existing[0].code };
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const created = await createShortLink({ targetUrl: '/book', campaignId, utmSource: channel === 'sms' ? 'sms' : 'email', utmMedium: 'campaign' }, db);
+    if (created.ok) return { ok: true, code: created.code };
+    if (created.error !== 'That code is taken.') return created;
+  }
+  return { ok: false, error: 'Could not create a short link.' };
+}

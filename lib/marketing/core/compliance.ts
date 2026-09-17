@@ -135,9 +135,10 @@ export function ensureMarketingSms(body: string, businessName: string): string {
 }
 
 /** CAN-SPAM footer: identity, postal address and a working unsubscribe link. */
-export function marketingEmailFooter(options: { senderName: string; postalAddress: string | null; unsubscribeUrl: string }): string {
+export function marketingEmailFooter(options: { senderName: string; postalAddress: string | null; unsubscribeUrl: string; preferencesUrl?: string }): string {
   const lines = ['—', `You're receiving this from ${options.senderName} because you're a customer or asked to hear from us.`];
   if (options.postalAddress) lines.push(options.postalAddress);
   lines.push(`Unsubscribe: ${options.unsubscribeUrl}`);
+  if (options.preferencesUrl) lines.push(`Email preferences: ${options.preferencesUrl}`);
   return lines.join('\n');
 }

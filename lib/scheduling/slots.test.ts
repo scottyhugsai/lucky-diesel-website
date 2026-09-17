@@ -36,3 +36,23 @@ describe('availableSlots', () => {
     expect(availableSlots('not-a-date', rules, [], earlyMorning)).toEqual([]);
   });
 });
+
+describe('priority fleet bays', () => {
+  const reserved: SlotRules = { ...rules, fleetReservedBays: 1, fleetReleaseHours: 24 };
+  const oneBooked = [{ startsAt: new Date('2026-09-16T13:00:00Z'), endsAt: new Date('2026-09-16T14:00:00Z') }];
+  const twoDaysBefore = new Date('2026-09-14T10:00:00Z');
+
+  test('holds the reserved bay from regular bookings until the release window', () => {
+    expect(availableSlots(wednesday, reserved, oneBooked, twoDaysBefore).map((s) => s.label)).not.toContain('9:00 AM');
+    expect(availableSlots(wednesday, reserved, oneBooked, earlyMorning).map((s) => s.label)).toContain('9:00 AM');
+  });
+
+  test('priority fleets can book the reserved bay any time', () => {
+    expect(availableSlots(wednesday, reserved, oneBooked, twoDaysBefore, true).map((s) => s.label)).toContain('9:00 AM');
+  });
+
+  test('never reserves every bay', () => {
+    const greedy: SlotRules = { ...rules, fleetReservedBays: 5 };
+    expect(availableSlots(wednesday, greedy, [], twoDaysBefore)).toHaveLength(4);
+  });
+});

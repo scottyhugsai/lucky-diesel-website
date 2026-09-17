@@ -2,9 +2,12 @@ import { AddReviewForm } from '@/components/admin/marketing/growth-ui/AddReviewF
 import { SubTabs } from '@/components/admin/marketing/growth-ui/kit';
 import { NegativeAlerts, NpsCard, PolicyNote, WidgetPreview } from '@/components/admin/marketing/growth-ui/ReviewPanels';
 import { ReviewItem } from '@/components/admin/marketing/growth-ui/ReviewItem';
+import { ThemesCard, TestimonialsCard, VelocityCard } from '@/components/admin/marketing/growth-ui/ReputationOpsPanels';
+import { loadReputationOps } from '@/components/admin/marketing/growth-ui/reputation-data';
 import { REVIEW_FILTERS, loadReviewsOverview, type ReviewFilter } from '@/components/admin/marketing/growth-ui/reviews-data';
 import { Card, EmptyState, PageHeader } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const metadata = { title: 'Reviews | Lucky Diesel admin' };
 
@@ -14,7 +17,12 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
   await requireRole('admin');
   const { filter: raw } = await searchParams;
   const filter: ReviewFilter = (REVIEW_FILTERS as readonly string[]).includes(raw ?? '') ? (raw as ReviewFilter) : 'needs_reply';
-  const data = await loadReviewsOverview(filter);
+  const [data, ops, { data: customerRows }] = await Promise.all([
+    loadReviewsOverview(filter),
+    loadReputationOps(),
+    createAdminClient().from('customers').select('id, full_name').order('full_name').limit(300),
+  ]);
+  const customers = (customerRows ?? []).map((c) => ({ id: c.id, name: c.full_name }));
 
   return (
     <>
@@ -45,6 +53,9 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
           <NegativeAlerts reviews={data.negatives} />
           <NpsCard nps={data.nps} requests={data.requests} />
           <WidgetPreview widget={data.widget} all={data.all} />
+          <ThemesCard ops={ops} />
+          <VelocityCard ops={ops} />
+          <TestimonialsCard ops={ops} customers={customers} />
         </aside>
       </div>
     </>

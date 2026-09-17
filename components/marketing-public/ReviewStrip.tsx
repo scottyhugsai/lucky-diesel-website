@@ -1,16 +1,18 @@
 import 'server-only';
+import type { ReactNode } from 'react';
 import { getReviewWidget } from '@/lib/marketing/content/reputation-service';
 import { ReviewStripView } from './ReviewStripView';
 
 /**
  * Drop-in reviews section for any design. Real reviews only (Google, Facebook,
- * owner-entered); sample and private feedback never reach it. Renders nothing when empty.
+ * owner-entered); sample and private feedback never reach it. Renders `fallback`
+ * (default nothing) when there are no real reviews to show.
  */
-export async function ReviewStrip({ limit = 6, heading }: { limit?: number; heading?: string }) {
+export async function ReviewStrip({ limit = 6, heading, fallback = null }: { limit?: number; heading?: string; fallback?: ReactNode }) {
   const widget = await getReviewWidget(limit).catch((error: unknown) => {
     console.error(`[marketing] review strip failed: ${error instanceof Error ? error.message : String(error)}`);
     return null;
   });
-  if (!widget) return null;
+  if (!widget || widget.reviews.length === 0) return fallback;
   return <ReviewStripView widget={widget} heading={heading} />;
 }

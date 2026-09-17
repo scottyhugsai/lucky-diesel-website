@@ -8,7 +8,7 @@ function contact(id: string, overrides: Partial<ContactFacts> = {}): ContactFact
   return {
     customerId: id, platforms: ['duramax'], generations: ['2017–Present L5P 6.6L L5P'], mileage: 60_000, lastVisitAt: daysAgo(30), paidVisits: 1,
     lifetimeValueCents: 150_000, tags: [], smsMarketing: false, emailMarketing: true, lifecycleStage: 'customer', loyaltyTier: 'stage_1',
-    source: 'google', isFleet: false, services: [], ...overrides,
+    source: 'google', isFleet: false, services: [], usage: [], overdueRatio: null, ...overrides,
   };
 }
 

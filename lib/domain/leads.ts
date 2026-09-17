@@ -57,6 +57,8 @@ export async function createWebsiteLead(lead: Lead, meta: { ip: string | null })
       details: lead.details,
       sms_consent: lead.smsConsent,
       consent_ip: lead.smsConsent ? meta.ip : null,
+      heard_about: lead.heardAbout ?? null,
+      vin: lead.vin ?? null,
     })
     .select('id')
     .single();

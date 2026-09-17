@@ -86,6 +86,10 @@ function EditFields({ item, builds }: { item: AdminGalleryItem; builds: BuildOpt
         <label htmlFor={id('caption')} className={labelClass}>Caption</label>
         <textarea id={id('caption')} name="caption" defaultValue={item.caption ?? ''} maxLength={LIMITS.caption} rows={2} className={`${fieldClass} h-auto py-2`} />
       </div>
+      <div>
+        <label htmlFor={id('alt')} className={labelClass}>Alt text</label>
+        <input id={id('alt')} name="alt_text" defaultValue={item.alt_text ?? ''} maxLength={LIMITS.alt} placeholder="Blue L5P Duramax on the shop dyno" className={fieldClass} />
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor={id('category')} className={labelClass}>Category</label>

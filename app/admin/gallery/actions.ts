@@ -71,6 +71,7 @@ export async function updateGalleryItem(_prev: ActionState, form: FormData): Pro
     const patch = {
       title: requiredText(form, 'title', 'Title', LIMITS.title),
       caption: text(form, 'caption', { max: LIMITS.caption, label: 'Caption' }),
+      alt_text: text(form, 'alt_text', { max: LIMITS.alt, label: 'Alt text' }),
       category: oneOf(form, 'category', CATEGORY_IDS, 'category'),
       platform: platformFrom(form),
       vehicle_label: text(form, 'vehicle_label', { max: LIMITS.vehicle, label: 'Vehicle' }),

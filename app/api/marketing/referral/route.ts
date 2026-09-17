@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ATTRIBUTION_MAX_AGE_SECONDS, REFERRAL_COOKIE } from '@/lib/marketing/core/attribution-touch';
-import { lookupReferralCode, normalizeReferralCode } from '@/lib/marketing/core/referrals';
+import { lookupAnyReferralCode, normalizeReferralCode } from '@/lib/marketing/core/referrals';
 import { clientIp, createThrottle } from '@/lib/marketing/core/requests';
 import { siteUrl } from '@/lib/site-url';
 
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const destination = new URL('/book', siteUrl());
   if (!code || throttled(clientIp(request) ?? 'unknown')) return NextResponse.redirect(destination, 302);
 
-  const valid = await lookupReferralCode(code).catch(() => null);
+  const valid = await lookupAnyReferralCode(code).catch(() => null);
   if (!valid) return NextResponse.redirect(destination, 302);
   destination.searchParams.set('ref', code);
   destination.searchParams.set('utm_source', 'referral');

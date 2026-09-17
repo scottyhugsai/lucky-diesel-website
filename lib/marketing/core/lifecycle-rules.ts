@@ -5,6 +5,7 @@
  */
 
 import { categorizeService } from './segment-rules';
+import { retentionEmits } from './lifecycle-retention';
 import { isServiceDue, predictMileage, type MileageReading } from './scoring';
 
 const HOUR_MS = 3_600_000;
@@ -22,8 +23,8 @@ export interface LifecycleInput {
   seasonal: Record<string, boolean>;
   customers: { id: string; birthday: string | null; tags: string[] }[];
   paidInvoices: { customerId: string; paidAt: string }[];
-  vehicles: { id: string; customerId: string; mileage: number | null; createdAt: string; label: string }[];
-  workOrders: { customerId: string; vehicleId: string; title: string; mileageIn: number | null; at: string }[];
+  vehicles: { id: string; customerId: string; mileage: number | null; createdAt: string; label: string; platform?: string | null; generation?: string | null; engineCode?: string | null; mileageUpdatedAt?: string | null }[];
+  workOrders: { id?: string; customerId: string; vehicleId: string; title: string; mileageIn: number | null; at: string }[];
   tunes: { id: string; customerId: string; vehicleId: string; flashedAt: string }[];
   plannerLeads: { id: string; customerId: string | null; createdAt: string; status: string }[];
   appointments: { customerId: string; createdAt: string; startsAt: string; status: string }[];
@@ -31,12 +32,24 @@ export interface LifecycleInput {
   detractors: { id: string; customerId: string; respondedAt: string }[];
   events: { id: string; name: string; kind: string; startsAt: string; registeredCustomerIds: string[] }[];
   fleets: { id: string; contactCustomerId: string | null; pmIntervalMiles: number; pmIntervalDays: number; memberCustomerIds: string[] }[];
+  /** Leads marked lost (retention rules below; optional so older callers keep working). */
+  lostLeads?: { id: string; customerId: string | null; createdAt: string }[];
+  buildItems?: { id: string; vehicleId: string; customerId: string; partName: string; installedAt: string | null; warrantyUntil: string | null }[];
+  promoters?: { id: string; customerId: string; respondedAt: string }[];
+  /** Customers with a portal login that was never used, keyed by customer id. */
+  portalNeverSignedIn?: string[];
+  /** Absolute site origin for links built in rules. */
+  siteBase?: string;
 }
 
-export const SEASONS: readonly { key: string; event: string; from: [number, number]; to: [number, number]; label: string }[] = [
+export const SEASONS: readonly { key: string; event: string; from: [number, number]; to: [number, number]; label: string; /** Only customers with one of these tags. */ tags?: string[] }[] = [
   { key: 'towing_season', event: 'marketing.seasonal.towing_season', from: [3, 1], to: [4, 15], label: 'a pre-towing-season inspection' },
   { key: 'hurricane_prep', event: 'marketing.seasonal.hurricane_prep', from: [5, 20], to: [6, 15], label: 'an evacuation-ready truck check' },
   { key: 'winter_diesel', event: 'marketing.seasonal.winter_diesel', from: [10, 15], to: [11, 30], label: 'a cold-start and fuel system check' },
+  { key: 'summer_heat', event: 'marketing.seasonal.summer_heat', from: [6, 16], to: [7, 31], label: 'a cooling system check' },
+  { key: 'hunting_season', event: 'marketing.seasonal.hunting_season', from: [8, 15], to: [9, 30], label: 'a pre-season trip check', tags: ['hunting', 'tows', 'towing', 'offroad'] },
+  { key: 'tax_refund', event: 'marketing.seasonal.tax_refund', from: [2, 1], to: [3, 15], label: 'a build plan' },
+  { key: 'holiday_parts', event: 'marketing.seasonal.holiday_parts', from: [11, 24], to: [12, 20], label: 'parts and gift ideas' },
 ];
 
 export function localDate(at: Date, timeZone: string): { year: number; month: number; day: number } {
@@ -44,13 +57,13 @@ export function localDate(at: Date, timeZone: string): { year: number; month: nu
   return { year: year!, month: month!, day: day! };
 }
 
-const ageMs = (iso: string, now: Date) => now.getTime() - Date.parse(iso);
-const within = (iso: string, now: Date, minMs: number, maxMs: number) => {
+export const ageMs = (iso: string, now: Date) => now.getTime() - Date.parse(iso);
+export const within = (iso: string, now: Date, minMs: number, maxMs: number) => {
   const age = ageMs(iso, now);
   return age >= minMs && age <= maxMs;
 };
 
-function lastPaidByCustomer(input: LifecycleInput): Map<string, string> {
+export function lastPaidByCustomer(input: LifecycleInput): Map<string, string> {
   const last = new Map<string, string>();
   for (const inv of input.paidInvoices) {
     const current = last.get(inv.customerId);
@@ -59,7 +72,7 @@ function lastPaidByCustomer(input: LifecycleInput): Map<string, string> {
   return last;
 }
 
-function upcomingAppointmentCustomers(input: LifecycleInput): Set<string> {
+export function upcomingAppointmentCustomers(input: LifecycleInput): Set<string> {
   return new Set(input.appointments.filter((a) => !['cancelled', 'no_show', 'completed'].includes(a.status) && Date.parse(a.startsAt) > input.now.getTime()).map((a) => a.customerId));
 }
 
@@ -84,7 +97,7 @@ export function readingsFor(vehicleId: string, input: LifecycleInput): MileageRe
     .filter((w) => w.vehicleId === vehicleId && w.mileageIn)
     .map((w) => ({ at: new Date(w.at), miles: w.mileageIn! }));
   const vehicle = input.vehicles.find((v) => v.id === vehicleId);
-  if (vehicle?.mileage) readings.push({ at: new Date(vehicle.createdAt), miles: vehicle.mileage });
+  if (vehicle?.mileage) readings.push({ at: new Date(vehicle.mileageUpdatedAt ?? vehicle.createdAt), miles: vehicle.mileage });
   return readings;
 }
 
@@ -132,7 +145,10 @@ export function seasonalEmits(input: LifecycleInput): LifecycleEmit[] {
   if (!seasons.length) return [];
   const { year } = localDate(input.now, input.timeZone);
   const active = [...lastPaidByCustomer(input)].filter(([, paidAt]) => ageMs(paidAt, input.now) <= ACTIVE_CUSTOMER_DAYS * DAY_MS).map(([id]) => id);
-  return seasons.flatMap((season) => active.map((customerId) => ({ name: season.event, customerId, discriminator: `${season.key}:${year}`, context: { due_service: season.label } })));
+  const tagsById = new Map(input.customers.map((c) => [c.id, c.tags.map((t) => t.toLowerCase())]));
+  return seasons.flatMap((season) => active
+    .filter((customerId) => !season.tags || (tagsById.get(customerId) ?? []).some((t) => season.tags!.includes(t)))
+    .map((customerId) => ({ name: season.event, customerId, discriminator: `${season.key}:${year}`, context: { due_service: season.label, store_link: `${input.siteBase ?? ''}/store`, planner_link: `${input.siteBase ?? ''}/build-planner` } })));
 }
 
 export function birthdayAndAnniversaryEmits(input: LifecycleInput): LifecycleEmit[] {
@@ -237,5 +253,6 @@ export function planLifecycleEmits(input: LifecycleInput): LifecycleEmit[] {
     ...dynoInviteEmits(input),
     ...winBackEmits(input),
     ...seasonalEmits(input),
+    ...retentionEmits(input),
   ];
 }

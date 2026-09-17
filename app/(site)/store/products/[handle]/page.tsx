@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, MessageSquare, Phone, ShieldAlert, Wrench } from 'lucide-react';
+import { NotifyMeForm } from '@/components/marketing-public/NotifyMeForm';
 import { FitmentCheck } from '@/components/store/FitmentCheck';
 import { ProductBuyBox } from '@/components/store/ProductBuyBox';
 import { ProductCard } from '@/components/store/ProductCard';
@@ -72,6 +73,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
 
             <div className="mt-6"><FitmentCheck product={product} /></div>
+            {!product.available && <div className="mt-6"><NotifyMeForm topic={`product:${product.handle}`.slice(0, 120)} label={product.title} heading="Back-in-stock alert" endpoint="/api/marketing/stock-alert" /></div>}
 
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               <Link href="/book?service=install" className={BTN_GHOST}><Wrench className="size-4" aria-hidden="true" /> Book install</Link>

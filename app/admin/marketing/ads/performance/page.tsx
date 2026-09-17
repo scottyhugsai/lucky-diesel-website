@@ -1,13 +1,14 @@
 import { RefreshCw } from 'lucide-react';
 import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
-import { Card, EmptyState, PageHeader, StatTile, TableWrap, tableClass } from '@/components/app/ui';
+import { Badge, Card, EmptyState, PageHeader, StatTile, TableWrap, tableClass } from '@/components/app/ui';
 import { Notice, SectionTabs, SimulatedBadge } from '@/components/admin/marketing/studio/Bits';
 import { DemoBanner } from '@/components/admin/marketing/studio/DemoBanner';
 import { ADS_TABS } from '@/components/admin/marketing/studio/labels';
 import { costPerLead, loadPerformance, roas, type PerfRow } from '@/components/admin/marketing/studio/performance-data';
 import { ShareBar, SpendChart } from '@/components/admin/marketing/studio/SpendChart';
 import { requireRole } from '@/lib/auth';
-import { money, relativeTime } from '@/lib/format';
+import { dateOnly, money, relativeTime } from '@/lib/format';
+import { recentAdAlerts } from '@/lib/marketing/content/metrics-service';
 import { syncNow } from './actions';
 
 export const metadata = { title: 'Ad performance | Lucky Diesel admin' };
@@ -49,7 +50,7 @@ function PerfTable({ rows, label }: { rows: readonly PerfRow[]; label: string })
 
 export default async function PerformancePage() {
   await requireRole('admin');
-  const data = await loadPerformance(30);
+  const [data, alerts] = await Promise.all([loadPerformance(30), recentAdAlerts()]);
   const { totals } = data;
   const cpl = costPerLead(totals);
   const ratio = roas(totals);
@@ -82,6 +83,23 @@ export default async function PerformancePage() {
       <Card title="Spend and leads by day" className="mt-6" action={totals.simulated ? <SimulatedBadge /> : undefined}>
         <SpendChart days={data.days} simulated={totals.simulated} />
       </Card>
+
+      {alerts.length > 0 && (
+        <Card title="Alerts" className="mt-6">
+          <p className="mb-3 text-sm text-chalk/60">Cost-per-lead spikes, dead spend and worn-out creative.</p>
+          <ul className="grid gap-2">
+            {alerts.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-start justify-between gap-2 rounded-sm border border-line bg-carbon px-3 py-2 text-sm">
+                <span><strong>{a.campaign}</strong> — {a.message}</span>
+                <span className="flex items-center gap-1.5 text-xs text-chalk/55">
+                  {dateOnly(`${a.date}T12:00:00`)}
+                  {a.simulated ? <SimulatedBadge /> : <Badge tone={a.sent ? 'good' : 'neutral'}>{a.sent ? 'Sent' : 'Not sent'}</Badge>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {data.autoPauses.length > 0 && (
         <Card title="Auto-pauses" className="mt-6">

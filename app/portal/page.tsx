@@ -5,9 +5,15 @@ import { ActionBand } from '@/components/portal/ActionBand';
 import { JobProgress } from '@/components/portal/JobProgress';
 import { NotLinked } from '@/components/portal/NotLinked';
 import { TruckCard } from '@/components/portal/TruckCard';
+import { ReferFriendPrompt } from '@/components/marketing-public/ReferFriendPrompt';
 import { loadGarage } from '@/components/portal/garage';
 import { requireRole } from '@/lib/auth';
 import { dateTime, firstName, SHOP_TIME_ZONE, vehicleLabel } from '@/lib/format';
+import { referralShareUrl, type ReferralShare } from '@/lib/marketing/core/referral-share';
+import { ensureReferralCode } from '@/lib/marketing/core/referrals';
+import { getMarketingSettings } from '@/lib/marketing/core/settings';
+import { siteUrl } from '@/lib/site-url';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const metadata = { title: 'My Garage | Lucky Diesel' };
 
@@ -23,10 +29,26 @@ const QUICK_LINKS = [
   { href: '/portal/messages', label: 'Messages', icon: MessageSquare },
 ] as const;
 
+/** The customer's referral link, or null if it can't be made right now (the card just hides). */
+async function loadReferralShare(customerId: string): Promise<ReferralShare | null> {
+  try {
+    const db = createAdminClient();
+    const [result, settings] = await Promise.all([ensureReferralCode(customerId, db), getMarketingSettings(db)]);
+    if (!result.ok) {
+      console.error(`[portal] referral code for ${customerId} failed: ${result.error}`);
+      return null;
+    }
+    return { code: result.code, url: referralShareUrl(siteUrl(), result.code), discountCents: settings.refereeDiscountCents };
+  } catch (error) {
+    console.error(`[portal] referral share failed: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
 export default async function GaragePage() {
   const viewer = await requireRole('client');
   if (!viewer.customerId) return <NotLinked />;
-  const { vehicles, activeJobs, actions, nextAppointment, latestDyno } = await loadGarage(viewer.customerId);
+  const [{ vehicles, activeJobs, actions, nextAppointment, latestDyno }, referralShare] = await Promise.all([loadGarage(viewer.customerId), loadReferralShare(viewer.customerId)]);
   const vehicleById = new Map(vehicles.map((vehicle) => [vehicle.id, vehicle]));
 
   return (
@@ -102,6 +124,7 @@ export default async function GaragePage() {
               </Link>
             ))}
           </nav>
+          {referralShare && <ReferFriendPrompt share={referralShare} />}
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { ReviewStrip } from '@/components/marketing-public/ReviewStrip';
 import { QuoteSection, QuoteSectionFromUrl } from '@/components/quote/QuoteSection';
 import { FeaturedBuild } from '@/components/sections/FeaturedBuild';
 import { Hero } from '@/components/sections/Hero';
@@ -22,6 +23,7 @@ export default async function Home() {
       <FeaturedBuild />
       <Parts />
       <Process />
+      <ReviewStrip />
       <Suspense fallback={<QuoteSection />}>
         <QuoteSectionFromUrl />
       </Suspense>

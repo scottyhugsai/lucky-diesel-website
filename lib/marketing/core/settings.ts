@@ -25,6 +25,16 @@ export interface MarketingSettings {
   loyaltyPointsPerDollar: number;
   tierThresholds: TierThresholds;
   missedCallTextBack: boolean;
+  /** Quiet hours in each recipient's area-code time zone (texts). */
+  recipientLocalTime: boolean;
+  smsMaxPerDay: number;
+  emailMaxPerDay: number;
+  sendRatePerMinute: number;
+  smsSegmentFeeMillicents: number;
+  mmsFeeMillicents: number;
+  /** 0 = off. */
+  sunsetDays: number;
+  newsletterAutopilot: boolean;
 }
 
 export const DEFAULT_MARKETING_SETTINGS: MarketingSettings = {
@@ -45,6 +55,14 @@ export const DEFAULT_MARKETING_SETTINGS: MarketingSettings = {
   loyaltyPointsPerDollar: 1,
   tierThresholds: DEFAULT_TIER_THRESHOLDS,
   missedCallTextBack: true,
+  recipientLocalTime: true,
+  smsMaxPerDay: 1,
+  emailMaxPerDay: 1,
+  sendRatePerMinute: 60,
+  smsSegmentFeeMillicents: 830,
+  mmsFeeMillicents: 2000,
+  sunsetDays: 180,
+  newsletterAutopilot: false,
 };
 
 function toggles(value: unknown): Record<string, boolean> {
@@ -72,6 +90,14 @@ export function mapSettings(row: Tables<'marketing_settings'> | null): Marketing
     loyaltyPointsPerDollar: row.loyalty_points_per_dollar,
     tierThresholds: parseTierThresholds(row.vip_thresholds_cents),
     missedCallTextBack: row.missed_call_text_back,
+    recipientLocalTime: row.recipient_local_time,
+    smsMaxPerDay: row.sms_max_per_day,
+    emailMaxPerDay: row.email_max_per_day,
+    sendRatePerMinute: row.send_rate_per_minute,
+    smsSegmentFeeMillicents: row.sms_segment_fee_millicents,
+    mmsFeeMillicents: row.mms_fee_millicents,
+    sunsetDays: row.sunset_days,
+    newsletterAutopilot: row.newsletter_autopilot,
   };
 }
 

@@ -1,10 +1,13 @@
-import { adjustPoints } from '@/app/admin/marketing/growth/referral-actions';
+import { adjustPoints, saveLoyaltyProgram } from '@/app/admin/marketing/growth/referral-actions';
 import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
 import { Card, TableWrap, fieldClass, tableClass } from '@/components/app/ui';
 import { money } from '@/lib/format';
+import type { PerkTier } from '@/lib/marketing/core/promotions';
 import { CustomerSelect } from './forms';
 import { TIER_LABEL, type CustomerOption, type LoyaltyOverview } from './growth-data';
 import { Field, shortDate } from './kit';
+
+const PERK_TIERS: readonly PerkTier[] = ['stage_1', 'stage_2', 'full_build'];
 
 export function LoyaltyPanel({ data, customers }: { data: LoyaltyOverview; customers: CustomerOption[] }) {
   return (
@@ -16,10 +19,13 @@ export function LoyaltyPanel({ data, customers }: { data: LoyaltyOverview; custo
             <p className="display mt-1 text-2xl not-italic">{TIER_LABEL[t.tier]}</p>
             <p className="mt-2 font-mono text-3xl tabular-nums text-clover">{t.count}</p>
             <p className="text-xs text-steel">{t.minCents ? `${money(t.minCents, { whole: true })}+ spent` : 'Everyone'}</p>
+            {t.tier !== 'stock' && <p className="mt-1 text-xs text-chalk/70">{data.perks[t.tier as PerkTier].perk}</p>}
           </li>
         ))}
       </ol>
-      <p className="text-sm text-chalk/65">{data.settings.loyaltyPointsPerDollar} point per $1 paid. Tiers update nightly.</p>
+      <p className="text-sm text-chalk/65">
+        {data.settings.loyaltyPointsPerDollar} point per $1 paid, worth {money(data.pointValueCents * 100)} per 100. Tiers update nightly; upgrades get a message.
+      </p>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <Card title="Members" padded={false}>
@@ -48,6 +54,25 @@ export function LoyaltyPanel({ data, customers }: { data: LoyaltyOverview; custo
               </Field>
               <Field label="Reason" htmlFor="pts-note"><input id="pts-note" name="note" required maxLength={200} className={fieldClass} placeholder="Dyno day bonus" /></Field>
               <PendingButton>Save points</PendingButton>
+            </ActionForm>
+          </Card>
+          <Card title="Tier perks">
+            <ActionForm action={saveLoyaltyProgram} className="grid gap-3" aria-label="Tier perks">
+              <Field label="Cents per point" htmlFor="point-value" hint="What one point is worth at checkout.">
+                <input id="point-value" name="point_value_cents" type="number" step={1} min={1} max={100} required defaultValue={data.pointValueCents} className={fieldClass} />
+              </Field>
+              {PERK_TIERS.map((tier) => (
+                <fieldset key={tier} className="grid gap-2 rounded-sm border border-line p-3">
+                  <legend className="px-1 text-xs font-semibold uppercase tracking-widest text-steel">{TIER_LABEL[tier]}</legend>
+                  <Field label="Perk" htmlFor={`perk-${tier}`}>
+                    <input id={`perk-${tier}`} name={`perk_${tier}`} required maxLength={80} defaultValue={data.perks[tier].perk} className={fieldClass} />
+                  </Field>
+                  <Field label="Labor %" htmlFor={`pct-${tier}`}>
+                    <input id={`pct-${tier}`} name={`pct_${tier}`} type="number" step={1} min={0} max={20} required defaultValue={data.perks[tier].laborPercent} className={fieldClass} />
+                  </Field>
+                </fieldset>
+              ))}
+              <PendingButton variant="secondary">Save program</PendingButton>
             </ActionForm>
           </Card>
           <Card title="Recent">

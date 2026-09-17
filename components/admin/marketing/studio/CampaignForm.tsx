@@ -3,6 +3,7 @@ import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
 import type { ActionState } from '@/components/admin/core/parse';
 import { fieldClass, labelClass } from '@/components/app/ui';
 import { money } from '@/lib/format';
+import { CAMPAIGN_TEMPLATES, DEFAULT_CALL_HOURS, TOWNS } from '@/lib/marketing/content/ad-presets';
 
 type Action = (prev: ActionState, form: FormData) => Promise<ActionState>;
 
@@ -27,6 +28,14 @@ export function CampaignForm({ action, guards }: { action: Action; guards: reado
       <div className="sm:col-span-2">
         <label className={labelClass} htmlFor="c-name">Name</label>
         <input id="c-name" name="name" className={fieldClass} placeholder="Fall tow-ready push" maxLength={80} required />
+      </div>
+      <div className="sm:col-span-2">
+        <label className={labelClass} htmlFor="c-template">Template</label>
+        <select id="c-template" name="template" className={fieldClass} defaultValue="">
+          <option value="">No template</option>
+          {CAMPAIGN_TEMPLATES.map((t) => <option key={t.key} value={t.key}>{t.label} — {t.hint}</option>)}
+        </select>
+        <p className="mt-1 text-xs text-chalk/55">A template sets the goal, radius, towns and call hours.</p>
       </div>
       <div>
         <label className={labelClass} htmlFor="c-platform">Platform</label>
@@ -59,6 +68,39 @@ export function CampaignForm({ action, guards }: { action: Action; guards: reado
         <input id="c-daily" name="daily" inputMode="decimal" className={fieldClass} defaultValue="20" required />
         <p className="mt-1 text-xs text-chalk/55">Hard cap{shopCap ? `: ${money(shopCap.maxDailyCents, { whole: true })}/day shop-wide` : ' per platform'}. Over-cap budgets are refused.</p>
       </div>
+      <details className="sm:col-span-2 rounded-sm border border-line bg-carbon p-3">
+        <summary className="cursor-pointer text-sm font-semibold">Targeting</summary>
+        <div className="mt-3 grid gap-3">
+          <fieldset>
+            <legend className={labelClass}>Extra towns</legend>
+            <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
+              {TOWNS.map((t) => (
+                <label key={t.key} className="flex items-center gap-2 text-xs text-chalk/75">
+                  <input type="checkbox" name="towns" value={t.key} className="size-4 accent-clover" />{t.name}
+                </label>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-chalk/55">Each adds a 10-mile circle on top of the radius.</p>
+          </fieldset>
+          <div>
+            <label className={labelClass} htmlFor="c-exclude">Exclude towns</label>
+            <select id="c-exclude" name="excludeTowns" multiple size={4} className={fieldClass}>
+              {TOWNS.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="negativeKeywords" defaultChecked className="size-4 accent-clover" />Block waste searches
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="callHours" className="size-4 accent-clover" />Run in shop hours only
+            <span className="text-xs text-chalk/55">Mon–Fri {DEFAULT_CALL_HOURS.startHour}–{DEFAULT_CALL_HOURS.endHour}</span>
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="aiEnhancements" className="size-4 accent-clover" />Let the platform edit creative
+          </label>
+          <p className="text-xs text-chalk/55">Financing wording switches the campaign to Meta’s financial category automatically.</p>
+        </div>
+      </details>
       <div className="grid grid-cols-2 gap-3 sm:col-span-2">
         <div>
           <label className={labelClass} htmlFor="c-starts">Start</label>

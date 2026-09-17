@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { ReviewStrip } from '@/components/marketing-public/ReviewStrip';
 import { QuoteSection, QuoteSectionFromUrl } from '@/components/quote/QuoteSection';
 import { getBuildStats, getNextOpenSlot } from '../data';
 import { FeaturedPartsV3 } from './FeaturedPartsV3';
@@ -20,7 +21,8 @@ export async function HomeV3() {
       <ServicesV3 />
       <LeaderboardV3 stats={stats} />
       <FeaturedPartsV3 />
-      <ReviewsV3 />
+      {/* Real reviews replace the honest placeholder only once they exist. */}
+      <ReviewStrip fallback={<ReviewsV3 />} />
       <Suspense fallback={<QuoteSection />}>
         <QuoteSectionFromUrl />
       </Suspense>

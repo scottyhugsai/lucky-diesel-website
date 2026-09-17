@@ -145,3 +145,32 @@ export function shouldPauseForCpl(spendCents: number, leads: number, capCents: n
   if (!capCents || spendCents < minSpendCents) return false;
   return leads === 0 ? spendCents >= capCents : spendCents / leads > capCents;
 }
+
+/** Month (1–12) → budget multiplier. Charleston diesel defaults: spring tow season up, holidays down. */
+export const DEFAULT_SEASON_MULTIPLIERS: Readonly<Record<number, number>> = { 1: 0.9, 2: 1, 3: 1.15, 4: 1.2, 5: 1.2, 6: 1.1, 7: 1, 8: 1.1, 9: 1.1, 10: 1, 11: 0.9, 12: 0.8 };
+export const SEASON_MULTIPLIER_RANGE = { min: 0.5, max: 2 } as const;
+
+/** Stored multipliers; missing or out-of-range months fall back to the default. */
+export function parseSeasonMultipliers(raw: unknown): Record<number, number> {
+  const source = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const out: Record<number, number> = {};
+  for (let month = 1; month <= 12; month += 1) {
+    const value = source[String(month)];
+    out[month] = typeof value === 'number' && value >= SEASON_MULTIPLIER_RANGE.min && value <= SEASON_MULTIPLIER_RANGE.max ? Math.round(value * 100) / 100 : DEFAULT_SEASON_MULTIPLIERS[month]!;
+  }
+  return out;
+}
+
+/** Base budget × month multiplier, in whole dollars, never above the daily cap or below $1. */
+export function seasonalBudgetCents(baseCents: number, multiplier: number, maxDailyCents: number | null): number {
+  const raw = Math.round((baseCents * multiplier) / 100) * 100;
+  const capped = maxDailyCents && maxDailyCents > 0 ? Math.min(raw, maxDailyCents) : raw;
+  return Math.max(100, capped);
+}
+
+/** YYYY-MM of the month after `today` (YYYY-MM-DD). */
+export function nextMonth(today: string): string {
+  const year = Number(today.slice(0, 4));
+  const month = Number(today.slice(5, 7));
+  return month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, '0')}`;
+}

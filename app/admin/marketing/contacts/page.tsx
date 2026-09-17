@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import { Upload } from 'lucide-react';
 import { ContactFiltersForm, ContactList } from '@/components/admin/marketing/core-ui/ContactList';
 import { loadContacts } from '@/components/admin/marketing/core-ui/contacts-data';
-import { EmptyState, PageHeader } from '@/components/app/ui';
+import { ButtonLink, EmptyState, PageHeader } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
 import { money } from '@/lib/format';
 
@@ -24,7 +25,8 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageHeader kicker="Contacts" title="Your people" description="Find anyone. Tap to see their full history." />
+      <PageHeader kicker="Contacts" title="Your people" description="Find anyone. Tap to see their full history."
+        actions={<ButtonLink href="/admin/marketing/contacts/import" variant="secondary" size="sm"><Upload className="size-4" aria-hidden="true" /> Import CSV</ButtonLink>} />
       <ContactFiltersForm filters={filters} tags={tags} />
       {error && <p role="alert" className="mb-4 text-sm text-danger">Couldn’t load contacts: {error}</p>}
       <p className="mb-3 text-sm text-steel" aria-live="polite">

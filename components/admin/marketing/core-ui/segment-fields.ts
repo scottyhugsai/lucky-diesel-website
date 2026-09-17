@@ -3,7 +3,11 @@
 import type { SegmentCondition, SegmentRules } from '@/lib/marketing/core/segment-rules';
 import { PLATFORM_OPTIONS, SERVICE_LABEL, STAGE_LABEL, TIER_LABEL } from './labels';
 
-export type FieldKind = 'choice' | 'text' | 'number' | 'money' | 'bool' | 'consent';
+export type FieldKind = 'choice' | 'text' | 'number' | 'money' | 'ratio' | 'bool' | 'consent';
+
+export const USAGE_LABEL: Record<string, string> = { towing: 'Towing', daily: 'Daily driver', work: 'Work truck', show: 'Show truck', fleet: 'Fleet', offroad: 'Off-road' };
+
+export const isNumericKind = (kind: FieldKind): boolean => kind === 'number' || kind === 'money' || kind === 'ratio';
 
 export interface FieldMeta {
   field: SegmentCondition['field'];
@@ -26,9 +30,12 @@ export const FIELDS: readonly FieldMeta[] = [
   { field: 'generation', label: 'Generation / engine', group: 'Truck', kind: 'text', ops: IN, placeholder: 'L5P, 6.7, 5.9' },
   { field: 'mileage', label: 'Mileage', group: 'Truck', kind: 'number', ops: RANGE, unit: 'mi',
     presets: [{ label: 'Under 100k', op: 'lte', value: 100000 }, { label: '100k–200k', op: 'between', min: 100000, max: 200000 }, { label: '200k+', op: 'gte', value: 200000 }] },
+  { field: 'usage', label: 'Truck usage', group: 'Truck', kind: 'choice', ops: IN, options: toOptions(USAGE_LABEL) },
   { field: 'service_history', label: 'Service history', group: 'Truck', kind: 'choice', ops: [{ value: 'has_any', label: 'has had' }, { value: 'has_none', label: 'never had' }], options: toOptions(SERVICE_LABEL) },
   { field: 'days_since_last_visit', label: 'Last visit', group: 'Visits', kind: 'number', ops: RANGE, unit: 'days ago',
     presets: [{ label: 'Within 90 days', op: 'lte', value: 90 }, { label: '6–12 months', op: 'between', min: 180, max: 365 }, { label: 'Over a year', op: 'gte', value: 365 }] },
+  { field: 'overdue_ratio', label: 'Overdue vs usual', group: 'Visits', kind: 'ratio', ops: RANGE, unit: '× usual gap',
+    presets: [{ label: 'At risk (1.5×+)', op: 'gte', value: 1.5 }, { label: 'Lost (3×+)', op: 'gte', value: 3 }] },
   { field: 'paid_visits', label: 'Paid visits', group: 'Visits', kind: 'number', ops: RANGE, unit: 'visits' },
   { field: 'has_visited', label: 'Has visited', group: 'Visits', kind: 'bool', ops: [{ value: 'is', label: 'is' }] },
   { field: 'lifetime_value_cents', label: 'Lifetime value', group: 'Value', kind: 'money', ops: RANGE, unit: '$',
@@ -64,14 +71,15 @@ export function newRow(field: SegmentCondition['field'] = 'platform', key?: stri
   counter += 1;
   const meta = fieldMeta(field);
   return {
-    key: key ?? `r${counter}-${Math.random().toString(36).slice(2, 7)}`, field, op: meta.kind === 'number' || meta.kind === 'money' ? 'gte' : meta.ops[0]!.value,
+    key: key ?? `r${counter}-${Math.random().toString(36).slice(2, 7)}`, field, op: isNumericKind(meta.kind) ? 'gte' : meta.ops[0]!.value,
     values: meta.kind === 'consent' ? ['sms_marketing'] : [], text: '', min: '', max: '', value: '', bool: true, withinDays: '',
   };
 }
 
-const num = (raw: string, money: boolean): number => {
-  const n = Number(raw.replace(/[$,\s]/g, ''));
-  return Number.isFinite(n) && n >= 0 ? Math.round(money ? n * 100 : n) : NaN;
+const num = (raw: string, money: boolean, decimals = false): number => {
+  const n = Number(raw.replace(/[$,×x\s]/g, ''));
+  if (!Number.isFinite(n) || n < 0) return NaN;
+  return decimals ? Math.round(n * 100) / 100 : Math.round(money ? n * 100 : n);
 };
 
 /** Converts one row to a DSL condition, or null while it is incomplete. */
@@ -90,13 +98,15 @@ export function toCondition(row: RowState): SegmentCondition | null {
       return { field: row.field, op: row.op, values } as SegmentCondition;
     }
     case 'number':
-    case 'money': {
+    case 'money':
+    case 'ratio': {
+      const decimals = meta.kind === 'ratio';
       if (row.op === 'between') {
-        const min = num(row.min, money);
-        const max = num(row.max, money);
+        const min = num(row.min, money, decimals);
+        const max = num(row.max, money, decimals);
         return Number.isNaN(min) || Number.isNaN(max) || !row.min || !row.max || min > max ? null : ({ field: row.field, op: 'between', min, max } as SegmentCondition);
       }
-      const value = num(row.value, money);
+      const value = num(row.value, money, decimals);
       return !row.value || Number.isNaN(value) ? null : ({ field: row.field, op: row.op, value } as SegmentCondition);
     }
     case 'bool':

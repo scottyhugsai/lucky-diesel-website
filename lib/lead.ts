@@ -1,3 +1,5 @@
+import { EMAIL_SYNTAX, suggestEmailFix } from './marketing/core/email-typo';
+import { cleanVin, parseHeardAbout } from './marketing/engage/rules';
 import { OTHER_PLATFORM, OTHER_SERVICE, PLATFORMS, SERVICES } from './site';
 
 /** Shared by the form (client) and the API route (server). */
@@ -18,6 +20,10 @@ export interface Lead {
   platformId: string;
   serviceId: string;
   smsConsent: boolean;
+  /** Self-reported "How did you hear about us?" option id. */
+  heardAbout?: string | null;
+  /** 17-character VIN when the visitor entered one. */
+  vin?: string | null;
 }
 
 export type LeadField = 'name' | 'phone' | 'email' | 'platform' | 'generation' | 'service' | 'details';
@@ -30,7 +36,6 @@ const MAX_NAME = 80;
 const MAX_MILEAGE = 20;
 const MIN_DETAILS = 5;
 const MAX_DETAILS = 2000;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function text(source: Record<string, unknown>, key: string): string {
   const value = source[key];
@@ -76,7 +81,13 @@ export function parseLead(input: unknown): ParseResult {
   if (!phone) errors.phone = 'Enter a 10-digit phone number.';
 
   const email = text(source, 'email');
-  if (!EMAIL_PATTERN.test(email)) errors.email = 'Enter a valid email.';
+  if (!EMAIL_SYNTAX.test(email)) {
+    errors.email = 'Enter a valid email.';
+  } else {
+    // A near-miss on a common domain is worth flagging: the lead is useless if the email bounces.
+    const suggestion = suggestEmailFix(email);
+    if (suggestion) errors.email = `Did you mean ${suggestion}?`;
+  }
 
   const platform = describePlatform(text(source, 'platform'), text(source, 'generation'));
   if ('error' in platform) errors[platform.error] = platform.message;
@@ -106,6 +117,8 @@ export function parseLead(input: unknown): ParseResult {
       platformId: text(source, 'platform'),
       serviceId: serviceId,
       smsConsent: source.smsConsent === true,
+      heardAbout: parseHeardAbout(source.heardAbout),
+      vin: cleanVin(source.vin),
     },
   };
 }

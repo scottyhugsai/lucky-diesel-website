@@ -2,6 +2,8 @@ import 'server-only';
 import type { Tables } from '@/lib/db/database.types';
 import { sendMessage } from '@/lib/messaging/send';
 import { renderTemplate } from '@/lib/messaging/template';
+import { stableBucket } from '@/lib/marketing/core/campaign-plan';
+import { enrollDripsForEvent } from '@/lib/marketing/core/trigger-enroll';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { buildRunContext, ownerRecipient, type Recipient } from './context';
 import { applyQuietHours, computeScheduledFor, dedupeKey } from './schedule';
@@ -27,6 +29,14 @@ export interface DispatchSummary {
   failed: number;
 }
 
+export const HOLDOUT_DETAIL = 'holdout: control group (not sent)';
+
+/** Customer automations with a holdout % keep a stable slice of customers as a no-send control group. */
+function isHoldout(automation: Pick<Tables<'automations'>, 'key' | 'audience' | 'holdout_percent'>, event: AutomationEvent): boolean {
+  if (automation.audience !== 'customer' || !automation.holdout_percent || !event.subjectId) return false;
+  return stableBucket(`holdout:${automation.key}:${event.subjectId}`) < automation.holdout_percent;
+}
+
 /**
  * Schedules every enabled automation listening for this event, then sends
  * whatever is already due. Safe to call repeatedly: runs are deduplicated.
@@ -34,6 +44,8 @@ export interface DispatchSummary {
 export async function emit(event: AutomationEvent): Promise<{ scheduled: number }> {
   const db = createAdminClient();
   const occurredAt = event.occurredAt ?? new Date();
+  // Owner-built drips with a matching trigger_event enroll here (fail-soft).
+  await enrollDripsForEvent({ ...event, occurredAt });
 
   const { data: automations, error } = await db
     .from('automations')
@@ -62,6 +74,7 @@ export async function emit(event: AutomationEvent): Promise<{ scheduled: number 
     if (!at) return [];
     const isDelayedCustomerText = automation.audience === 'customer' && automation.channels.includes('sms') && at > occurredAt;
     const scheduledFor = isDelayedCustomerText ? applyQuietHours(at) : at;
+    const holdout = isHoldout(automation, event);
     return [{
       automation_key: automation.key,
       subject_type: event.subjectType,
@@ -70,6 +83,10 @@ export async function emit(event: AutomationEvent): Promise<{ scheduled: number 
       context: event.context ?? {},
       scheduled_for: scheduledFor.toISOString(),
       dedupe_key: dedupeKey(automation.key, event.subjectType, event.subjectId, event.discriminator),
+      // Every row carries the same columns so the bulk upsert never nulls a default.
+      status: holdout ? ('skipped' as const) : ('scheduled' as const),
+      executed_at: holdout ? new Date().toISOString() : null,
+      detail: holdout ? HOLDOUT_DETAIL : null,
     }];
   });
 

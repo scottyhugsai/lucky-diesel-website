@@ -4,6 +4,73 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export interface Database {
   public: {
     Tables: {
+      ab_events: {
+        Row: {
+          id: number;
+          test_id: string;
+          variant: string;
+          kind: string;
+          visitor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          test_id: string;
+          variant: string;
+          kind: string;
+          visitor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          test_id?: string;
+          variant?: string;
+          kind?: string;
+          visitor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ab_events_test_id_fkey';
+            columns: ['test_id'];
+            isOneToOne: false;
+            referencedRelation: 'ab_tests';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ab_tests: {
+        Row: {
+          id: string;
+          name: string;
+          slot: string;
+          variants: Json;
+          active: boolean;
+          created_at: string;
+          ended_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slot: string;
+          variants: Json;
+          active?: boolean;
+          created_at?: string;
+          ended_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slot?: string;
+          variants?: Json;
+          active?: boolean;
+          created_at?: string;
+          ended_at?: string | null;
+        };
+        Relationships: [
+
+        ];
+      };
       acknowledgements: {
         Row: {
           id: string;
@@ -58,6 +125,47 @@ export interface Database {
             columns: ['work_order_id'];
             isOneToOne: false;
             referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ad_alerts: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          kind: string;
+          alert_date: string;
+          message: string;
+          simulated: boolean;
+          sent: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          kind: string;
+          alert_date: string;
+          message: string;
+          simulated?: boolean;
+          sent?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          kind?: string;
+          alert_date?: string;
+          message?: string;
+          simulated?: boolean;
+          sent?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ad_alerts_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_campaigns';
             referencedColumns: ['id'];
           },
         ];
@@ -855,6 +963,7 @@ export interface Database {
           sort: number;
           updated_at: string;
           anchor: string;
+          holdout_percent: number;
         };
         Insert: {
           key: string;
@@ -871,6 +980,7 @@ export interface Database {
           sort?: number;
           updated_at?: string;
           anchor?: string;
+          holdout_percent?: number;
         };
         Update: {
           key?: string;
@@ -887,9 +997,124 @@ export interface Database {
           sort?: number;
           updated_at?: string;
           anchor?: string;
+          holdout_percent?: number;
         };
         Relationships: [
 
+        ];
+      };
+      bio_links: {
+        Row: {
+          id: string;
+          label: string;
+          short_link_id: string;
+          sort: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          short_link_id: string;
+          sort?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          short_link_id?: string;
+          sort?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bio_links_short_link_id_fkey';
+            columns: ['short_link_id'];
+            isOneToOne: false;
+            referencedRelation: 'short_links';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      botm_nominations: {
+        Row: {
+          id: string;
+          month: string;
+          build_id: string | null;
+          truck: string;
+          owner_name: string;
+          why: string | null;
+          nominator_email: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          month: string;
+          build_id?: string | null;
+          truck: string;
+          owner_name: string;
+          why?: string | null;
+          nominator_email?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          month?: string;
+          build_id?: string | null;
+          truck?: string;
+          owner_name?: string;
+          why?: string | null;
+          nominator_email?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'botm_nominations_build_id_fkey';
+            columns: ['build_id'];
+            isOneToOne: false;
+            referencedRelation: 'builds';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      botm_votes: {
+        Row: {
+          id: string;
+          month: string;
+          nomination_id: string;
+          email_hash: string;
+          device_hash: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          month: string;
+          nomination_id: string;
+          email_hash: string;
+          device_hash: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          month?: string;
+          nomination_id?: string;
+          email_hash?: string;
+          device_hash?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'botm_votes_nomination_id_fkey';
+            columns: ['nomination_id'];
+            isOneToOne: false;
+            referencedRelation: 'botm_nominations';
+            referencedColumns: ['id'];
+          },
         ];
       };
       brand_voice: {
@@ -930,6 +1155,73 @@ export interface Database {
 
         ];
       };
+      budget_change_proposals: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          month: string;
+          from_cents: number;
+          to_cents: number;
+          multiplier: number;
+          status: string;
+          error: string | null;
+          created_by: string | null;
+          decided_by: string | null;
+          decided_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          month: string;
+          from_cents: number;
+          to_cents: number;
+          multiplier: number;
+          status?: string;
+          error?: string | null;
+          created_by?: string | null;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          month?: string;
+          from_cents?: number;
+          to_cents?: number;
+          multiplier?: number;
+          status?: string;
+          error?: string | null;
+          created_by?: string | null;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'budget_change_proposals_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'budget_change_proposals_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'budget_change_proposals_decided_by_fkey';
+            columns: ['decided_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       budget_guards: {
         Row: {
           id: string;
@@ -941,6 +1233,7 @@ export interface Database {
           pacing_tolerance: number;
           active: boolean;
           updated_at: string;
+          season_multipliers: Json;
         };
         Insert: {
           id?: string;
@@ -952,6 +1245,7 @@ export interface Database {
           pacing_tolerance?: number;
           active?: boolean;
           updated_at?: string;
+          season_multipliers?: Json;
         };
         Update: {
           id?: string;
@@ -963,6 +1257,7 @@ export interface Database {
           pacing_tolerance?: number;
           active?: boolean;
           updated_at?: string;
+          season_multipliers?: Json;
         };
         Relationships: [
 
@@ -1240,6 +1535,8 @@ export interface Database {
           subject: string | null;
           body: string;
           created_at: string;
+          blocks: Json;
+          media_url: string | null;
         };
         Insert: {
           id?: string;
@@ -1250,6 +1547,8 @@ export interface Database {
           subject?: string | null;
           body: string;
           created_at?: string;
+          blocks?: Json;
+          media_url?: string | null;
         };
         Update: {
           id?: string;
@@ -1260,6 +1559,8 @@ export interface Database {
           subject?: string | null;
           body?: string;
           created_at?: string;
+          blocks?: Json;
+          media_url?: string | null;
         };
         Relationships: [
           {
@@ -1296,6 +1597,10 @@ export interface Database {
           created_by: string | null;
           created_at: string;
           updated_at: string;
+          from_name: string | null;
+          topic: string | null;
+          send_time_optimized: boolean;
+          autopilot_key: string | null;
         };
         Insert: {
           id?: string;
@@ -1321,6 +1626,10 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          from_name?: string | null;
+          topic?: string | null;
+          send_time_optimized?: boolean;
+          autopilot_key?: string | null;
         };
         Update: {
           id?: string;
@@ -1346,6 +1655,10 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          from_name?: string | null;
+          topic?: string | null;
+          send_time_optimized?: boolean;
+          autopilot_key?: string | null;
         };
         Relationships: [
           {
@@ -1427,6 +1740,136 @@ export interface Database {
           },
         ];
       };
+      chat_messages: {
+        Row: {
+          id: string;
+          thread_id: string;
+          sender: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          thread_id: string;
+          sender: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          thread_id?: string;
+          sender?: string;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_messages_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'chat_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      chat_threads: {
+        Row: {
+          id: string;
+          token_hash: string;
+          visitor_name: string;
+          email: string | null;
+          phone: string | null;
+          sms_consent: boolean;
+          customer_id: string | null;
+          lead_id: string | null;
+          status: string;
+          unread_by_shop: number;
+          page_url: string | null;
+          last_message_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          token_hash: string;
+          visitor_name: string;
+          email?: string | null;
+          phone?: string | null;
+          sms_consent?: boolean;
+          customer_id?: string | null;
+          lead_id?: string | null;
+          status?: string;
+          unread_by_shop?: number;
+          page_url?: string | null;
+          last_message_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          token_hash?: string;
+          visitor_name?: string;
+          email?: string | null;
+          phone?: string | null;
+          sms_consent?: boolean;
+          customer_id?: string | null;
+          lead_id?: string | null;
+          status?: string;
+          unread_by_shop?: number;
+          page_url?: string | null;
+          last_message_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_threads_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'chat_threads_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      competitor_ratings: {
+        Row: {
+          id: string;
+          name: string;
+          place_id: string | null;
+          rating: number | null;
+          review_count: number | null;
+          source: string;
+          checked_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          place_id?: string | null;
+          rating?: number | null;
+          review_count?: number | null;
+          source?: string;
+          checked_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          place_id?: string | null;
+          rating?: number | null;
+          review_count?: number | null;
+          source?: string;
+          checked_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       contact_consent_events: {
         Row: {
           id: string;
@@ -1474,6 +1917,59 @@ export interface Database {
           },
         ];
       };
+      contact_imports: {
+        Row: {
+          id: string;
+          file_name: string;
+          email_basis: string;
+          basis_note: string | null;
+          total_rows: number;
+          created_count: number;
+          updated_count: number;
+          skipped_count: number;
+          email_opt_ins: number;
+          issues: Json;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          file_name: string;
+          email_basis: string;
+          basis_note?: string | null;
+          total_rows?: number;
+          created_count?: number;
+          updated_count?: number;
+          skipped_count?: number;
+          email_opt_ins?: number;
+          issues?: Json;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          file_name?: string;
+          email_basis?: string;
+          basis_note?: string | null;
+          total_rows?: number;
+          created_count?: number;
+          updated_count?: number;
+          skipped_count?: number;
+          email_opt_ins?: number;
+          issues?: Json;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contact_imports_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       content_calendar_items: {
         Row: {
           id: string;
@@ -1516,6 +2012,32 @@ export interface Database {
           generator?: string;
           is_sample?: boolean;
           created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      contest_rules: {
+        Row: {
+          key: string;
+          title: string;
+          body: string;
+          params: Json;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          title: string;
+          body: string;
+          params?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          title?: string;
+          body?: string;
+          params?: Json;
+          updated_at?: string;
         };
         Relationships: [
 
@@ -1648,6 +2170,18 @@ export interface Database {
           privacy_note: string | null;
           is_sample: boolean;
           created_at: string;
+          asset_title: string | null;
+          asset_tags: string[];
+          asset_license: string;
+          asset_license_note: string | null;
+          asset_consent: string;
+          uploaded_by: string | null;
+          title: string | null;
+          license_type: string | null;
+          license_source: string | null;
+          license_url: string | null;
+          license_expires_at: string | null;
+          attribution: string | null;
         };
         Insert: {
           id?: string;
@@ -1665,6 +2199,18 @@ export interface Database {
           privacy_note?: string | null;
           is_sample?: boolean;
           created_at?: string;
+          asset_title?: string | null;
+          asset_tags?: string[];
+          asset_license?: string;
+          asset_license_note?: string | null;
+          asset_consent?: string;
+          uploaded_by?: string | null;
+          title?: string | null;
+          license_type?: string | null;
+          license_source?: string | null;
+          license_url?: string | null;
+          license_expires_at?: string | null;
+          attribution?: string | null;
         };
         Update: {
           id?: string;
@@ -1682,6 +2228,18 @@ export interface Database {
           privacy_note?: string | null;
           is_sample?: boolean;
           created_at?: string;
+          asset_title?: string | null;
+          asset_tags?: string[];
+          asset_license?: string;
+          asset_license_note?: string | null;
+          asset_consent?: string;
+          uploaded_by?: string | null;
+          title?: string | null;
+          license_type?: string | null;
+          license_source?: string | null;
+          license_url?: string | null;
+          license_expires_at?: string | null;
+          attribution?: string | null;
         };
         Relationships: [
           {
@@ -1691,6 +2249,138 @@ export interface Database {
             referencedRelation: 'ai_generation_jobs';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'creative_assets_uploaded_by_fkey';
+            columns: ['uploaded_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      crm_alerts: {
+        Row: {
+          id: string;
+          kind: string;
+          subject_key: string;
+          detail: string | null;
+          sent_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: string;
+          subject_key: string;
+          detail?: string | null;
+          sent_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          subject_key?: string;
+          detail?: string | null;
+          sent_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      crm_notes: {
+        Row: {
+          id: string;
+          lead_id: string | null;
+          thread_id: string | null;
+          author_id: string | null;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id?: string | null;
+          thread_id?: string | null;
+          author_id?: string | null;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          lead_id?: string | null;
+          thread_id?: string | null;
+          author_id?: string | null;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'crm_notes_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'crm_notes_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'crm_notes_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'inbox_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      crm_settings: {
+        Row: {
+          id: number;
+          sla_first_minutes: number;
+          sla_backup_minutes: number;
+          backup_phone: string | null;
+          backup_email: string | null;
+          hot_score: number;
+          stale_hours: number;
+          unanswered_hours: number;
+          quote_valid_days: number;
+          quote_nudge_days: number;
+          auto_reply_enabled: boolean;
+          auto_reply_text: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          sla_first_minutes?: number;
+          sla_backup_minutes?: number;
+          backup_phone?: string | null;
+          backup_email?: string | null;
+          hot_score?: number;
+          stale_hours?: number;
+          unanswered_hours?: number;
+          quote_valid_days?: number;
+          quote_nudge_days?: number;
+          auto_reply_enabled?: boolean;
+          auto_reply_text?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          sla_first_minutes?: number;
+          sla_backup_minutes?: number;
+          backup_phone?: string | null;
+          backup_email?: string | null;
+          hot_score?: number;
+          stale_hours?: number;
+          unanswered_hours?: number;
+          quote_valid_days?: number;
+          quote_nudge_days?: number;
+          auto_reply_enabled?: boolean;
+          auto_reply_text?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+
         ];
       };
       customers: {
@@ -1723,6 +2413,12 @@ export interface Database {
           first_touch_source: string | null;
           last_touch_source: string | null;
           last_marketing_sent_at: string | null;
+          anonymized_at: string | null;
+          email_topics_off: string[];
+          sunset_notice_at: string | null;
+          referral_leaderboard_opt_in: boolean;
+          military_verified_at: string | null;
+          military_verified_note: string | null;
         };
         Insert: {
           id?: string;
@@ -1753,6 +2449,12 @@ export interface Database {
           first_touch_source?: string | null;
           last_touch_source?: string | null;
           last_marketing_sent_at?: string | null;
+          anonymized_at?: string | null;
+          email_topics_off?: string[];
+          sunset_notice_at?: string | null;
+          referral_leaderboard_opt_in?: boolean;
+          military_verified_at?: string | null;
+          military_verified_note?: string | null;
         };
         Update: {
           id?: string;
@@ -1783,6 +2485,12 @@ export interface Database {
           first_touch_source?: string | null;
           last_touch_source?: string | null;
           last_marketing_sent_at?: string | null;
+          anonymized_at?: string | null;
+          email_topics_off?: string[];
+          sunset_notice_at?: string | null;
+          referral_leaderboard_opt_in?: boolean;
+          military_verified_at?: string | null;
+          military_verified_note?: string | null;
         };
         Relationships: [
           {
@@ -1905,6 +2613,9 @@ export interface Database {
           horsepower: number | null;
           torque: number | null;
           created_at: string;
+          waiver_name: string | null;
+          show_name: boolean;
+          result_verified: boolean;
         };
         Insert: {
           id?: string;
@@ -1922,6 +2633,9 @@ export interface Database {
           horsepower?: number | null;
           torque?: number | null;
           created_at?: string;
+          waiver_name?: string | null;
+          show_name?: boolean;
+          result_verified?: boolean;
         };
         Update: {
           id?: string;
@@ -1939,6 +2653,9 @@ export interface Database {
           horsepower?: number | null;
           torque?: number | null;
           created_at?: string;
+          waiver_name?: string | null;
+          show_name?: boolean;
+          result_verified?: boolean;
         };
         Relationships: [
           {
@@ -1950,6 +2667,50 @@ export interface Database {
           },
           {
             foreignKeyName: 'event_registrations_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      event_sponsors: {
+        Row: {
+          id: string;
+          event_id: string;
+          name: string;
+          kind: string;
+          contact: string | null;
+          giveaway: string | null;
+          ask: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          name: string;
+          kind?: string;
+          contact?: string | null;
+          giveaway?: string | null;
+          ask?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          name?: string;
+          kind?: string;
+          contact?: string | null;
+          giveaway?: string | null;
+          ask?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_sponsors_event_id_fkey';
             columns: ['event_id'];
             isOneToOne: false;
             referencedRelation: 'events';
@@ -1972,6 +2733,10 @@ export interface Database {
           registration_open: boolean;
           published: boolean;
           created_at: string;
+          slot_minutes: number | null;
+          waiver_text: string | null;
+          charity: string | null;
+          leaderboard_public: boolean;
         };
         Insert: {
           id?: string;
@@ -1987,6 +2752,10 @@ export interface Database {
           registration_open?: boolean;
           published?: boolean;
           created_at?: string;
+          slot_minutes?: number | null;
+          waiver_text?: string | null;
+          charity?: string | null;
+          leaderboard_public?: boolean;
         };
         Update: {
           id?: string;
@@ -2002,6 +2771,10 @@ export interface Database {
           registration_open?: boolean;
           published?: boolean;
           created_at?: string;
+          slot_minutes?: number | null;
+          waiver_text?: string | null;
+          charity?: string | null;
+          leaderboard_public?: boolean;
         };
         Relationships: [
 
@@ -2021,6 +2794,15 @@ export interface Database {
           notes: string | null;
           active: boolean;
           created_at: string;
+          stage: string;
+          source: string | null;
+          truck_count: number | null;
+          city: string | null;
+          website: string | null;
+          priority: boolean;
+          sla_hours: number;
+          labor_discount_pct: number;
+          last_report_sent_at: string | null;
         };
         Insert: {
           id?: string;
@@ -2035,6 +2817,15 @@ export interface Database {
           notes?: string | null;
           active?: boolean;
           created_at?: string;
+          stage?: string;
+          source?: string | null;
+          truck_count?: number | null;
+          city?: string | null;
+          website?: string | null;
+          priority?: boolean;
+          sla_hours?: number;
+          labor_discount_pct?: number;
+          last_report_sent_at?: string | null;
         };
         Update: {
           id?: string;
@@ -2049,6 +2840,15 @@ export interface Database {
           notes?: string | null;
           active?: boolean;
           created_at?: string;
+          stage?: string;
+          source?: string | null;
+          truck_count?: number | null;
+          city?: string | null;
+          website?: string | null;
+          priority?: boolean;
+          sla_hours?: number;
+          labor_discount_pct?: number;
+          last_report_sent_at?: string | null;
         };
         Relationships: [
           {
@@ -2077,6 +2877,7 @@ export interface Database {
           published: boolean;
           is_sample: boolean;
           created_at: string;
+          alt_text: string | null;
         };
         Insert: {
           id?: string;
@@ -2094,6 +2895,7 @@ export interface Database {
           published?: boolean;
           is_sample?: boolean;
           created_at?: string;
+          alt_text?: string | null;
         };
         Update: {
           id?: string;
@@ -2111,6 +2913,7 @@ export interface Database {
           published?: boolean;
           is_sample?: boolean;
           created_at?: string;
+          alt_text?: string | null;
         };
         Relationships: [
           {
@@ -2118,6 +2921,89 @@ export interface Database {
             columns: ['build_id'];
             isOneToOne: false;
             referencedRelation: 'builds';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      gbp_profile: {
+        Row: {
+          id: number;
+          description: string | null;
+          primary_category: string | null;
+          services: string | null;
+          hours_note: string | null;
+          last_push_at: string | null;
+          last_push_note: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          description?: string | null;
+          primary_category?: string | null;
+          services?: string | null;
+          hours_note?: string | null;
+          last_push_at?: string | null;
+          last_push_note?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          description?: string | null;
+          primary_category?: string | null;
+          services?: string | null;
+          hours_note?: string | null;
+          last_push_at?: string | null;
+          last_push_note?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      inbox_threads: {
+        Row: {
+          id: string;
+          channel: Database['public']['Enums']['message_channel'];
+          address: string;
+          customer_id: string | null;
+          assigned_to: string | null;
+          snoozed_until: string | null;
+          closed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          channel: Database['public']['Enums']['message_channel'];
+          address: string;
+          customer_id?: string | null;
+          assigned_to?: string | null;
+          snoozed_until?: string | null;
+          closed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          channel?: Database['public']['Enums']['message_channel'];
+          address?: string;
+          customer_id?: string | null;
+          assigned_to?: string | null;
+          snoozed_until?: string | null;
+          closed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'inbox_threads_assigned_to_fkey';
+            columns: ['assigned_to'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inbox_threads_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
             referencedColumns: ['id'];
           },
         ];
@@ -2208,6 +3094,87 @@ export interface Database {
           },
         ];
       };
+      invoice_discounts: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          kind: string;
+          label: string;
+          amount_cents: number;
+          offer_id: string | null;
+          offer_code_id: string | null;
+          redemption_id: string | null;
+          points: number;
+          note: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          kind: string;
+          label: string;
+          amount_cents?: number;
+          offer_id?: string | null;
+          offer_code_id?: string | null;
+          redemption_id?: string | null;
+          points?: number;
+          note?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_id?: string;
+          kind?: string;
+          label?: string;
+          amount_cents?: number;
+          offer_id?: string | null;
+          offer_code_id?: string | null;
+          redemption_id?: string | null;
+          points?: number;
+          note?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'invoice_discounts_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'invoice_discounts_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'invoice_discounts_offer_code_id_fkey';
+            columns: ['offer_code_id'];
+            isOneToOne: false;
+            referencedRelation: 'offer_codes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'invoice_discounts_offer_id_fkey';
+            columns: ['offer_id'];
+            isOneToOne: false;
+            referencedRelation: 'offers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'invoice_discounts_redemption_id_fkey';
+            columns: ['redemption_id'];
+            isOneToOne: false;
+            referencedRelation: 'offer_redemptions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       invoices: {
         Row: {
           id: string;
@@ -2223,6 +3190,8 @@ export interface Database {
           due_at: string | null;
           paid_at: string | null;
           created_at: string;
+          discount_cents: number;
+          pre_discount_tax_cents: number | null;
         };
         Insert: {
           id?: string;
@@ -2238,6 +3207,8 @@ export interface Database {
           due_at?: string | null;
           paid_at?: string | null;
           created_at?: string;
+          discount_cents?: number;
+          pre_discount_tax_cents?: number | null;
         };
         Update: {
           id?: string;
@@ -2253,6 +3224,8 @@ export interface Database {
           due_at?: string | null;
           paid_at?: string | null;
           created_at?: string;
+          discount_cents?: number;
+          pre_discount_tax_cents?: number | null;
         };
         Relationships: [
           {
@@ -2405,6 +3378,12 @@ export interface Database {
           lost_reason: string | null;
           first_touch_id: string | null;
           last_touch_id: string | null;
+          deal_value_cents: number;
+          assigned_to: string | null;
+          snoozed_until: string | null;
+          last_activity_at: string;
+          heard_about: string | null;
+          vin: string | null;
         };
         Insert: {
           id?: string;
@@ -2430,6 +3409,12 @@ export interface Database {
           lost_reason?: string | null;
           first_touch_id?: string | null;
           last_touch_id?: string | null;
+          deal_value_cents?: number;
+          assigned_to?: string | null;
+          snoozed_until?: string | null;
+          last_activity_at?: string;
+          heard_about?: string | null;
+          vin?: string | null;
         };
         Update: {
           id?: string;
@@ -2455,8 +3440,21 @@ export interface Database {
           lost_reason?: string | null;
           first_touch_id?: string | null;
           last_touch_id?: string | null;
+          deal_value_cents?: number;
+          assigned_to?: string | null;
+          snoozed_until?: string | null;
+          last_activity_at?: string;
+          heard_about?: string | null;
+          vin?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: 'leads_assigned_to_fkey';
+            columns: ['assigned_to'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'leads_customer_id_fkey';
             columns: ['customer_id'];
@@ -2594,6 +3592,51 @@ export interface Database {
 
         ];
       };
+      local_events: {
+        Row: {
+          id: string;
+          name: string;
+          starts_on: string;
+          pitch: string | null;
+          draft_campaign_id: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          starts_on: string;
+          pitch?: string | null;
+          draft_campaign_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          starts_on?: string;
+          pitch?: string | null;
+          draft_campaign_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'local_events_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'local_events_draft_campaign_id_fkey';
+            columns: ['draft_campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       loyalty_accounts: {
         Row: {
           customer_id: string;
@@ -2680,6 +3723,50 @@ export interface Database {
           },
         ];
       };
+      marketing_anomalies: {
+        Row: {
+          id: string;
+          metric: string;
+          direction: string;
+          current_value: number;
+          baseline_value: number;
+          change_ratio: number;
+          message: string;
+          dedupe_key: string;
+          alerted: boolean;
+          acknowledged_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          metric: string;
+          direction: string;
+          current_value: number;
+          baseline_value: number;
+          change_ratio: number;
+          message: string;
+          dedupe_key: string;
+          alerted?: boolean;
+          acknowledged_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          metric?: string;
+          direction?: string;
+          current_value?: number;
+          baseline_value?: number;
+          change_ratio?: number;
+          message?: string;
+          dedupe_key?: string;
+          alerted?: boolean;
+          acknowledged_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       marketing_approvals: {
         Row: {
           id: string;
@@ -2737,6 +3824,35 @@ export interface Database {
           },
         ];
       };
+      marketing_budgets: {
+        Row: {
+          id: string;
+          month: string;
+          channel: string;
+          budget_cents: number;
+          manual_spend_cents: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          month: string;
+          channel: string;
+          budget_cents?: number;
+          manual_spend_cents?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          month?: string;
+          channel?: string;
+          budget_cents?: number;
+          manual_spend_cents?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       marketing_call_events: {
         Row: {
           id: string;
@@ -2788,6 +3904,102 @@ export interface Database {
           },
         ];
       };
+      marketing_digests: {
+        Row: {
+          id: string;
+          week_start: string;
+          summary: Json;
+          body: string;
+          sent_count: number;
+          send_detail: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          week_start: string;
+          summary?: Json;
+          body: string;
+          sent_count?: number;
+          send_detail?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          week_start?: string;
+          summary?: Json;
+          body?: string;
+          sent_count?: number;
+          send_detail?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      marketing_goals: {
+        Row: {
+          id: string;
+          month: string;
+          metric: string;
+          target: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          month: string;
+          metric: string;
+          target: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          month?: string;
+          metric?: string;
+          target?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      marketing_report_feeds: {
+        Row: {
+          id: string;
+          label: string;
+          token_hash: string;
+          last_used_at: string | null;
+          revoked_at: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          label?: string;
+          token_hash: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          token_hash?: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'marketing_report_feeds_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       marketing_settings: {
         Row: {
           id: number;
@@ -2809,6 +4021,23 @@ export interface Database {
           vip_thresholds_cents: Json;
           missed_call_text_back: boolean;
           updated_at: string;
+          revoke_all_on_opt_out: boolean;
+          recipient_local_time: boolean;
+          sms_max_per_day: number;
+          email_max_per_day: number;
+          send_rate_per_minute: number;
+          sms_segment_fee_millicents: number;
+          mms_fee_millicents: number;
+          sunset_days: number;
+          newsletter_autopilot: boolean;
+          ai_monthly_cap_usd: number;
+          tendlc_profile: Json;
+          sender_dns_check: Json | null;
+          point_value_cents: number;
+          tier_perks: Json;
+          fleet_volume_tiers: Json;
+          military_labor_percent: number;
+          auto_post_positive_replies: boolean;
         };
         Insert: {
           id?: number;
@@ -2830,6 +4059,23 @@ export interface Database {
           vip_thresholds_cents?: Json;
           missed_call_text_back?: boolean;
           updated_at?: string;
+          revoke_all_on_opt_out?: boolean;
+          recipient_local_time?: boolean;
+          sms_max_per_day?: number;
+          email_max_per_day?: number;
+          send_rate_per_minute?: number;
+          sms_segment_fee_millicents?: number;
+          mms_fee_millicents?: number;
+          sunset_days?: number;
+          newsletter_autopilot?: boolean;
+          ai_monthly_cap_usd?: number;
+          tendlc_profile?: Json;
+          sender_dns_check?: Json | null;
+          point_value_cents?: number;
+          tier_perks?: Json;
+          fleet_volume_tiers?: Json;
+          military_labor_percent?: number;
+          auto_post_positive_replies?: boolean;
         };
         Update: {
           id?: number;
@@ -2851,6 +4097,105 @@ export interface Database {
           vip_thresholds_cents?: Json;
           missed_call_text_back?: boolean;
           updated_at?: string;
+          revoke_all_on_opt_out?: boolean;
+          recipient_local_time?: boolean;
+          sms_max_per_day?: number;
+          email_max_per_day?: number;
+          send_rate_per_minute?: number;
+          sms_segment_fee_millicents?: number;
+          mms_fee_millicents?: number;
+          sunset_days?: number;
+          newsletter_autopilot?: boolean;
+          ai_monthly_cap_usd?: number;
+          tendlc_profile?: Json;
+          sender_dns_check?: Json | null;
+          point_value_cents?: number;
+          tier_perks?: Json;
+          fleet_volume_tiers?: Json;
+          military_labor_percent?: number;
+          auto_post_positive_replies?: boolean;
+        };
+        Relationships: [
+
+        ];
+      };
+      marketing_templates: {
+        Row: {
+          id: string;
+          template_key: string;
+          version: number;
+          name: string;
+          channel: string;
+          subject: string | null;
+          body: string;
+          tags: string[];
+          compliance_status: string;
+          compliance_issues: Json;
+          archived: boolean;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          template_key: string;
+          version?: number;
+          name: string;
+          channel: string;
+          subject?: string | null;
+          body: string;
+          tags?: string[];
+          compliance_status?: string;
+          compliance_issues?: Json;
+          archived?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          template_key?: string;
+          version?: number;
+          name?: string;
+          channel?: string;
+          subject?: string | null;
+          body?: string;
+          tags?: string[];
+          compliance_status?: string;
+          compliance_issues?: Json;
+          archived?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'marketing_templates_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      marketing_tracking_numbers: {
+        Row: {
+          id: string;
+          phone: string;
+          source: string;
+          label: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          phone: string;
+          source: string;
+          label?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          phone?: string;
+          source?: string;
+          label?: string;
+          created_at?: string;
         };
         Relationships: [
 
@@ -2917,6 +4262,88 @@ export interface Database {
           },
           {
             foreignKeyName: 'media_work_order_id_fkey';
+            columns: ['work_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      media_releases: {
+        Row: {
+          id: string;
+          customer_id: string | null;
+          work_order_id: string | null;
+          person_name: string;
+          allow_truck: boolean;
+          allow_plate: boolean;
+          allow_face: boolean;
+          allow_name: boolean;
+          allow_testimonial: boolean;
+          incentivized: boolean;
+          method: string;
+          evidence: string | null;
+          source: string;
+          signed_at: string;
+          revoked_at: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id?: string | null;
+          work_order_id?: string | null;
+          person_name: string;
+          allow_truck?: boolean;
+          allow_plate?: boolean;
+          allow_face?: boolean;
+          allow_name?: boolean;
+          allow_testimonial?: boolean;
+          incentivized?: boolean;
+          method: string;
+          evidence?: string | null;
+          source?: string;
+          signed_at?: string;
+          revoked_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string | null;
+          work_order_id?: string | null;
+          person_name?: string;
+          allow_truck?: boolean;
+          allow_plate?: boolean;
+          allow_face?: boolean;
+          allow_name?: boolean;
+          allow_testimonial?: boolean;
+          incentivized?: boolean;
+          method?: string;
+          evidence?: string | null;
+          source?: string;
+          signed_at?: string;
+          revoked_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'media_releases_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'media_releases_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'media_releases_work_order_id_fkey';
             columns: ['work_order_id'];
             isOneToOne: false;
             referencedRelation: 'work_orders';
@@ -3001,6 +4428,7 @@ export interface Database {
           responded_at: string | null;
           owner_alerted_at: string | null;
           is_sample: boolean;
+          themes: string[];
         };
         Insert: {
           id?: string;
@@ -3015,6 +4443,7 @@ export interface Database {
           responded_at?: string | null;
           owner_alerted_at?: string | null;
           is_sample?: boolean;
+          themes?: string[];
         };
         Update: {
           id?: string;
@@ -3029,6 +4458,7 @@ export interface Database {
           responded_at?: string | null;
           owner_alerted_at?: string | null;
           is_sample?: boolean;
+          themes?: string[];
         };
         Relationships: [
           {
@@ -3047,6 +4477,68 @@ export interface Database {
           },
         ];
       };
+      offer_codes: {
+        Row: {
+          id: string;
+          offer_id: string;
+          code: string;
+          customer_id: string | null;
+          campaign_send_id: string | null;
+          invoice_id: string | null;
+          redeemed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          offer_id: string;
+          code: string;
+          customer_id?: string | null;
+          campaign_send_id?: string | null;
+          invoice_id?: string | null;
+          redeemed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          offer_id?: string;
+          code?: string;
+          customer_id?: string | null;
+          campaign_send_id?: string | null;
+          invoice_id?: string | null;
+          redeemed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'offer_codes_campaign_send_id_fkey';
+            columns: ['campaign_send_id'];
+            isOneToOne: true;
+            referencedRelation: 'campaign_sends';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_codes_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_codes_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_codes_offer_id_fkey';
+            columns: ['offer_id'];
+            isOneToOne: false;
+            referencedRelation: 'offers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       offer_redemptions: {
         Row: {
           id: string;
@@ -3056,6 +4548,7 @@ export interface Database {
           invoice_id: string | null;
           discount_cents: number;
           redeemed_at: string;
+          offer_code_id: string | null;
         };
         Insert: {
           id?: string;
@@ -3065,6 +4558,7 @@ export interface Database {
           invoice_id?: string | null;
           discount_cents?: number;
           redeemed_at?: string;
+          offer_code_id?: string | null;
         };
         Update: {
           id?: string;
@@ -3074,6 +4568,7 @@ export interface Database {
           invoice_id?: string | null;
           discount_cents?: number;
           redeemed_at?: string;
+          offer_code_id?: string | null;
         };
         Relationships: [
           {
@@ -3088,6 +4583,13 @@ export interface Database {
             columns: ['invoice_id'];
             isOneToOne: false;
             referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_redemptions_offer_code_id_fkey';
+            columns: ['offer_code_id'];
+            isOneToOne: false;
+            referencedRelation: 'offer_codes';
             referencedColumns: ['id'];
           },
           {
@@ -3123,6 +4625,13 @@ export interface Database {
           ends_at: string | null;
           active: boolean;
           created_at: string;
+          single_use: boolean;
+          public: boolean;
+          bundle_items: string[];
+          bundle_price_cents: number | null;
+          gift_item: string | null;
+          creator_name: string | null;
+          creator_commission_percent: number;
         };
         Insert: {
           id?: string;
@@ -3140,6 +4649,13 @@ export interface Database {
           ends_at?: string | null;
           active?: boolean;
           created_at?: string;
+          single_use?: boolean;
+          public?: boolean;
+          bundle_items?: string[];
+          bundle_price_cents?: number | null;
+          gift_item?: string | null;
+          creator_name?: string | null;
+          creator_commission_percent?: number;
         };
         Update: {
           id?: string;
@@ -3157,6 +4673,13 @@ export interface Database {
           ends_at?: string | null;
           active?: boolean;
           created_at?: string;
+          single_use?: boolean;
+          public?: boolean;
+          bundle_items?: string[];
+          bundle_price_cents?: number | null;
+          gift_item?: string | null;
+          creator_name?: string | null;
+          creator_commission_percent?: number;
         };
         Relationships: [
           {
@@ -3166,6 +4689,105 @@ export interface Database {
             referencedRelation: 'segments';
             referencedColumns: ['id'];
           },
+        ];
+      };
+      ops_alerts: {
+        Row: {
+          key: string;
+          severity: string;
+          title: string;
+          detail: string | null;
+          first_seen_at: string;
+          last_seen_at: string;
+          last_alerted_at: string | null;
+          resolved_at: string | null;
+        };
+        Insert: {
+          key: string;
+          severity?: string;
+          title: string;
+          detail?: string | null;
+          first_seen_at?: string;
+          last_seen_at?: string;
+          last_alerted_at?: string | null;
+          resolved_at?: string | null;
+        };
+        Update: {
+          key?: string;
+          severity?: string;
+          title?: string;
+          detail?: string | null;
+          first_seen_at?: string;
+          last_seen_at?: string;
+          last_alerted_at?: string | null;
+          resolved_at?: string | null;
+        };
+        Relationships: [
+
+        ];
+      };
+      ops_checklist_ticks: {
+        Row: {
+          id: string;
+          checklist: string;
+          period: string;
+          item: string;
+          done_by: string | null;
+          done_at: string;
+        };
+        Insert: {
+          id?: string;
+          checklist: string;
+          period: string;
+          item: string;
+          done_by?: string | null;
+          done_at?: string;
+        };
+        Update: {
+          id?: string;
+          checklist?: string;
+          period?: string;
+          item?: string;
+          done_by?: string | null;
+          done_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ops_checklist_ticks_done_by_fkey';
+            columns: ['done_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ops_cron_runs: {
+        Row: {
+          id: string;
+          job: string;
+          started_at: string;
+          finished_at: string | null;
+          ok: boolean | null;
+          errors: Json;
+        };
+        Insert: {
+          id?: string;
+          job: string;
+          started_at?: string;
+          finished_at?: string | null;
+          ok?: boolean | null;
+          errors?: Json;
+        };
+        Update: {
+          id?: string;
+          job?: string;
+          started_at?: string;
+          finished_at?: string | null;
+          ok?: boolean | null;
+          errors?: Json;
+        };
+        Relationships: [
+
         ];
       };
       part_requests: {
@@ -3206,6 +4828,143 @@ export interface Database {
             columns: ['work_order_id'];
             isOneToOne: false;
             referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      partial_leads: {
+        Row: {
+          id: string;
+          session_key: string;
+          full_name: string;
+          email: string;
+          phone: string;
+          platform: string | null;
+          service_id: string | null;
+          step: number;
+          remind_consent: boolean;
+          page_url: string | null;
+          ip: string | null;
+          customer_id: string | null;
+          converted_lead_id: string | null;
+          followed_up_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_key: string;
+          full_name: string;
+          email: string;
+          phone: string;
+          platform?: string | null;
+          service_id?: string | null;
+          step?: number;
+          remind_consent?: boolean;
+          page_url?: string | null;
+          ip?: string | null;
+          customer_id?: string | null;
+          converted_lead_id?: string | null;
+          followed_up_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_key?: string;
+          full_name?: string;
+          email?: string;
+          phone?: string;
+          platform?: string | null;
+          service_id?: string | null;
+          step?: number;
+          remind_consent?: boolean;
+          page_url?: string | null;
+          ip?: string | null;
+          customer_id?: string | null;
+          converted_lead_id?: string | null;
+          followed_up_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'partial_leads_converted_lead_id_fkey';
+            columns: ['converted_lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'partial_leads_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      partner_referrals: {
+        Row: {
+          id: string;
+          partner_id: string;
+          lead_id: string | null;
+          customer_id: string | null;
+          status: Database['public']['Enums']['mkt_referral_status'];
+          invoice_id: string | null;
+          reward_cents: number;
+          rewarded_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          partner_id: string;
+          lead_id?: string | null;
+          customer_id?: string | null;
+          status?: Database['public']['Enums']['mkt_referral_status'];
+          invoice_id?: string | null;
+          reward_cents?: number;
+          rewarded_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          partner_id?: string;
+          lead_id?: string | null;
+          customer_id?: string | null;
+          status?: Database['public']['Enums']['mkt_referral_status'];
+          invoice_id?: string | null;
+          reward_cents?: number;
+          rewarded_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'partner_referrals_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'partner_referrals_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'partner_referrals_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'partner_referrals_partner_id_fkey';
+            columns: ['partner_id'];
+            isOneToOne: false;
+            referencedRelation: 'referral_partners';
             referencedColumns: ['id'];
           },
         ];
@@ -3369,6 +5128,50 @@ export interface Database {
           },
         ];
       };
+      referral_partners: {
+        Row: {
+          id: string;
+          name: string;
+          kind: string;
+          contact_name: string | null;
+          email: string | null;
+          phone: string | null;
+          code: string;
+          reward_cents: number;
+          active: boolean;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          kind?: string;
+          contact_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          code: string;
+          reward_cents?: number;
+          active?: boolean;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          kind?: string;
+          contact_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          code?: string;
+          reward_cents?: number;
+          active?: boolean;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       referrals: {
         Row: {
           id: string;
@@ -3447,6 +5250,32 @@ export interface Database {
           },
         ];
       };
+      reply_snippets: {
+        Row: {
+          id: string;
+          title: string;
+          body: string;
+          sort: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          body: string;
+          sort?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          body?: string;
+          sort?: number;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       review_replies: {
         Row: {
           id: string;
@@ -3507,6 +5336,48 @@ export interface Database {
           },
         ];
       };
+      review_requests: {
+        Row: {
+          id: string;
+          customer_id: string | null;
+          requested_by: string | null;
+          channel: string;
+          sent: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id?: string | null;
+          requested_by?: string | null;
+          channel: string;
+          sent?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string | null;
+          requested_by?: string | null;
+          channel?: string;
+          sent?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'review_requests_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'review_requests_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       reviews: {
         Row: {
           id: string;
@@ -3520,6 +5391,10 @@ export interface Database {
           customer_id: string | null;
           owner_alerted_at: string | null;
           created_at: string;
+          themes: string[];
+          flag_reason: string | null;
+          flagged_at: string | null;
+          social_post_id: string | null;
         };
         Insert: {
           id?: string;
@@ -3533,6 +5408,10 @@ export interface Database {
           customer_id?: string | null;
           owner_alerted_at?: string | null;
           created_at?: string;
+          themes?: string[];
+          flag_reason?: string | null;
+          flagged_at?: string | null;
+          social_post_id?: string | null;
         };
         Update: {
           id?: string;
@@ -3546,6 +5425,10 @@ export interface Database {
           customer_id?: string | null;
           owner_alerted_at?: string | null;
           created_at?: string;
+          themes?: string[];
+          flag_reason?: string | null;
+          flagged_at?: string | null;
+          social_post_id?: string | null;
         };
         Relationships: [
           {
@@ -3555,6 +5438,51 @@ export interface Database {
             referencedRelation: 'customers';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'reviews_social_post_id_fkey';
+            columns: ['social_post_id'];
+            isOneToOne: false;
+            referencedRelation: 'social_posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      search_metrics_daily: {
+        Row: {
+          id: string;
+          source: string;
+          day: string;
+          page: string;
+          clicks: number;
+          impressions: number;
+          position: number | null;
+          is_sample: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          source: string;
+          day: string;
+          page: string;
+          clicks?: number;
+          impressions?: number;
+          position?: number | null;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          source?: string;
+          day?: string;
+          page?: string;
+          clicks?: number;
+          impressions?: number;
+          position?: number | null;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
         ];
       };
       segment_members: {
@@ -3653,6 +5581,9 @@ export interface Database {
           is_sample: boolean;
           created_at: string;
           updated_at: string;
+          area: string | null;
+          platform: string | null;
+          published_at: string | null;
         };
         Insert: {
           id?: string;
@@ -3672,6 +5603,9 @@ export interface Database {
           is_sample?: boolean;
           created_at?: string;
           updated_at?: string;
+          area?: string | null;
+          platform?: string | null;
+          published_at?: string | null;
         };
         Update: {
           id?: string;
@@ -3691,6 +5625,88 @@ export interface Database {
           is_sample?: boolean;
           created_at?: string;
           updated_at?: string;
+          area?: string | null;
+          platform?: string | null;
+          published_at?: string | null;
+        };
+        Relationships: [
+
+        ];
+      };
+      seo_tasks: {
+        Row: {
+          id: string;
+          key: string;
+          category: string;
+          title: string;
+          hint: string | null;
+          url: string | null;
+          status: string;
+          repeat_days: number | null;
+          notes: string | null;
+          done_at: string | null;
+          sort: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          category: string;
+          title: string;
+          hint?: string | null;
+          url?: string | null;
+          status?: string;
+          repeat_days?: number | null;
+          notes?: string | null;
+          done_at?: string | null;
+          sort?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          category?: string;
+          title?: string;
+          hint?: string | null;
+          url?: string | null;
+          status?: string;
+          repeat_days?: number | null;
+          notes?: string | null;
+          done_at?: string | null;
+          sort?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      shop_closures: {
+        Row: {
+          id: string;
+          label: string;
+          message: string | null;
+          starts_on: string;
+          ends_on: string;
+          closed: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          message?: string | null;
+          starts_on: string;
+          ends_on: string;
+          closed?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          message?: string | null;
+          starts_on?: string;
+          ends_on?: string;
+          closed?: boolean;
+          created_at?: string;
         };
         Relationships: [
 
@@ -3712,6 +5728,8 @@ export interface Database {
           open_days: number[];
           slot_minutes: number;
           updated_at: string;
+          fleet_reserved_bays: number;
+          fleet_release_hours: number;
         };
         Insert: {
           id?: number;
@@ -3728,6 +5746,8 @@ export interface Database {
           open_days?: number[];
           slot_minutes?: number;
           updated_at?: string;
+          fleet_reserved_bays?: number;
+          fleet_release_hours?: number;
         };
         Update: {
           id?: number;
@@ -3744,6 +5764,8 @@ export interface Database {
           open_days?: number[];
           slot_minutes?: number;
           updated_at?: string;
+          fleet_reserved_bays?: number;
+          fleet_release_hours?: number;
         };
         Relationships: [
 
@@ -3761,6 +5783,7 @@ export interface Database {
           last_clicked_at: string | null;
           expires_at: string | null;
           created_at: string;
+          placement: string | null;
         };
         Insert: {
           id?: string;
@@ -3773,6 +5796,7 @@ export interface Database {
           last_clicked_at?: string | null;
           expires_at?: string | null;
           created_at?: string;
+          placement?: string | null;
         };
         Update: {
           id?: string;
@@ -3785,6 +5809,7 @@ export interface Database {
           last_clicked_at?: string | null;
           expires_at?: string | null;
           created_at?: string;
+          placement?: string | null;
         };
         Relationships: [
           {
@@ -3794,6 +5819,190 @@ export interface Database {
             referencedRelation: 'campaigns';
             referencedColumns: ['id'];
           },
+        ];
+      };
+      site_consent_log: {
+        Row: {
+          id: number;
+          visitor_id: string;
+          analytics: boolean;
+          ads: boolean;
+          policy_version: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          visitor_id: string;
+          analytics: boolean;
+          ads: boolean;
+          policy_version: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          visitor_id?: string;
+          analytics?: boolean;
+          ads?: boolean;
+          policy_version?: string;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      site_engagement: {
+        Row: {
+          id: number;
+          announcement: Json | null;
+          social_proof: boolean;
+          financing_url: string | null;
+          price_ranges: Json;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          announcement?: Json | null;
+          social_proof?: boolean;
+          financing_url?: string | null;
+          price_ranges?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          announcement?: Json | null;
+          social_proof?: boolean;
+          financing_url?: string | null;
+          price_ranges?: Json;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      site_popups: {
+        Row: {
+          id: string;
+          name: string;
+          path_prefix: string;
+          trigger: string;
+          trigger_value: number;
+          headline: string;
+          body: string | null;
+          cta_label: string;
+          cta_href: string;
+          active: boolean;
+          starts_at: string | null;
+          ends_at: string | null;
+          views: number;
+          clicks: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          path_prefix?: string;
+          trigger?: string;
+          trigger_value?: number;
+          headline: string;
+          body?: string | null;
+          cta_label?: string;
+          cta_href: string;
+          active?: boolean;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          views?: number;
+          clicks?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          path_prefix?: string;
+          trigger?: string;
+          trigger_value?: number;
+          headline?: string;
+          body?: string | null;
+          cta_label?: string;
+          cta_href?: string;
+          active?: boolean;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          views?: number;
+          clicks?: number;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      sku_compliance: {
+        Row: {
+          handle: string;
+          status: string;
+          eo_number: string | null;
+          note: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          handle: string;
+          status?: string;
+          eo_number?: string | null;
+          note?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          handle?: string;
+          status?: string;
+          eo_number?: string | null;
+          note?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'sku_compliance_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      sms_keywords: {
+        Row: {
+          id: string;
+          keyword: string;
+          action: string;
+          reply: string;
+          active: boolean;
+          hits: number;
+          last_hit_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          keyword: string;
+          action?: string;
+          reply: string;
+          active?: boolean;
+          hits?: number;
+          last_hit_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          keyword?: string;
+          action?: string;
+          reply?: string;
+          active?: boolean;
+          hits?: number;
+          last_hit_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+
         ];
       };
       social_post_targets: {
@@ -3885,6 +6094,7 @@ export interface Database {
           created_by: string | null;
           created_at: string;
           updated_at: string;
+          last_recycled_at: string | null;
         };
         Insert: {
           id?: string;
@@ -3911,6 +6121,7 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_recycled_at?: string | null;
         };
         Update: {
           id?: string;
@@ -3937,6 +6148,7 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_recycled_at?: string | null;
         };
         Relationships: [
           {
@@ -3951,6 +6163,138 @@ export interface Database {
             columns: ['created_by'];
             isOneToOne: false;
             referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      social_task_log: {
+        Row: {
+          id: string;
+          task_key: string;
+          period: string;
+          done_by: string | null;
+          done_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_key: string;
+          period: string;
+          done_by?: string | null;
+          done_at?: string;
+        };
+        Update: {
+          id?: string;
+          task_key?: string;
+          period?: string;
+          done_by?: string | null;
+          done_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'social_task_log_done_by_fkey';
+            columns: ['done_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      stock_alerts: {
+        Row: {
+          id: string;
+          handle: string;
+          product_title: string;
+          email: string;
+          customer_id: string | null;
+          consent_text: string;
+          consent_ip: string | null;
+          status: string;
+          notified_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          handle: string;
+          product_title: string;
+          email: string;
+          customer_id?: string | null;
+          consent_text: string;
+          consent_ip?: string | null;
+          status?: string;
+          notified_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          handle?: string;
+          product_title?: string;
+          email?: string;
+          customer_id?: string | null;
+          consent_text?: string;
+          consent_ip?: string | null;
+          status?: string;
+          notified_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'stock_alerts_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      store_orders: {
+        Row: {
+          id: string;
+          shopify_order_id: string;
+          order_name: string | null;
+          customer_id: string | null;
+          email: string | null;
+          total_cents: number;
+          currency: string;
+          financial_status: string | null;
+          line_count: number;
+          is_demo: boolean;
+          ordered_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shopify_order_id: string;
+          order_name?: string | null;
+          customer_id?: string | null;
+          email?: string | null;
+          total_cents?: number;
+          currency?: string;
+          financial_status?: string | null;
+          line_count?: number;
+          is_demo?: boolean;
+          ordered_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          shopify_order_id?: string;
+          order_name?: string | null;
+          customer_id?: string | null;
+          email?: string | null;
+          total_cents?: number;
+          currency?: string;
+          financial_status?: string | null;
+          line_count?: number;
+          is_demo?: boolean;
+          ordered_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'store_orders_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
             referencedColumns: ['id'];
           },
         ];
@@ -4033,6 +6377,35 @@ export interface Database {
             referencedRelation: 'work_orders';
             referencedColumns: ['id'];
           },
+        ];
+      };
+      tracking_numbers: {
+        Row: {
+          id: string;
+          phone: string;
+          source: string;
+          label: string;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          phone: string;
+          source: string;
+          label: string;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          phone?: string;
+          source?: string;
+          label?: string;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
         ];
       };
       tracking_visitors: {
@@ -4155,6 +6528,167 @@ export interface Database {
           },
         ];
       };
+      tune_revision_releases: {
+        Row: {
+          id: string;
+          calibrator: string;
+          revision: string;
+          notes: string | null;
+          notified: number;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          calibrator: string;
+          revision: string;
+          notes?: string | null;
+          notified?: number;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          calibrator?: string;
+          revision?: string;
+          notes?: string | null;
+          notified?: number;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tune_revision_releases_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ugc_submissions: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          handle: string | null;
+          truck: string | null;
+          caption: string | null;
+          storage_path: string;
+          mime: string;
+          bytes: number;
+          credit_ok: boolean;
+          rights_confirmed: boolean;
+          status: string;
+          post_id: string | null;
+          release_id: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email: string;
+          handle?: string | null;
+          truck?: string | null;
+          caption?: string | null;
+          storage_path: string;
+          mime: string;
+          bytes: number;
+          credit_ok?: boolean;
+          rights_confirmed: boolean;
+          status?: string;
+          post_id?: string | null;
+          release_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          handle?: string | null;
+          truck?: string | null;
+          caption?: string | null;
+          storage_path?: string;
+          mime?: string;
+          bytes?: number;
+          credit_ok?: boolean;
+          rights_confirmed?: boolean;
+          status?: string;
+          post_id?: string | null;
+          release_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ugc_submissions_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'social_posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ugc_submissions_release_id_fkey';
+            columns: ['release_id'];
+            isOneToOne: false;
+            referencedRelation: 'media_releases';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ugc_submissions_reviewed_by_fkey';
+            columns: ['reviewed_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vehicle_recalls: {
+        Row: {
+          id: string;
+          vehicle_id: string;
+          campaign_number: string;
+          component: string | null;
+          summary: string | null;
+          remedy: string | null;
+          report_date: string | null;
+          found_at: string;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id: string;
+          campaign_number: string;
+          component?: string | null;
+          summary?: string | null;
+          remedy?: string | null;
+          report_date?: string | null;
+          found_at?: string;
+        };
+        Update: {
+          id?: string;
+          vehicle_id?: string;
+          campaign_number?: string;
+          component?: string | null;
+          summary?: string | null;
+          remedy?: string | null;
+          report_date?: string | null;
+          found_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vehicle_recalls_vehicle_id_fkey';
+            columns: ['vehicle_id'];
+            isOneToOne: false;
+            referencedRelation: 'vehicles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       vehicles: {
         Row: {
           id: string;
@@ -4172,6 +6706,10 @@ export interface Database {
           color: string | null;
           photo_path: string | null;
           created_at: string;
+          usage: string[];
+          sold_at: string | null;
+          mileage_updated_at: string | null;
+          recalls_checked_at: string | null;
         };
         Insert: {
           id?: string;
@@ -4189,6 +6727,10 @@ export interface Database {
           color?: string | null;
           photo_path?: string | null;
           created_at?: string;
+          usage?: string[];
+          sold_at?: string | null;
+          mileage_updated_at?: string | null;
+          recalls_checked_at?: string | null;
         };
         Update: {
           id?: string;
@@ -4206,10 +6748,112 @@ export interface Database {
           color?: string | null;
           photo_path?: string | null;
           created_at?: string;
+          usage?: string[];
+          sold_at?: string | null;
+          mileage_updated_at?: string | null;
+          recalls_checked_at?: string | null;
         };
         Relationships: [
           {
             foreignKeyName: 'vehicles_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      video_testimonials: {
+        Row: {
+          id: string;
+          customer_id: string | null;
+          token_hash: string;
+          status: string;
+          storage_path: string | null;
+          release_accepted_at: string | null;
+          release_text: string | null;
+          requested_by: string | null;
+          requested_at: string;
+          uploaded_at: string | null;
+          expires_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id?: string | null;
+          token_hash: string;
+          status?: string;
+          storage_path?: string | null;
+          release_accepted_at?: string | null;
+          release_text?: string | null;
+          requested_by?: string | null;
+          requested_at?: string;
+          uploaded_at?: string | null;
+          expires_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string | null;
+          token_hash?: string;
+          status?: string;
+          storage_path?: string | null;
+          release_accepted_at?: string | null;
+          release_text?: string | null;
+          requested_by?: string | null;
+          requested_at?: string;
+          uploaded_at?: string | null;
+          expires_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'video_testimonials_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'video_testimonials_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      waitlist_signups: {
+        Row: {
+          id: string;
+          topic: string;
+          topic_label: string;
+          email: string;
+          full_name: string | null;
+          customer_id: string | null;
+          notified_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          topic: string;
+          topic_label: string;
+          email: string;
+          full_name?: string | null;
+          customer_id?: string | null;
+          notified_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          topic?: string;
+          topic_label?: string;
+          email?: string;
+          full_name?: string | null;
+          customer_id?: string | null;
+          notified_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'waitlist_signups_customer_id_fkey';
             columns: ['customer_id'];
             isOneToOne: false;
             referencedRelation: 'customers';
@@ -4323,6 +6967,9 @@ export interface Database {
           review_requested_at: string | null;
           created_at: string;
           updated_at: string;
+          estimate_expires_at: string | null;
+          media_consent: boolean;
+          media_consent_at: string | null;
         };
         Insert: {
           id?: string;
@@ -4342,6 +6989,9 @@ export interface Database {
           review_requested_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          estimate_expires_at?: string | null;
+          media_consent?: boolean;
+          media_consent_at?: string | null;
         };
         Update: {
           id?: string;
@@ -4361,6 +7011,9 @@ export interface Database {
           review_requested_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          estimate_expires_at?: string | null;
+          media_consent?: boolean;
+          media_consent_at?: string | null;
         };
         Relationships: [
           {

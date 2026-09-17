@@ -20,6 +20,14 @@ export interface OutboundMessage {
    * automation keys starting `mkt_` or `campaign:`, which are always marketing.
    */
   purpose?: MessagePurpose;
+  /** Email HTML part (block campaigns). The text body stays the plain-text part. */
+  html?: string | null;
+  /** Email topic for the preference center. */
+  topic?: string | null;
+  /** Per-campaign display name override for marketing email. */
+  fromName?: string | null;
+  /** MMS image (https). */
+  mediaUrl?: string | null;
 }
 
 export interface SendResult {
@@ -30,20 +38,25 @@ export interface SendResult {
 
 const RESEND_TIMEOUT_MS = 8000;
 
-async function sendEmail(to: string, subject: string, body: string, headers: Record<string, string> = {}): Promise<{ id: string | null; error?: string; deliveredTo: string }> {
+interface EmailExtras { html?: string; from?: string; replyTo?: string }
+
+async function sendEmail(to: string, subject: string, body: string, headers: Record<string, string> = {}, extras: EmailExtras = {}): Promise<{ id: string | null; error?: string; deliveredTo: string }> {
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key) return { id: null, error: 'RESEND_API_KEY not set', deliveredTo: to };
 
   // Demo mode: every email lands in the presenter's inbox, addressed as if to the customer.
   const override = process.env.DEMO_EMAIL_TO?.trim();
   const deliveredTo = override || to;
-  const from = process.env.LEAD_FROM_EMAIL?.trim() || 'Lucky Diesel <onboarding@resend.dev>';
+  const from = extras.from || process.env.LEAD_FROM_EMAIL?.trim() || 'Lucky Diesel <onboarding@resend.dev>';
   const text = override && override !== to ? `[Demo — intended for ${to}]\n\n${body}` : body;
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: [deliveredTo], subject, text, ...(Object.keys(headers).length ? { headers } : {}) }),
+    body: JSON.stringify({
+      from, to: [deliveredTo], subject, text, ...(extras.html ? { html: extras.html } : {}), ...(extras.replyTo ? { reply_to: extras.replyTo } : {}),
+      ...(Object.keys(headers).length ? { headers } : {}),
+    }),
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
   if (!response.ok) return { id: null, error: `Resend ${response.status}: ${await response.text().catch(() => '')}`, deliveredTo };
@@ -51,7 +64,7 @@ async function sendEmail(to: string, subject: string, body: string, headers: Rec
   return { id: data.id ?? null, deliveredTo };
 }
 
-async function sendSms(to: string, body: string): Promise<{ id: string | null; error?: string }> {
+async function sendSms(to: string, body: string, mediaUrl?: string | null): Promise<{ id: string | null; error?: string }> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   const service = process.env.TWILIO_MESSAGING_SERVICE_SID;
@@ -63,7 +76,7 @@ async function sendSms(to: string, body: string): Promise<{ id: string | null; e
       Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: new URLSearchParams({ To: toE164(to), MessagingServiceSid: service, Body: body }),
+    body: new URLSearchParams({ To: toE164(to), MessagingServiceSid: service, Body: body, ...(mediaUrl && /^https:\/\//.test(mediaUrl) ? { MediaUrl: mediaUrl } : {}) }),
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
   const data = (await response.json().catch(() => ({}))) as { sid?: string; message?: string };
@@ -102,7 +115,7 @@ export async function sendMessage(message: OutboundMessage): Promise<SendResult>
   const purpose: MessagePurpose = isMarketingAutomationKey(message.automationKey) ? 'marketing' : (message.purpose ?? 'transactional');
 
   try {
-    const gate = await gateOutbound(db, { channel: message.channel, to: message.to, customerId: message.customerId, purpose, body });
+    const gate = await gateOutbound(db, { channel: message.channel, to: message.to, customerId: message.customerId, purpose, body, html: message.html, topic: message.topic, fromName: message.fromName });
     if (!gate.allowed) {
       status = 'skipped';
       error = gate.reason;
@@ -113,7 +126,7 @@ export async function sendMessage(message: OutboundMessage): Promise<SendResult>
         status = 'skipped';
         error = blocked;
       } else if (process.env.MESSAGING_SMS_MODE === 'live') {
-        const result = await sendSms(message.to, body);
+        const result = await sendSms(message.to, body, message.mediaUrl);
         status = result.error ? 'failed' : 'sent';
         providerId = result.id;
         error = result.error;
@@ -122,7 +135,7 @@ export async function sendMessage(message: OutboundMessage): Promise<SendResult>
       }
     } else {
       body = gate.body;
-      const result = await sendEmail(message.to, message.subject ?? 'Lucky Diesel', body, gate.headers);
+      const result = await sendEmail(message.to, message.subject ?? 'Lucky Diesel', body, gate.headers, { html: gate.html, from: gate.from, replyTo: gate.replyTo });
       status = result.error ? 'failed' : 'sent';
       providerId = result.id;
       error = result.error;

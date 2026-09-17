@@ -1,6 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { predictMileage, type MileageReading } from './scoring';
+import { predictMileage, visitRhythm, type MileageReading } from './scoring';
 import { categorizeService, evaluateSegment, parseSegmentRules, type ContactFacts, type ParseResult, type SegmentRules } from './segment-rules';
 import type { Db } from './settings';
 
@@ -13,8 +13,9 @@ const CHUNK = 500;
  */
 export async function loadContactFacts(db: Db, now = new Date()): Promise<ContactFacts[]> {
   const [customers, vehicles, workOrders, invoices, builds, tunes, loyalty, suppressions] = await Promise.all([
-    db.from('customers').select('id, email, phone, tags, source, lifecycle_stage, is_fleet, email_marketing_status, sms_opted_out_at, sms_marketing_consent_at, sms_marketing_opted_out_at'),
-    db.from('vehicles').select('id, customer_id, platform, generation, engine_code, mileage, created_at'),
+    // Anonymized (data-deletion) contacts are never marketed to.
+    db.from('customers').select('id, email, phone, tags, source, lifecycle_stage, is_fleet, email_marketing_status, sms_opted_out_at, sms_marketing_consent_at, sms_marketing_opted_out_at').is('anonymized_at', null),
+    db.from('vehicles').select('id, customer_id, platform, generation, engine_code, mileage, usage, sold_at, created_at'),
     db.from('work_orders').select('customer_id, vehicle_id, title, mileage_in, status, completed_at, created_at').neq('status', 'cancelled'),
     db.from('invoices').select('customer_id, total_cents, paid_at').eq('status', 'paid'),
     db.from('build_items').select('vehicle_id, category, part_name, installed_at, created_at'),
@@ -31,7 +32,8 @@ export async function loadContactFacts(db: Db, now = new Date()): Promise<Contac
   const tierBy = new Map((loyalty.data ?? []).map((l) => [l.customer_id, l.tier]));
 
   return (customers.data ?? []).map((c): ContactFacts => {
-    const trucks = (vehicles.data ?? []).filter((v) => v.customer_id === c.id);
+    // Sold trucks stop driving truck targeting; their history still counts as visits and spend.
+    const trucks = (vehicles.data ?? []).filter((v) => v.customer_id === c.id && !v.sold_at);
     const jobs = (workOrders.data ?? []).filter((w) => w.customer_id === c.id);
     const paid = (invoices.data ?? []).filter((i) => i.customer_id === c.id && i.paid_at);
     const services = [
@@ -64,6 +66,8 @@ export async function loadContactFacts(db: Db, now = new Date()): Promise<Contac
       source: c.source,
       isFleet: c.is_fleet,
       services,
+      usage: [...new Set(trucks.flatMap((t) => t.usage))],
+      overdueRatio: visitRhythm(paid.map((i) => new Date(i.paid_at!)), now).overdueRatio,
     };
   });
 }

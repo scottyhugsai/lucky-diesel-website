@@ -6,6 +6,7 @@ import { GalleryCta } from '@/components/gallery/GalleryCta';
 import { JustifiedGrid } from '@/components/gallery/JustifiedGrid';
 import { LightboxProvider } from '@/components/gallery/LightboxProvider';
 import { applyFilters, loadPublishedPhotos, parseFilters } from '@/components/gallery/data';
+import { TruckSubmitForm } from '@/components/marketing-public/TruckSubmitForm';
 import { BUSINESS } from '@/lib/site';
 
 const TITLE = `Gallery | Lucky Diesel ${BUSINESS.city}`;
@@ -57,6 +58,15 @@ export default async function GalleryPage({ searchParams }: PageProps<'/gallery'
         ) : (
           !failed && <EmptyGallery filtered={filtered} />
         )}
+      </section>
+
+      <section aria-labelledby="submit-truck" className="mx-auto mt-16 max-w-3xl px-4 sm:px-6">
+        <div className="rounded-md border border-line bg-carbon-2 p-5 sm:p-7 [[data-design=v2]_&]:rounded-3xl [[data-design=v3]_&]:rounded-lg">
+          <p className="kicker">Truck of the week</p>
+          <h2 id="submit-truck" className="display mt-2 text-3xl sm:text-4xl">Send us your truck</h2>
+          <p className="mt-2 mb-5 text-chalk/70">Ours or not — if it’s clean, it might end up on the feed.</p>
+          <TruckSubmitForm />
+        </div>
       </section>
 
       <GalleryCta />

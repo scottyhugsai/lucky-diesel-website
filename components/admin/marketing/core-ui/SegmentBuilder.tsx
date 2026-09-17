@@ -1,15 +1,17 @@
 'use client';
 
-import { LoaderCircle, Plus, Users } from 'lucide-react';
+import { LoaderCircle, Plus, Sparkles, Users } from 'lucide-react';
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import { previewSegmentAction, saveSegmentAction, type PreviewResult } from '@/app/admin/marketing/contacts/segment-actions';
+import { nlSegmentAction, previewSegmentAction, saveSegmentAction, type NlSegmentResponse, type PreviewResult } from '@/app/admin/marketing/contacts/segment-actions';
 import { ActionForm, PendingButton } from '@/components/admin/core/ActionForm';
-import { fieldClass, labelClass } from '@/components/app/ui';
+import { buttonClass, fieldClass, labelClass } from '@/components/app/ui';
+import { NL_MAX_CHARS } from '@/lib/marketing/core/segment-nl';
 import type { SegmentRules } from '@/lib/marketing/core/segment-rules';
 import { ConditionRow } from './ConditionRow';
 import { fromRules, newRow, toRules, type RowState } from './segment-fields';
 
 const PREVIEW_DELAY_MS = 450;
+const NL_EXAMPLE = 'Cummins owners who tow, 100k+ miles, not seen in a year';
 
 interface SegmentBuilderProps {
   id?: string;
@@ -24,6 +26,9 @@ export function SegmentBuilder({ id, name = '', description = '', rules }: Segme
   const [rows, setRows] = useState<RowState[]>(() => (rules?.conditions.length ? fromRules(rules) : [newRow('platform', 'init-0')]));
   const [preview, setPreview] = useState<PreviewResult>({ count: null, sample: [], error: null });
   const [pending, startTransition] = useTransition();
+  const [nlText, setNlText] = useState('');
+  const [nl, setNl] = useState<NlSegmentResponse | null>(null);
+  const [nlPending, startNl] = useTransition();
 
   const { rules: built, incomplete } = useMemo(() => toRules(match, rows), [match, rows]);
   const json = JSON.stringify(built);
@@ -37,11 +42,43 @@ export function SegmentBuilder({ id, name = '', description = '', rules }: Segme
 
   const update = (key: string, next: RowState) => setRows((prev) => prev.map((r) => (r.key === key ? next : r)));
 
+  function describe() {
+    if (!nlText.trim() || nlPending) return;
+    startNl(async () => {
+      const result = await nlSegmentAction(nlText);
+      setNl(result);
+      if (result.rules.conditions.length) {
+        setMatch(result.rules.match);
+        setRows(fromRules(result.rules));
+      }
+    });
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <ActionForm action={saveSegmentAction} className="grid min-w-0 content-start gap-5">
         {id && <input type="hidden" name="id" value={id} />}
         <input type="hidden" name="rules" value={json} />
+
+        <div className="rounded-md border border-dashed border-clover/40 bg-clover/[0.04] p-3">
+          <label htmlFor="nl" className="flex items-center gap-1.5 text-sm font-bold text-clover">
+            <Sparkles className="size-4" aria-hidden="true" /> Describe it
+          </label>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <input id="nl" value={nlText} maxLength={NL_MAX_CHARS} placeholder={NL_EXAMPLE} onChange={(e) => setNlText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); describe(); } }}
+              className={`${fieldClass} min-w-[14rem] flex-1`} />
+            <button type="button" onClick={describe} disabled={nlPending || !nlText.trim()} className={buttonClass('secondary')}>
+              {nlPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}Build rules
+            </button>
+          </div>
+          <p aria-live="polite" className="mt-2 text-xs text-steel">
+            {nl?.error ? <span className="font-semibold text-danger">{nl.error}</span>
+              : nl ? <>Read: {nl.understood.join(', ') || 'nothing'}{nl.ignored.length ? ` · Ignored: ${nl.ignored.join(', ')}` : ''}. Check the rules below.</>
+              : 'Plain English turns into rules you can edit.'}
+          </p>
+        </div>
+
         <div className="grid gap-3 sm:grid-cols-2">
           <label><span className={labelClass}>Name</span>
             <input name="name" required maxLength={80} defaultValue={name} placeholder="Duramax owners, 150k+" className={fieldClass} />

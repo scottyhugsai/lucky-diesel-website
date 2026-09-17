@@ -1,10 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { fail, isUuid, ok, oneOf, str, type ActionState } from '@/components/admin/ops/form';
+import { checked, fail, isUuid, ok, oneOf, str, type ActionState } from '@/components/admin/ops/form';
 import { requireRole } from '@/lib/auth';
 import { enrollCustomer } from '@/lib/marketing/core/campaigns';
 import { recordConsent } from '@/lib/marketing/core/consent';
+import { anonymizeContact } from '@/lib/marketing/core/contact-privacy';
+import { TRUCK_USAGES } from '@/lib/marketing/core/segment-rules';
 import { ensureReferralCode } from '@/lib/marketing/core/referrals';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -97,4 +99,50 @@ export async function moveLeadStageAction(_prev: ActionState, formData: FormData
   if (error) return fail('Could not move the lead.');
   revalidatePath(`${BASE}/pipeline`);
   return ok(`Moved to ${stage.name}.`);
+}
+
+/** Truck usage and sold state, from the contact page. */
+export async function saveTruckAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole('admin');
+  const id = str(formData, 'id');
+  const vehicleId = str(formData, 'vehicle_id');
+  if (!isUuid(id) || !isUuid(vehicleId)) return fail('Unknown truck.');
+  const usage = TRUCK_USAGES.filter((u) => formData.getAll('usage').includes(u));
+  const sold = checked(formData, 'sold');
+  const supabase = await createClient();
+  const { data: vehicle } = await supabase.from('vehicles').select('sold_at').eq('id', vehicleId).eq('customer_id', id).maybeSingle();
+  if (!vehicle) return fail('Truck not found.');
+  const soldAt = sold ? (vehicle.sold_at ?? new Date().toISOString()) : null;
+  const { error } = await supabase.from('vehicles').update({ usage, sold_at: soldAt }).eq('id', vehicleId).eq('customer_id', id);
+  if (error) return fail('Could not save the truck.');
+  if (sold && !vehicle.sold_at) {
+    // Clear the inbound-SMS flag once the owner has handled it.
+    const { data: customer } = await supabase.from('customers').select('tags').eq('id', id).maybeSingle();
+    if (customer?.tags.includes('truck-sold')) await supabase.from('customers').update({ tags: customer.tags.filter((t) => t !== 'truck-sold') }).eq('id', id);
+  }
+  refresh(id);
+  return ok(sold ? 'Marked sold. Truck reminders stop.' : 'Truck saved.');
+}
+
+/** Data-deletion request: wipes personal data, keeps a redacted consent ledger. */
+export async function anonymizeContactAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const viewer = await requireRole('admin');
+  const id = str(formData, 'id');
+  if (!isUuid(id)) return fail('Unknown contact.');
+  if (str(formData, 'confirm').toUpperCase() !== 'ERASE') return fail('Type ERASE to confirm.');
+  const result = await anonymizeContact(createAdminClient(), id, viewer.userId);
+  if (!result.ok) return fail(result.error);
+  refresh(id);
+  return ok('Personal data erased.');
+}
+
+/** Settings: one opt-out revokes every purpose on that address. */
+export async function saveRevokeAllAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole('admin');
+  const on = checked(formData, 'revoke_all');
+  const supabase = await createClient();
+  const { error } = await supabase.from('marketing_settings').upsert({ id: 1, revoke_all_on_opt_out: on }, { onConflict: 'id' });
+  if (error) return fail('Could not save.');
+  revalidatePath('/admin/marketing/settings');
+  return ok(on ? 'Revoke-all is on.' : 'Revoke-all is off.');
 }

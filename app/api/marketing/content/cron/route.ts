@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { syncAdMetrics } from '@/lib/marketing/content/metrics-service';
+import { autoPostPositiveReplies, tagReviewThemes } from '@/lib/marketing/content/reputation-ops';
 import { requestNpsSurveys, syncGbpReviews } from '@/lib/marketing/content/reputation-service';
 import { draftPillarPosts, draftPostsForBuild, draftPostsForDynoRun, publishDuePosts } from '@/lib/marketing/content/social-service';
 import { adminDb } from '@/lib/marketing/content/db';
@@ -7,7 +8,8 @@ import { adminDb } from '@/lib/marketing/content/db';
 /**
  * Marketing content cron (Bearer CRON_SECRET). Every run: publish due posts.
  * ?daily=1 also: sync ad metrics + budget auto-pause, GBP reviews, NPS surveys,
- * auto-draft posts for new builds/dyno runs, and the next two weeks of pillar posts.
+ * auto-draft posts for new builds/dyno runs, the next two weeks of pillar posts,
+ * review theme tags and clean 5-star auto-replies.
  */
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -26,6 +28,8 @@ export async function GET(request: NextRequest) {
     summary.metrics = await syncAdMetrics(undefined, db);
     summary.reviews = await syncGbpReviews(db);
     summary.nps = await requestNpsSurveys(new Date(), db);
+    summary.reviewThemes = await tagReviewThemes(db);
+    summary.autoReplies = await autoPostPositiveReplies(new Date(), db);
   }
   return NextResponse.json({ ok: true, ...summary });
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { fail, isUuid, ok, str, TEMPLATE_MAX, numberIn, oneOf, type ActionState } from '@/components/admin/ops/form';
 import { dispatchDue, emit } from '@/lib/automations/engine';
 import { requireRole } from '@/lib/auth';
+import { policyBlockMessage } from '@/lib/marketing/content/compliance';
 import { createClient } from '@/lib/supabase/server';
 
 const KEY_PATTERN = /^[a-z0-9_]{1,64}$/;
@@ -59,6 +60,8 @@ export async function saveAutomation(_prev: ActionState, formData: FormData): Pr
   if ((subject.value?.length ?? 0) > 200) return fail('Keep the email subject under 200 characters.');
   if (current.channels.includes('sms') && !sms.value) return fail('The text message can’t be empty.');
   if (current.channels.includes('email') && (!subject.value || !body.value)) return fail('The email needs a subject and a body.');
+  const blocked = policyBlockMessage([sms.value, subject.value, body.value]); // review policy + Reg Z lint on save (B8)
+  if (blocked) return fail(blocked);
 
   const amount = numberIn(formData, 'delay_amount', 0, 100_000, { integer: true });
   const unit = oneOf(formData.get('delay_unit'), ['minutes', 'hours', 'days'] as const);

@@ -101,18 +101,19 @@ describe('tune, planner, checkout and detractor follow-ups', () => {
 });
 
 describe('calendar rules', () => {
-  test('seasonal windows (towing Mar 1–Apr 15, hurricane May 20–Jun 15, winter Oct 15–Nov 30) and toggles', () => {
+  test('seasonal windows overlap where the calendar overlaps, and toggles switch one off', () => {
     const tz = 'America/New_York';
-    expect(activeSeasons(new Date('2026-03-10T15:00:00Z'), tz, {}).map((s) => s.key)).toEqual(['towing_season']);
+    expect(activeSeasons(new Date('2026-03-10T15:00:00Z'), tz, {}).map((s) => s.key)).toEqual(['towing_season', 'tax_refund']);
     expect(activeSeasons(new Date('2026-06-01T15:00:00Z'), tz, {}).map((s) => s.key)).toEqual(['hurricane_prep']);
-    expect(activeSeasons(new Date('2026-11-30T15:00:00Z'), tz, {}).map((s) => s.key)).toEqual(['winter_diesel']);
-    expect(activeSeasons(new Date('2026-11-30T15:00:00Z'), tz, { winter_diesel: false })).toEqual([]);
-    expect(activeSeasons(now, tz, {})).toEqual([]);
+    expect(activeSeasons(new Date('2026-11-30T15:00:00Z'), tz, {}).map((s) => s.key)).toEqual(['winter_diesel', 'holiday_parts']);
+    expect(activeSeasons(new Date('2026-11-30T15:00:00Z'), tz, { winter_diesel: false }).map((s) => s.key)).toEqual(['holiday_parts']);
+    expect(activeSeasons(now, tz, {}).map((s) => s.key)).toEqual(['hunting_season']);
+    expect(activeSeasons(now, tz, { hunting_season: false })).toEqual([]);
   });
 
   test('seasonal emits go to customers active in the last two years, once per year', () => {
     const emits = seasonalEmits(input({ now: new Date('2026-10-20T15:00:00Z'), paidInvoices: [{ customerId: 'a', paidAt: '2026-05-01T00:00:00Z' }, { customerId: 'b', paidAt: '2023-01-01T00:00:00Z' }] }));
-    expect(emits).toEqual([{ name: 'marketing.seasonal.winter_diesel', customerId: 'a', discriminator: 'winter_diesel:2026', context: { due_service: 'a cold-start and fuel system check' } }]);
+    expect(emits).toEqual([{ name: 'marketing.seasonal.winter_diesel', customerId: 'a', discriminator: 'winter_diesel:2026', context: { due_service: 'a cold-start and fuel system check', store_link: '/store', planner_link: '/build-planner' } }]);
   });
 
   test('birthdays (local date) and first-visit anniversaries', () => {

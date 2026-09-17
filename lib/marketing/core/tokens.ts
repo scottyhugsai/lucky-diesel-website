@@ -6,7 +6,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
  * (all server-only). Tokens are scoped by `purpose` so one can't be replayed as another.
  */
 
-export type TokenPurpose = 'unsubscribe' | 'click';
+export type TokenPurpose = 'unsubscribe' | 'click' | 'open';
 
 function secret(): string {
   const value = process.env.MARKETING_SIGNING_SECRET || process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;

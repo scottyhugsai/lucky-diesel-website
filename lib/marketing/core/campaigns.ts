@@ -1,8 +1,11 @@
 import 'server-only';
 import type { Tables, TablesInsert } from '@/lib/db/database.types';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { assignVariant, broadcastSendTime, campaignWindow, dripStepTime, sendDedupeKey, stepFor, variantsOf } from './campaign-plan';
+import { assignVariant, bestSendHour, broadcastSendTime, campaignWindow, dripStepTime, optimizedSendTime, sendDedupeKey, stepFor, variantsOf } from './campaign-plan';
 import { checkClaims, type ClaimIssue } from './compliance';
+import { checkDeliverability } from './deliverability';
+import { blocksText, parseBlocks } from './email-blocks';
+import { ensureCampaignLink } from './links';
 import { refreshSegment } from './segments';
 import { getMarketingSettings, type Db, type MarketingSettings } from './settings';
 
@@ -17,9 +20,17 @@ export function windowFor(campaign: Pick<Campaign, 'send_window_start_hour' | 's
   return campaignWindow(campaign, { start: settings.quietHoursStart, end: settings.quietHoursEnd, timeZone: settings.timeZone });
 }
 
-/** Every step must pass the emissions/claims check before anything is scheduled. */
-export function lintSteps(steps: readonly Pick<Step, 'subject' | 'body' | 'step_order' | 'variant'>[]): ClaimIssue[] {
-  return steps.flatMap((step) => checkClaims(`${step.subject ?? ''}\n${step.body}`).issues.filter((i) => i.severity === 'block'));
+/** Every step must pass the emissions/claims check (blocks included) and hard deliverability rules before anything is scheduled. */
+export function lintSteps(steps: readonly (Pick<Step, 'subject' | 'body' | 'step_order' | 'variant'> & { blocks?: Step['blocks'] })[], channel: 'email' | 'sms' = 'email'): ClaimIssue[] {
+  return steps.flatMap((step) => {
+    const parsed = parseBlocks(step.blocks ?? []);
+    const extra = parsed.ok ? blocksText(parsed.value) : '';
+    const claims = checkClaims(`${step.subject ?? ''}\n${step.body}\n${extra}`).issues.filter((i) => i.severity === 'block');
+    const delivery = checkDeliverability({ channel, subject: step.subject, body: step.body, extraText: extra })
+      .filter((i) => i.severity === 'block')
+      .map((i): ClaimIssue => ({ severity: 'block', rule: i.rule, match: 'link', index: 0, reason: i.message }));
+    return [...claims, ...delivery];
+  });
 }
 
 async function loadCampaign(db: Db, campaignId: string): Promise<{ campaign: Campaign; steps: Step[] } | null> {
@@ -39,8 +50,12 @@ export async function scheduleCampaign(campaignId: string, at: Date, db: Db = cr
   if (!steps.length) return { ok: false, error: 'Add message content first.' };
   if (campaign.channel === 'email' && steps.some((s) => !s.subject?.trim())) return { ok: false, error: 'Every email step needs a subject.' };
   if (!campaign.segment_id && campaign.kind === 'broadcast') return { ok: false, error: 'Pick a segment to send to.' };
-  const issues = lintSteps(steps);
+  const issues = lintSteps(steps, campaign.channel === 'sms' ? 'sms' : 'email');
   if (issues.length) return { ok: false, error: 'Message content failed the compliance check.', issues };
+
+  // Branded, per-recipient tracked {{link}}: without it click reports and click-based A/B winners stay at zero.
+  const link = await ensureCampaignLink(campaignId, campaign.channel, db);
+  if (!link.ok) return { ok: false, error: `Tracking link failed: ${link.error}` };
 
   const status = campaign.kind === 'broadcast' ? 'scheduled' : 'active';
   const { error } = await db.from('campaigns').update({ status, scheduled_at: at.toISOString(), started_at: campaign.kind === 'broadcast' ? null : at.toISOString() }).eq('id', campaignId);
@@ -50,6 +65,31 @@ export async function scheduleCampaign(campaignId: string, at: Date, db: Db = cr
 export async function pauseCampaign(campaignId: string, db: Db = createAdminClient()): Promise<CampaignResult> {
   const { error } = await db.from('campaigns').update({ status: 'paused' }).eq('id', campaignId).in('status', ['scheduled', 'sending', 'active']);
   return error ? { ok: false, error: error.message } : { ok: true, data: undefined };
+}
+
+const STO_LOOKBACK_MS = 365 * 86_400_000;
+
+/** Past opens, clicks and bookings per customer, for send-time optimization. */
+async function engagementTimes(db: Db, customerIds: string[], now: Date): Promise<Map<string, Date[]>> {
+  const since = new Date(now.getTime() - STO_LOOKBACK_MS).toISOString();
+  const times = new Map<string, Date[]>();
+  const add = (id: string | null, at: string | null) => {
+    if (!id || !at) return;
+    times.set(id, [...(times.get(id) ?? []), new Date(at)]);
+  };
+  for (let i = 0; i < customerIds.length; i += CHUNK) {
+    const ids = customerIds.slice(i, i + CHUNK);
+    const [sends, bookings] = await Promise.all([
+      db.from('campaign_sends').select('customer_id, opened_at, clicked_at').in('customer_id', ids).gte('created_at', since).or('opened_at.not.is.null,clicked_at.not.is.null'),
+      db.from('appointments').select('customer_id, created_at').in('customer_id', ids).gte('created_at', since),
+    ]);
+    for (const s of sends.data ?? []) {
+      add(s.customer_id, s.clicked_at);
+      if (s.opened_at !== s.clicked_at) add(s.customer_id, s.opened_at);
+    }
+    for (const b of bookings.data ?? []) add(b.customer_id, b.created_at);
+  }
+  return times;
 }
 
 async function upsertSends(db: Db, rows: TablesInsert<'campaign_sends'>[]): Promise<void> {
@@ -83,12 +123,18 @@ export async function materializeDueBroadcasts(now = new Date(), db: Db = create
     const variants = variantsOf(steps ?? []);
     const window = windowFor(campaign, settings);
     const scheduledAt = new Date(campaign.scheduled_at ?? now);
+    // Send-time optimization skips A/B tests: shifting cohorts would skew the winner.
+    const optimize = campaign.send_time_optimized && (variants.length < 2 || campaign.ab_test_percent <= 0);
+    const engaged = optimize ? await engagementTimes(db, (members ?? []).map((m) => m.customer_id), now) : new Map<string, Date[]>();
     const rows = (members ?? []).map(({ customer_id }) => {
       const variant = assignVariant(campaign.id, customer_id, variants, campaign.ab_test_percent);
+      const at = optimize
+        ? optimizedSendTime(scheduledAt, bestSendHour(engaged.get(customer_id) ?? [], window), window)
+        : broadcastSendTime(scheduledAt, variant, campaign.ab_decide_after_minutes, window);
       return {
         campaign_id: campaign.id, step_order: 1, customer_id, channel: campaign.channel, variant,
         dedupe_key: sendDedupeKey(campaign.id, 1, customer_id),
-        scheduled_for: broadcastSendTime(scheduledAt, variant, campaign.ab_decide_after_minutes, window).toISOString(),
+        scheduled_for: at.toISOString(),
       };
     });
     await upsertSends(db, rows);

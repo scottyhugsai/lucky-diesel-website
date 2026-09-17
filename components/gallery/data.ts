@@ -27,7 +27,7 @@ export async function loadPublishedPhotos(): Promise<{ photos: GalleryPhoto[]; f
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('gallery_items')
-    .select('id, title, caption, category, platform, vehicle_label, image_url, width, height, is_sample, builds(slug, published)')
+    .select('id, title, caption, alt_text, category, platform, vehicle_label, image_url, width, height, is_sample, builds(slug, published)')
     .eq('published', true)
     .order('sort', { ascending: true })
     .order('created_at', { ascending: false });
@@ -37,6 +37,7 @@ export async function loadPublishedPhotos(): Promise<{ photos: GalleryPhoto[]; f
     id: row.id,
     title: row.title,
     caption: row.caption,
+    alt: row.alt_text,
     category: row.category,
     platform: row.platform,
     vehicleLabel: row.vehicle_label,
