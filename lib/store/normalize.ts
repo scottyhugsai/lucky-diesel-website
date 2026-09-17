@@ -130,7 +130,7 @@ function categorize(product: ShopifyProduct): CategoryId {
   return 'accessories';
 }
 
-function platformsOf(product: ShopifyProduct): PlatformId[] {
+function platformsOf(product: ShopifyProduct, collections: string[]): PlatformId[] {
   // A title that names exactly one platform wins over tags: the live store has
   // Cummins injector sets also tagged Duramax, which would show them for the wrong truck.
   const named = PLATFORM_WORDS.filter(([, pattern]) => pattern.test(product.title)).map(([platform]) => platform);
@@ -142,6 +142,13 @@ function platformsOf(product: ShopifyProduct): PlatformId[] {
     if (lower.startsWith('duramax')) tagged.add('duramax');
     if (lower.startsWith('powerstroke')) tagged.add('powerstroke');
     if (lower.startsWith('cummins') || /\bcummins$/.test(lower)) tagged.add('cummins');
+  }
+  // The store's own per-generation collections are also fitment data (e.g. a tuner tagged
+  // only Powerstroke but listed under Duramax and Cummins generations).
+  for (const handle of collections) {
+    for (const platform of ['duramax', 'powerstroke', 'cummins'] as const) {
+      if (handle.startsWith(`${platform}-`)) tagged.add(platform);
+    }
   }
   if (tagged.size === 0) {
     for (const [platform, pattern] of PLATFORM_WORDS) if (pattern.test(product.title)) tagged.add(platform);
@@ -175,7 +182,7 @@ export function normalizeProduct(product: ShopifyProduct, collectionsByHandle: M
     title: product.title.replace(/\s{2,}/g, ' ').trim(),
     vendor: product.vendor,
     category: categorize(product),
-    platforms: platformsOf(product),
+    platforms: platformsOf(product, collectionsByHandle.get(product.handle) ?? []),
     generationCollections: collectionsByHandle.get(product.handle) ?? [],
     offRoadOnly: product.tags.some((tag) => /off-?road use only|competition use only/i.test(tag)),
     tags: product.tags,

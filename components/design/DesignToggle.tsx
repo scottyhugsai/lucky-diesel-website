@@ -15,17 +15,17 @@ export function DesignToggle({ design, labels }: DesignToggleProps) {
 
   return (
     <div
-      className="fixed bottom-24 left-4 z-40 flex items-center gap-1 rounded-full border border-line bg-carbon/85 p-1 text-xs font-semibold shadow-2xl backdrop-blur-xl lg:bottom-5"
+      className="fixed bottom-[5.5rem] left-3 z-40 flex items-center gap-0.5 rounded-full border border-line bg-carbon/85 p-0.5 text-[0.7rem] font-semibold shadow-2xl backdrop-blur-xl lg:bottom-5 lg:left-4 lg:gap-1 lg:p-1 lg:text-xs"
       role="group"
       aria-label="Website design"
     >
-      <span className="px-2 text-steel">Design</span>
+      <span className="hidden px-2 text-steel lg:inline">Design</span>
       {(['v1', 'v2'] as const).map((option) => (
         <a
           key={option}
           href={`/design/${option}?next=${next}`}
           aria-current={design === option ? 'true' : undefined}
-          className={`rounded-full px-3 py-1.5 transition-colors ${design === option ? 'bg-clover text-carbon' : 'text-chalk/80 hover:text-chalk'}`}
+          className={`rounded-full px-2.5 py-1 transition-colors lg:px-3 lg:py-1.5 ${design === option ? 'bg-clover text-carbon' : 'text-chalk/80 hover:text-chalk'}`}
         >
           {labels[option]}
         </a>

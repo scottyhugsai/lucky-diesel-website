@@ -30,6 +30,13 @@ describe('normalizeProduct', () => {
     expect(normalizeProduct(cummins, new Map()).platforms).toEqual(['cummins']);
   });
 
+  test('adds platforms from the store’s generation collections', () => {
+    const device = raw.find((p) => p.title.startsWith('EZ-lynk'))!;
+    const tagged = { ...device, tags: ['Powerstroke'] };
+    const product = normalizeProduct(tagged, new Map([[device.handle, ['duramax-2017-present-l5p', 'cummins-2019-present-6-7l']]]));
+    expect(product.platforms).toEqual(['duramax', 'powerstroke', 'cummins']);
+  });
+
   test('flags off-road-only products', () => {
     expect(byTitle('Transmission Tuning').offRoadOnly).toBe(true);
     expect(byTitle('CP3 Conversion').offRoadOnly).toBe(false);
