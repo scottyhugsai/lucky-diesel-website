@@ -200,3 +200,70 @@ describe('marketing core tables (migration 008)', () => {
     expect(data).toHaveLength(1);
   });
 });
+
+describe('marketing content tables (migration 009)', () => {
+  const CONTENT_TABLES = [
+    'ai_generation_jobs', 'ai_prompt_templates', 'brand_voice', 'creative_assets', 'ad_creatives', 'ad_creative_variants', 'marketing_approvals',
+    'ad_campaigns', 'budget_guards', 'ad_publications', 'ad_metrics_daily', 'social_posts', 'social_post_targets', 'content_calendar_items',
+    'reviews', 'review_replies', 'nps_responses', 'seo_content', 'listings',
+  ] as const;
+
+  test('anonymous visitors and clients read none of the internal content tables', async () => {
+    for (const who of [anon, client]) {
+      for (const table of CONTENT_TABLES) {
+        const { data } = await who.from(table).select('id');
+        expect(data ?? [], table).toHaveLength(0);
+      }
+      const { data: connections } = await who.from('channel_connections').select('platform');
+      expect(connections ?? []).toHaveLength(0);
+    }
+  });
+
+  test('anonymous visitors see only published landing pages and lead magnets', async () => {
+    const { data: all } = await owner.from('landing_pages').select('id, published');
+    const { error: draftError } = await owner.from('landing_pages').insert({ slug: 'rls-draft-page', title: 'RLS draft', blocks: [], published: false });
+    expect(draftError).toBeNull();
+    const { data: pages } = await anon.from('landing_pages').select('slug, published');
+    expect(pages?.length).toBe((all ?? []).filter((p) => p.published).length);
+    expect(pages?.every((p) => p.published)).toBe(true);
+    expect(pages?.some((p) => p.slug === 'rls-draft-page')).toBe(false);
+    const { data: magnets } = await anon.from('lead_magnets').select('published');
+    expect(magnets?.length).toBeGreaterThan(0);
+    expect(magnets?.every((m) => m.published)).toBe(true);
+    await owner.from('landing_pages').delete().eq('slug', 'rls-draft-page');
+  });
+
+  test('anonymous visitors cannot write landing pages or reviews', async () => {
+    expect((await anon.from('landing_pages').insert({ slug: 'anon-page', title: 'x', published: true })).error).not.toBeNull();
+    expect((await anon.from('reviews').insert({ source: 'google', rating: 5, author_name: 'x' })).error).not.toBeNull();
+  });
+
+  test('employees read content but cannot write it', async () => {
+    const { data: creatives } = await tech.from('ad_creatives').select('id, status');
+    expect(creatives?.length).toBeGreaterThan(0);
+    const { data: updated } = await tech.from('ad_creatives').update({ status: 'live' }).eq('id', creatives![0]!.id).select();
+    expect(updated ?? []).toHaveLength(0);
+    expect((await tech.from('reviews').insert({ source: 'manual', rating: 5, author_name: 'Fake' })).error).not.toBeNull();
+    const { data: approvals } = await tech.from('marketing_approvals').update({ decision: 'approved' }).eq('decision', 'pending').select();
+    expect(approvals ?? []).toHaveLength(0);
+    const { data: guards } = await tech.from('budget_guards').update({ max_daily_cents: 999999 }).eq('platform', 'meta').select();
+    expect(guards ?? []).toHaveLength(0);
+  });
+
+  test('nobody signed in can read or write platform tokens', async () => {
+    for (const who of [tech, owner]) {
+      const { error } = await who.from('channel_connections').select('access_token_encrypted');
+      expect(error).not.toBeNull();
+    }
+    const { data: safe, error } = await owner.from('channel_connections').select('platform, status');
+    expect(error).toBeNull();
+    expect(safe?.length).toBeGreaterThan(0);
+    expect((await owner.from('channel_connections').update({ access_token_encrypted: 'x' }).eq('platform', 'meta_ads')).error).not.toBeNull();
+  });
+
+  test('owner can edit content', async () => {
+    const { data: page } = await owner.from('landing_pages').select('id, title').limit(1).single();
+    const { data } = await owner.from('landing_pages').update({ title: page!.title }).eq('id', page!.id).select('id');
+    expect(data).toHaveLength(1);
+  });
+});

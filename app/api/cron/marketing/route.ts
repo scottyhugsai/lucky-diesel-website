@@ -13,5 +13,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
   const report = await runMarketingCron(new Date());
-  return NextResponse.json({ ok: report.errors.length === 0, ...report }, { status: report.errors.length ? 207 : 200 });
+  // Hobby plans allow two crons, so the content engine (posts, metrics, reviews) rides on this one.
+  const content = await fetch(new URL('/api/marketing/content/cron', request.nextUrl.origin), {
+    headers: { authorization: request.headers.get('authorization') ?? '' },
+    signal: AbortSignal.timeout(55_000),
+  })
+    .then((response) => response.json() as Promise<unknown>)
+    .catch((error: unknown) => ({ error: error instanceof Error ? error.message : String(error) }));
+  return NextResponse.json({ ok: report.errors.length === 0, ...report, content }, { status: report.errors.length ? 207 : 200 });
 }
