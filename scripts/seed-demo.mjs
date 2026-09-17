@@ -444,6 +444,7 @@ async function main() {
   run('inspection_ready', 'work_order', codyJob.id, 'sent', now - 40 * 60_000, 'sms: simulated · email: sent');
   run('estimate_nudge', 'work_order', codyJob.id, 'scheduled', now + 200 * 60_000);
   await must(db.from('automation_runs').insert(RUNS), 'automation runs');
+  await (await import('./seed-marketing-core.mjs')).seedMarketingCore({ db, sql, now });
 
   await sql`insert into audit_log (actor_id, entity, action, data) values (${ownerId}, 'demo', 'seeded', ${sql.json({ at: iso(now) })})`;
   const hash = createHash('sha256').update(String(now)).digest('hex').slice(0, 8);

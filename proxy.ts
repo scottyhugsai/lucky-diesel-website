@@ -1,10 +1,15 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { captureAttribution } from '@/lib/marketing/core/capture';
 
 const PROTECTED = ['/portal', '/shop', '/admin'];
+/** Paths that need the Supabase session refreshed (the original matcher). */
+const SESSION_PATHS = [...PROTECTED, '/login', '/auth'];
+
+const matchesPrefix = (path: string, prefixes: readonly string[]) => prefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
 /** Refreshes the Supabase session cookie and bounces signed-out users from app areas. */
-export async function proxy(request: NextRequest) {
+async function sessionProxy(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -26,7 +31,7 @@ export async function proxy(request: NextRequest) {
   const isSignedIn = Boolean(data?.claims?.sub);
   const path = request.nextUrl.pathname;
 
-  if (!isSignedIn && PROTECTED.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+  if (!isSignedIn && matchesPrefix(path, PROTECTED)) {
     const login = request.nextUrl.clone();
     login.pathname = '/login';
     login.search = `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
@@ -36,6 +41,20 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+export async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  if (matchesPrefix(path, SESSION_PATHS)) return sessionProxy(request);
+
+  // Public pages: first-party UTM / click-id capture only.
+  const response = NextResponse.next({ request });
+  captureAttribution(request, response);
+  return response;
+}
+
 export const config = {
-  matcher: ['/portal/:path*', '/shop/:path*', '/admin/:path*', '/login', '/auth/:path*'],
+  matcher: [
+    '/portal/:path*', '/shop/:path*', '/admin/:path*', '/login', '/auth/:path*',
+    // Public pages, excluding APIs, short links, Next internals and static files.
+    '/((?!api/|r/|_next/|_vercel/|.*\\.[A-Za-z0-9]+$).*)',
+  ],
 };

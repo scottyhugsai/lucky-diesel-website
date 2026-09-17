@@ -62,6 +62,474 @@ export interface Database {
           },
         ];
       };
+      ad_campaigns: {
+        Row: {
+          id: string;
+          name: string;
+          platform: string;
+          objective: string;
+          audience: Json;
+          daily_budget_cents: number;
+          starts_on: string | null;
+          ends_on: string | null;
+          status: string;
+          landing_page_id: string | null;
+          utm_campaign: string | null;
+          simulated: boolean;
+          generator: string;
+          notes: string | null;
+          is_sample: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          platform: string;
+          objective?: string;
+          audience?: Json;
+          daily_budget_cents?: number;
+          starts_on?: string | null;
+          ends_on?: string | null;
+          status?: string;
+          landing_page_id?: string | null;
+          utm_campaign?: string | null;
+          simulated?: boolean;
+          generator?: string;
+          notes?: string | null;
+          is_sample?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          platform?: string;
+          objective?: string;
+          audience?: Json;
+          daily_budget_cents?: number;
+          starts_on?: string | null;
+          ends_on?: string | null;
+          status?: string;
+          landing_page_id?: string | null;
+          utm_campaign?: string | null;
+          simulated?: boolean;
+          generator?: string;
+          notes?: string | null;
+          is_sample?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ad_campaigns_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_campaigns_landing_page_id_fkey';
+            columns: ['landing_page_id'];
+            isOneToOne: false;
+            referencedRelation: 'landing_pages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ad_creative_variants: {
+        Row: {
+          id: string;
+          creative_id: string;
+          label: string;
+          hook: string | null;
+          angle: string | null;
+          headline: string;
+          long_headline: string | null;
+          primary_text: string;
+          description: string | null;
+          cta: string;
+          format: string;
+          image_template: string;
+          image_params: Json;
+          image_asset_id: string | null;
+          compliance_status: string;
+          compliance_issues: Json;
+          generator: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          creative_id: string;
+          label: string;
+          hook?: string | null;
+          angle?: string | null;
+          headline: string;
+          long_headline?: string | null;
+          primary_text: string;
+          description?: string | null;
+          cta: string;
+          format?: string;
+          image_template: string;
+          image_params?: Json;
+          image_asset_id?: string | null;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          generator?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          creative_id?: string;
+          label?: string;
+          hook?: string | null;
+          angle?: string | null;
+          headline?: string;
+          long_headline?: string | null;
+          primary_text?: string;
+          description?: string | null;
+          cta?: string;
+          format?: string;
+          image_template?: string;
+          image_params?: Json;
+          image_asset_id?: string | null;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          generator?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ad_creative_variants_creative_id_fkey';
+            columns: ['creative_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_creatives';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_creative_variants_image_asset_id_fkey';
+            columns: ['image_asset_id'];
+            isOneToOne: false;
+            referencedRelation: 'creative_assets';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ad_creatives: {
+        Row: {
+          id: string;
+          campaign_id: string | null;
+          name: string;
+          goal: string;
+          platform: string;
+          subject_kind: string;
+          subject_ref: string | null;
+          audience: string | null;
+          status: string;
+          generator: string;
+          ai_generation_id: string | null;
+          landing_url: string | null;
+          is_sample: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id?: string | null;
+          name: string;
+          goal?: string;
+          platform: string;
+          subject_kind: string;
+          subject_ref?: string | null;
+          audience?: string | null;
+          status?: string;
+          generator?: string;
+          ai_generation_id?: string | null;
+          landing_url?: string | null;
+          is_sample?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string | null;
+          name?: string;
+          goal?: string;
+          platform?: string;
+          subject_kind?: string;
+          subject_ref?: string | null;
+          audience?: string | null;
+          status?: string;
+          generator?: string;
+          ai_generation_id?: string | null;
+          landing_url?: string | null;
+          is_sample?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ad_creatives_ai_generation_id_fkey';
+            columns: ['ai_generation_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_generation_jobs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_creatives_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_creatives_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ad_metrics_daily: {
+        Row: {
+          id: string;
+          publication_id: string;
+          date: string;
+          impressions: number;
+          clicks: number;
+          spend_cents: number;
+          leads: number;
+          conversions: number;
+          conversion_value_cents: number;
+          simulated: boolean;
+        };
+        Insert: {
+          id?: string;
+          publication_id: string;
+          date: string;
+          impressions?: number;
+          clicks?: number;
+          spend_cents?: number;
+          leads?: number;
+          conversions?: number;
+          conversion_value_cents?: number;
+          simulated?: boolean;
+        };
+        Update: {
+          id?: string;
+          publication_id?: string;
+          date?: string;
+          impressions?: number;
+          clicks?: number;
+          spend_cents?: number;
+          leads?: number;
+          conversions?: number;
+          conversion_value_cents?: number;
+          simulated?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ad_metrics_daily_publication_id_fkey';
+            columns: ['publication_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_publications';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ad_publications: {
+        Row: {
+          id: string;
+          variant_id: string;
+          campaign_id: string | null;
+          connection_id: string | null;
+          approval_id: string | null;
+          platform: string;
+          mode: string;
+          simulated: boolean;
+          external_ids: Json;
+          status_on_platform: string;
+          publish_attempt_key: string;
+          request_preview: Json;
+          error: string | null;
+          last_synced_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          variant_id: string;
+          campaign_id?: string | null;
+          connection_id?: string | null;
+          approval_id?: string | null;
+          platform: string;
+          mode?: string;
+          simulated?: boolean;
+          external_ids?: Json;
+          status_on_platform?: string;
+          publish_attempt_key: string;
+          request_preview?: Json;
+          error?: string | null;
+          last_synced_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          variant_id?: string;
+          campaign_id?: string | null;
+          connection_id?: string | null;
+          approval_id?: string | null;
+          platform?: string;
+          mode?: string;
+          simulated?: boolean;
+          external_ids?: Json;
+          status_on_platform?: string;
+          publish_attempt_key?: string;
+          request_preview?: Json;
+          error?: string | null;
+          last_synced_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ad_publications_approval_id_fkey';
+            columns: ['approval_id'];
+            isOneToOne: false;
+            referencedRelation: 'marketing_approvals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_publications_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_publications_connection_id_fkey';
+            columns: ['connection_id'];
+            isOneToOne: false;
+            referencedRelation: 'channel_connections';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ad_publications_variant_id_fkey';
+            columns: ['variant_id'];
+            isOneToOne: false;
+            referencedRelation: 'ad_creative_variants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ai_generation_jobs: {
+        Row: {
+          id: string;
+          kind: string;
+          status: string;
+          generator: string;
+          model_id: string | null;
+          prompt_key: string | null;
+          prompt_version: number | null;
+          input: Json;
+          output: Json | null;
+          input_tokens: number | null;
+          output_tokens: number | null;
+          cost_usd: number;
+          error: string | null;
+          requested_by: string | null;
+          created_at: string;
+          finished_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          kind: string;
+          status?: string;
+          generator?: string;
+          model_id?: string | null;
+          prompt_key?: string | null;
+          prompt_version?: number | null;
+          input?: Json;
+          output?: Json | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          cost_usd?: number;
+          error?: string | null;
+          requested_by?: string | null;
+          created_at?: string;
+          finished_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          status?: string;
+          generator?: string;
+          model_id?: string | null;
+          prompt_key?: string | null;
+          prompt_version?: number | null;
+          input?: Json;
+          output?: Json | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          cost_usd?: number;
+          error?: string | null;
+          requested_by?: string | null;
+          created_at?: string;
+          finished_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_generation_jobs_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ai_prompt_templates: {
+        Row: {
+          id: string;
+          key: string;
+          version: number;
+          kind: string;
+          system_prompt: string;
+          user_template: string;
+          output_schema: Json;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          version?: number;
+          kind: string;
+          system_prompt: string;
+          user_template: string;
+          output_schema?: Json;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          version?: number;
+          kind?: string;
+          system_prompt?: string;
+          user_template?: string;
+          output_schema?: Json;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       appointments: {
         Row: {
           id: string;
@@ -182,6 +650,100 @@ export interface Database {
             columns: ['work_order_id'];
             isOneToOne: false;
             referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      attribution_touches: {
+        Row: {
+          id: string;
+          anonymous_id: string | null;
+          customer_id: string | null;
+          lead_id: string | null;
+          touch_type: string;
+          source: string;
+          medium: string | null;
+          campaign: string | null;
+          term: string | null;
+          content: string | null;
+          gclid: string | null;
+          gbraid: string | null;
+          wbraid: string | null;
+          fbclid: string | null;
+          ttclid: string | null;
+          msclkid: string | null;
+          referrer: string | null;
+          landing_path: string | null;
+          campaign_id: string | null;
+          occurred_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          anonymous_id?: string | null;
+          customer_id?: string | null;
+          lead_id?: string | null;
+          touch_type?: string;
+          source: string;
+          medium?: string | null;
+          campaign?: string | null;
+          term?: string | null;
+          content?: string | null;
+          gclid?: string | null;
+          gbraid?: string | null;
+          wbraid?: string | null;
+          fbclid?: string | null;
+          ttclid?: string | null;
+          msclkid?: string | null;
+          referrer?: string | null;
+          landing_path?: string | null;
+          campaign_id?: string | null;
+          occurred_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          anonymous_id?: string | null;
+          customer_id?: string | null;
+          lead_id?: string | null;
+          touch_type?: string;
+          source?: string;
+          medium?: string | null;
+          campaign?: string | null;
+          term?: string | null;
+          content?: string | null;
+          gclid?: string | null;
+          gbraid?: string | null;
+          wbraid?: string | null;
+          fbclid?: string | null;
+          ttclid?: string | null;
+          msclkid?: string | null;
+          referrer?: string | null;
+          landing_path?: string | null;
+          campaign_id?: string | null;
+          occurred_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'attribution_touches_campaign_fk';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'attribution_touches_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'attribution_touches_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
             referencedColumns: ['id'];
           },
         ];
@@ -330,6 +892,82 @@ export interface Database {
 
         ];
       };
+      brand_voice: {
+        Row: {
+          id: number;
+          tone: string;
+          do_rules: string[];
+          dont_rules: string[];
+          banned_phrases: string[];
+          approved_claims: string[];
+          hashtags: string[];
+          default_cta: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          tone?: string;
+          do_rules?: string[];
+          dont_rules?: string[];
+          banned_phrases?: string[];
+          approved_claims?: string[];
+          hashtags?: string[];
+          default_cta?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          tone?: string;
+          do_rules?: string[];
+          dont_rules?: string[];
+          banned_phrases?: string[];
+          approved_claims?: string[];
+          hashtags?: string[];
+          default_cta?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      budget_guards: {
+        Row: {
+          id: string;
+          platform: string;
+          max_daily_cents: number;
+          max_monthly_cents: number;
+          max_campaign_days: number;
+          auto_pause_cpl_cents: number | null;
+          pacing_tolerance: number;
+          active: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          platform: string;
+          max_daily_cents: number;
+          max_monthly_cents: number;
+          max_campaign_days?: number;
+          auto_pause_cpl_cents?: number | null;
+          pacing_tolerance?: number;
+          active?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          platform?: string;
+          max_daily_cents?: number;
+          max_monthly_cents?: number;
+          max_campaign_days?: number;
+          auto_pause_cpl_cents?: number | null;
+          pacing_tolerance?: number;
+          active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       build_items: {
         Row: {
           id: string;
@@ -440,6 +1078,621 @@ export interface Database {
 
         ];
       };
+      campaign_enrollments: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          customer_id: string;
+          status: Database['public']['Enums']['mkt_enrollment_status'];
+          variant: string | null;
+          current_step: number;
+          enrolled_at: string;
+          next_step_at: string | null;
+          exited_at: string | null;
+          exit_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          customer_id: string;
+          status?: Database['public']['Enums']['mkt_enrollment_status'];
+          variant?: string | null;
+          current_step?: number;
+          enrolled_at?: string;
+          next_step_at?: string | null;
+          exited_at?: string | null;
+          exit_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          customer_id?: string;
+          status?: Database['public']['Enums']['mkt_enrollment_status'];
+          variant?: string | null;
+          current_step?: number;
+          enrolled_at?: string;
+          next_step_at?: string | null;
+          exited_at?: string | null;
+          exit_reason?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'campaign_enrollments_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'campaign_enrollments_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      campaign_sends: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          step_order: number;
+          enrollment_id: string | null;
+          customer_id: string | null;
+          channel: Database['public']['Enums']['message_channel'];
+          variant: string | null;
+          dedupe_key: string;
+          status: Database['public']['Enums']['mkt_send_status'];
+          scheduled_for: string;
+          claimed_at: string | null;
+          sent_at: string | null;
+          message_id: string | null;
+          detail: string | null;
+          opened_at: string | null;
+          clicked_at: string | null;
+          click_count: number;
+          converted_at: string | null;
+          revenue_cents: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          step_order?: number;
+          enrollment_id?: string | null;
+          customer_id?: string | null;
+          channel: Database['public']['Enums']['message_channel'];
+          variant?: string | null;
+          dedupe_key: string;
+          status?: Database['public']['Enums']['mkt_send_status'];
+          scheduled_for?: string;
+          claimed_at?: string | null;
+          sent_at?: string | null;
+          message_id?: string | null;
+          detail?: string | null;
+          opened_at?: string | null;
+          clicked_at?: string | null;
+          click_count?: number;
+          converted_at?: string | null;
+          revenue_cents?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          step_order?: number;
+          enrollment_id?: string | null;
+          customer_id?: string | null;
+          channel?: Database['public']['Enums']['message_channel'];
+          variant?: string | null;
+          dedupe_key?: string;
+          status?: Database['public']['Enums']['mkt_send_status'];
+          scheduled_for?: string;
+          claimed_at?: string | null;
+          sent_at?: string | null;
+          message_id?: string | null;
+          detail?: string | null;
+          opened_at?: string | null;
+          clicked_at?: string | null;
+          click_count?: number;
+          converted_at?: string | null;
+          revenue_cents?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'campaign_sends_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'campaign_sends_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'campaign_sends_enrollment_id_fkey';
+            columns: ['enrollment_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaign_enrollments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'campaign_sends_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      campaign_steps: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          step_order: number;
+          variant: string;
+          delay_minutes: number;
+          subject: string | null;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          step_order?: number;
+          variant?: string;
+          delay_minutes?: number;
+          subject?: string | null;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          step_order?: number;
+          variant?: string;
+          delay_minutes?: number;
+          subject?: string | null;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'campaign_steps_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      campaigns: {
+        Row: {
+          id: string;
+          name: string;
+          kind: Database['public']['Enums']['mkt_campaign_kind'];
+          channel: Database['public']['Enums']['message_channel'];
+          status: Database['public']['Enums']['mkt_campaign_status'];
+          segment_id: string | null;
+          offer_id: string | null;
+          trigger_event: string | null;
+          exit_on: string[];
+          scheduled_at: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          send_window_start_hour: number;
+          send_window_end_hour: number;
+          ab_test_percent: number;
+          ab_winner_metric: string;
+          ab_decide_after_minutes: number;
+          ab_winner_variant: string | null;
+          utm_campaign: string | null;
+          seasonal_key: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          kind: Database['public']['Enums']['mkt_campaign_kind'];
+          channel: Database['public']['Enums']['message_channel'];
+          status?: Database['public']['Enums']['mkt_campaign_status'];
+          segment_id?: string | null;
+          offer_id?: string | null;
+          trigger_event?: string | null;
+          exit_on?: string[];
+          scheduled_at?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          send_window_start_hour?: number;
+          send_window_end_hour?: number;
+          ab_test_percent?: number;
+          ab_winner_metric?: string;
+          ab_decide_after_minutes?: number;
+          ab_winner_variant?: string | null;
+          utm_campaign?: string | null;
+          seasonal_key?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          kind?: Database['public']['Enums']['mkt_campaign_kind'];
+          channel?: Database['public']['Enums']['message_channel'];
+          status?: Database['public']['Enums']['mkt_campaign_status'];
+          segment_id?: string | null;
+          offer_id?: string | null;
+          trigger_event?: string | null;
+          exit_on?: string[];
+          scheduled_at?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          send_window_start_hour?: number;
+          send_window_end_hour?: number;
+          ab_test_percent?: number;
+          ab_winner_metric?: string;
+          ab_decide_after_minutes?: number;
+          ab_winner_variant?: string | null;
+          utm_campaign?: string | null;
+          seasonal_key?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'campaigns_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'campaigns_offer_id_fkey';
+            columns: ['offer_id'];
+            isOneToOne: false;
+            referencedRelation: 'offers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'campaigns_segment_id_fkey';
+            columns: ['segment_id'];
+            isOneToOne: false;
+            referencedRelation: 'segments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      channel_connections: {
+        Row: {
+          id: string;
+          platform: string;
+          status: string;
+          account_name: string | null;
+          external_account_id: string | null;
+          scopes: string[];
+          access_token_encrypted: string | null;
+          refresh_token_encrypted: string | null;
+          token_key_id: string | null;
+          token_expires_at: string | null;
+          last_error: string | null;
+          connected_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          platform: string;
+          status?: string;
+          account_name?: string | null;
+          external_account_id?: string | null;
+          scopes?: string[];
+          access_token_encrypted?: string | null;
+          refresh_token_encrypted?: string | null;
+          token_key_id?: string | null;
+          token_expires_at?: string | null;
+          last_error?: string | null;
+          connected_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          platform?: string;
+          status?: string;
+          account_name?: string | null;
+          external_account_id?: string | null;
+          scopes?: string[];
+          access_token_encrypted?: string | null;
+          refresh_token_encrypted?: string | null;
+          token_key_id?: string | null;
+          token_expires_at?: string | null;
+          last_error?: string | null;
+          connected_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'channel_connections_connected_by_fkey';
+            columns: ['connected_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      contact_consent_events: {
+        Row: {
+          id: string;
+          customer_id: string | null;
+          channel: Database['public']['Enums']['message_channel'];
+          purpose: Database['public']['Enums']['mkt_consent_purpose'];
+          action: Database['public']['Enums']['mkt_consent_action'];
+          method: string;
+          address: string;
+          consent_text_version: string | null;
+          evidence: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id?: string | null;
+          channel: Database['public']['Enums']['message_channel'];
+          purpose: Database['public']['Enums']['mkt_consent_purpose'];
+          action: Database['public']['Enums']['mkt_consent_action'];
+          method: string;
+          address: string;
+          consent_text_version?: string | null;
+          evidence?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string | null;
+          channel?: Database['public']['Enums']['message_channel'];
+          purpose?: Database['public']['Enums']['mkt_consent_purpose'];
+          action?: Database['public']['Enums']['mkt_consent_action'];
+          method?: string;
+          address?: string;
+          consent_text_version?: string | null;
+          evidence?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contact_consent_events_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      content_calendar_items: {
+        Row: {
+          id: string;
+          scheduled_for: string;
+          kind: string;
+          title: string;
+          pillar: string | null;
+          ref_type: string | null;
+          ref_id: string | null;
+          status: string;
+          notes: string | null;
+          generator: string;
+          is_sample: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          scheduled_for: string;
+          kind: string;
+          title: string;
+          pillar?: string | null;
+          ref_type?: string | null;
+          ref_id?: string | null;
+          status?: string;
+          notes?: string | null;
+          generator?: string;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          scheduled_for?: string;
+          kind?: string;
+          title?: string;
+          pillar?: string | null;
+          ref_type?: string | null;
+          ref_id?: string | null;
+          status?: string;
+          notes?: string | null;
+          generator?: string;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      conversion_events: {
+        Row: {
+          id: string;
+          kind: Database['public']['Enums']['mkt_conversion_kind'];
+          customer_id: string | null;
+          lead_id: string | null;
+          appointment_id: string | null;
+          invoice_id: string | null;
+          anonymous_id: string | null;
+          value_cents: number;
+          source: string;
+          first_source: string | null;
+          first_touch_id: string | null;
+          last_touch_id: string | null;
+          campaign_id: string | null;
+          dedupe_key: string;
+          metadata: Json;
+          occurred_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: Database['public']['Enums']['mkt_conversion_kind'];
+          customer_id?: string | null;
+          lead_id?: string | null;
+          appointment_id?: string | null;
+          invoice_id?: string | null;
+          anonymous_id?: string | null;
+          value_cents?: number;
+          source?: string;
+          first_source?: string | null;
+          first_touch_id?: string | null;
+          last_touch_id?: string | null;
+          campaign_id?: string | null;
+          dedupe_key: string;
+          metadata?: Json;
+          occurred_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: Database['public']['Enums']['mkt_conversion_kind'];
+          customer_id?: string | null;
+          lead_id?: string | null;
+          appointment_id?: string | null;
+          invoice_id?: string | null;
+          anonymous_id?: string | null;
+          value_cents?: number;
+          source?: string;
+          first_source?: string | null;
+          first_touch_id?: string | null;
+          last_touch_id?: string | null;
+          campaign_id?: string | null;
+          dedupe_key?: string;
+          metadata?: Json;
+          occurred_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversion_events_appointment_id_fkey';
+            columns: ['appointment_id'];
+            isOneToOne: false;
+            referencedRelation: 'appointments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversion_events_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversion_events_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversion_events_first_touch_id_fkey';
+            columns: ['first_touch_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribution_touches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversion_events_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversion_events_last_touch_id_fkey';
+            columns: ['last_touch_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribution_touches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversion_events_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      creative_assets: {
+        Row: {
+          id: string;
+          kind: string;
+          source: string;
+          url: string | null;
+          storage_path: string | null;
+          mime: string | null;
+          width: number | null;
+          height: number | null;
+          alt_text: string | null;
+          sha256: string | null;
+          ai_generation_id: string | null;
+          needs_privacy_review: boolean;
+          privacy_note: string | null;
+          is_sample: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind?: string;
+          source: string;
+          url?: string | null;
+          storage_path?: string | null;
+          mime?: string | null;
+          width?: number | null;
+          height?: number | null;
+          alt_text?: string | null;
+          sha256?: string | null;
+          ai_generation_id?: string | null;
+          needs_privacy_review?: boolean;
+          privacy_note?: string | null;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          source?: string;
+          url?: string | null;
+          storage_path?: string | null;
+          mime?: string | null;
+          width?: number | null;
+          height?: number | null;
+          alt_text?: string | null;
+          sha256?: string | null;
+          ai_generation_id?: string | null;
+          needs_privacy_review?: boolean;
+          privacy_note?: string | null;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'creative_assets_ai_generation_id_fkey';
+            columns: ['ai_generation_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_generation_jobs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       customers: {
         Row: {
           id: string;
@@ -454,6 +1707,22 @@ export interface Database {
           source: string;
           notes: string | null;
           created_at: string;
+          tags: string[];
+          lifecycle_stage: Database['public']['Enums']['mkt_lifecycle_stage'];
+          lead_score: number;
+          birthday: string | null;
+          is_fleet: boolean;
+          fleet_account_id: string | null;
+          email_marketing_status: Database['public']['Enums']['mkt_email_status'];
+          sms_marketing_consent_at: string | null;
+          sms_marketing_consent_version: string | null;
+          sms_marketing_opted_out_at: string | null;
+          consent_source_url: string | null;
+          first_touch_id: string | null;
+          last_touch_id: string | null;
+          first_touch_source: string | null;
+          last_touch_source: string | null;
+          last_marketing_sent_at: string | null;
         };
         Insert: {
           id?: string;
@@ -468,6 +1737,22 @@ export interface Database {
           source?: string;
           notes?: string | null;
           created_at?: string;
+          tags?: string[];
+          lifecycle_stage?: Database['public']['Enums']['mkt_lifecycle_stage'];
+          lead_score?: number;
+          birthday?: string | null;
+          is_fleet?: boolean;
+          fleet_account_id?: string | null;
+          email_marketing_status?: Database['public']['Enums']['mkt_email_status'];
+          sms_marketing_consent_at?: string | null;
+          sms_marketing_consent_version?: string | null;
+          sms_marketing_opted_out_at?: string | null;
+          consent_source_url?: string | null;
+          first_touch_id?: string | null;
+          last_touch_id?: string | null;
+          first_touch_source?: string | null;
+          last_touch_source?: string | null;
+          last_marketing_sent_at?: string | null;
         };
         Update: {
           id?: string;
@@ -482,8 +1767,45 @@ export interface Database {
           source?: string;
           notes?: string | null;
           created_at?: string;
+          tags?: string[];
+          lifecycle_stage?: Database['public']['Enums']['mkt_lifecycle_stage'];
+          lead_score?: number;
+          birthday?: string | null;
+          is_fleet?: boolean;
+          fleet_account_id?: string | null;
+          email_marketing_status?: Database['public']['Enums']['mkt_email_status'];
+          sms_marketing_consent_at?: string | null;
+          sms_marketing_consent_version?: string | null;
+          sms_marketing_opted_out_at?: string | null;
+          consent_source_url?: string | null;
+          first_touch_id?: string | null;
+          last_touch_id?: string | null;
+          first_touch_source?: string | null;
+          last_touch_source?: string | null;
+          last_marketing_sent_at?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: 'customers_first_touch_id_fkey';
+            columns: ['first_touch_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribution_touches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'customers_fleet_account_id_fkey';
+            columns: ['fleet_account_id'];
+            isOneToOne: false;
+            referencedRelation: 'fleet_accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'customers_last_touch_id_fkey';
+            columns: ['last_touch_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribution_touches';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'customers_profile_id_fkey';
             columns: ['profile_id'];
@@ -562,6 +1884,178 @@ export interface Database {
             columns: ['work_order_id'];
             isOneToOne: false;
             referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      event_registrations: {
+        Row: {
+          id: string;
+          event_id: string;
+          customer_id: string | null;
+          full_name: string;
+          email: string | null;
+          phone: string | null;
+          vehicle_label: string | null;
+          platform: string | null;
+          slot_at: string | null;
+          status: string;
+          waiver_signed_at: string | null;
+          media_consent: boolean;
+          horsepower: number | null;
+          torque: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          customer_id?: string | null;
+          full_name: string;
+          email?: string | null;
+          phone?: string | null;
+          vehicle_label?: string | null;
+          platform?: string | null;
+          slot_at?: string | null;
+          status?: string;
+          waiver_signed_at?: string | null;
+          media_consent?: boolean;
+          horsepower?: number | null;
+          torque?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          customer_id?: string | null;
+          full_name?: string;
+          email?: string | null;
+          phone?: string | null;
+          vehicle_label?: string | null;
+          platform?: string | null;
+          slot_at?: string | null;
+          status?: string;
+          waiver_signed_at?: string | null;
+          media_consent?: boolean;
+          horsepower?: number | null;
+          torque?: number | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_registrations_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_registrations_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      events: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          kind: string;
+          description: string | null;
+          location: string | null;
+          starts_at: string;
+          ends_at: string;
+          capacity: number | null;
+          price_cents: number;
+          registration_open: boolean;
+          published: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name: string;
+          kind?: string;
+          description?: string | null;
+          location?: string | null;
+          starts_at: string;
+          ends_at: string;
+          capacity?: number | null;
+          price_cents?: number;
+          registration_open?: boolean;
+          published?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          name?: string;
+          kind?: string;
+          description?: string | null;
+          location?: string | null;
+          starts_at?: string;
+          ends_at?: string;
+          capacity?: number | null;
+          price_cents?: number;
+          registration_open?: boolean;
+          published?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      fleet_accounts: {
+        Row: {
+          id: string;
+          name: string;
+          contact_customer_id: string | null;
+          contact_name: string | null;
+          email: string | null;
+          phone: string | null;
+          billing_terms: string;
+          pm_interval_miles: number;
+          pm_interval_days: number;
+          notes: string | null;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          contact_customer_id?: string | null;
+          contact_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          billing_terms?: string;
+          pm_interval_miles?: number;
+          pm_interval_days?: number;
+          notes?: string | null;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          contact_customer_id?: string | null;
+          contact_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          billing_terms?: string;
+          pm_interval_miles?: number;
+          pm_interval_days?: number;
+          notes?: string | null;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'fleet_accounts_contact_customer_id_fkey';
+            columns: ['contact_customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
             referencedColumns: ['id'];
           },
         ];
@@ -777,6 +2271,115 @@ export interface Database {
           },
         ];
       };
+      landing_pages: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          template: string;
+          blocks: Json;
+          offer: Json | null;
+          form: Json;
+          utm_default: Json;
+          seo_description: string | null;
+          lead_magnet_id: string | null;
+          published: boolean;
+          published_at: string | null;
+          generator: string;
+          is_sample: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          template?: string;
+          blocks?: Json;
+          offer?: Json | null;
+          form?: Json;
+          utm_default?: Json;
+          seo_description?: string | null;
+          lead_magnet_id?: string | null;
+          published?: boolean;
+          published_at?: string | null;
+          generator?: string;
+          is_sample?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          template?: string;
+          blocks?: Json;
+          offer?: Json | null;
+          form?: Json;
+          utm_default?: Json;
+          seo_description?: string | null;
+          lead_magnet_id?: string | null;
+          published?: boolean;
+          published_at?: string | null;
+          generator?: string;
+          is_sample?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'landing_pages_lead_magnet_fk';
+            columns: ['lead_magnet_id'];
+            isOneToOne: false;
+            referencedRelation: 'lead_magnets';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      lead_magnets: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          description: string;
+          format: string;
+          sections: Json;
+          email_subject: string;
+          published: boolean;
+          downloads: number;
+          is_sample: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          description: string;
+          format?: string;
+          sections?: Json;
+          email_subject: string;
+          published?: boolean;
+          downloads?: number;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          description?: string;
+          format?: string;
+          sections?: Json;
+          email_subject?: string;
+          published?: boolean;
+          downloads?: number;
+          is_sample?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       leads: {
         Row: {
           id: string;
@@ -797,6 +2400,11 @@ export interface Database {
           contacted_at: string | null;
           converted_at: string | null;
           created_at: string;
+          pipeline_stage_id: string | null;
+          lead_score: number;
+          lost_reason: string | null;
+          first_touch_id: string | null;
+          last_touch_id: string | null;
         };
         Insert: {
           id?: string;
@@ -817,6 +2425,11 @@ export interface Database {
           contacted_at?: string | null;
           converted_at?: string | null;
           created_at?: string;
+          pipeline_stage_id?: string | null;
+          lead_score?: number;
+          lost_reason?: string | null;
+          first_touch_id?: string | null;
+          last_touch_id?: string | null;
         };
         Update: {
           id?: string;
@@ -837,6 +2450,11 @@ export interface Database {
           contacted_at?: string | null;
           converted_at?: string | null;
           created_at?: string;
+          pipeline_stage_id?: string | null;
+          lead_score?: number;
+          lost_reason?: string | null;
+          first_touch_id?: string | null;
+          last_touch_id?: string | null;
         };
         Relationships: [
           {
@@ -844,6 +2462,27 @@ export interface Database {
             columns: ['customer_id'];
             isOneToOne: false;
             referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'leads_first_touch_id_fkey';
+            columns: ['first_touch_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribution_touches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'leads_last_touch_id_fkey';
+            columns: ['last_touch_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribution_touches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'leads_pipeline_stage_id_fkey';
+            columns: ['pipeline_stage_id'];
+            isOneToOne: false;
+            referencedRelation: 'pipeline_stages';
             referencedColumns: ['id'];
           },
         ];
@@ -909,6 +2548,312 @@ export interface Database {
             referencedRelation: 'work_orders';
             referencedColumns: ['id'];
           },
+        ];
+      };
+      listings: {
+        Row: {
+          id: string;
+          directory: string;
+          category: string;
+          url: string | null;
+          status: string;
+          nap: Json;
+          nap_consistent: boolean | null;
+          notes: string | null;
+          sort: number;
+          last_checked_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          directory: string;
+          category: string;
+          url?: string | null;
+          status?: string;
+          nap?: Json;
+          nap_consistent?: boolean | null;
+          notes?: string | null;
+          sort?: number;
+          last_checked_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          directory?: string;
+          category?: string;
+          url?: string | null;
+          status?: string;
+          nap?: Json;
+          nap_consistent?: boolean | null;
+          notes?: string | null;
+          sort?: number;
+          last_checked_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      loyalty_accounts: {
+        Row: {
+          customer_id: string;
+          points_balance: number;
+          lifetime_points: number;
+          lifetime_spend_cents: number;
+          tier: Database['public']['Enums']['mkt_loyalty_tier'];
+          tier_updated_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          customer_id: string;
+          points_balance?: number;
+          lifetime_points?: number;
+          lifetime_spend_cents?: number;
+          tier?: Database['public']['Enums']['mkt_loyalty_tier'];
+          tier_updated_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          customer_id?: string;
+          points_balance?: number;
+          lifetime_points?: number;
+          lifetime_spend_cents?: number;
+          tier?: Database['public']['Enums']['mkt_loyalty_tier'];
+          tier_updated_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'loyalty_accounts_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: true;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      loyalty_events: {
+        Row: {
+          id: string;
+          customer_id: string;
+          kind: string;
+          points: number;
+          invoice_id: string | null;
+          note: string | null;
+          dedupe_key: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          kind: string;
+          points: number;
+          invoice_id?: string | null;
+          note?: string | null;
+          dedupe_key?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          kind?: string;
+          points?: number;
+          invoice_id?: string | null;
+          note?: string | null;
+          dedupe_key?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'loyalty_events_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'loyalty_events_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      marketing_approvals: {
+        Row: {
+          id: string;
+          subject_type: string;
+          subject_id: string;
+          payload_hash: string;
+          decision: string;
+          requested_by: string | null;
+          decided_by: string | null;
+          notes: string | null;
+          requested_at: string;
+          decided_at: string | null;
+          warnings_acknowledged: boolean;
+        };
+        Insert: {
+          id?: string;
+          subject_type: string;
+          subject_id: string;
+          payload_hash: string;
+          decision?: string;
+          requested_by?: string | null;
+          decided_by?: string | null;
+          notes?: string | null;
+          requested_at?: string;
+          decided_at?: string | null;
+          warnings_acknowledged?: boolean;
+        };
+        Update: {
+          id?: string;
+          subject_type?: string;
+          subject_id?: string;
+          payload_hash?: string;
+          decision?: string;
+          requested_by?: string | null;
+          decided_by?: string | null;
+          notes?: string | null;
+          requested_at?: string;
+          decided_at?: string | null;
+          warnings_acknowledged?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'marketing_approvals_decided_by_fkey';
+            columns: ['decided_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'marketing_approvals_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      marketing_call_events: {
+        Row: {
+          id: string;
+          call_sid: string;
+          from_number: string;
+          to_number: string | null;
+          call_status: string;
+          customer_id: string | null;
+          texted_back_at: string | null;
+          message_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          call_sid: string;
+          from_number: string;
+          to_number?: string | null;
+          call_status: string;
+          customer_id?: string | null;
+          texted_back_at?: string | null;
+          message_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          call_sid?: string;
+          from_number?: string;
+          to_number?: string | null;
+          call_status?: string;
+          customer_id?: string | null;
+          texted_back_at?: string | null;
+          message_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'marketing_call_events_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'marketing_call_events_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      marketing_settings: {
+        Row: {
+          id: number;
+          sender_name: string;
+          sender_email: string | null;
+          reply_to_email: string | null;
+          postal_address: string | null;
+          sms_business_name: string;
+          time_zone: string;
+          quiet_hours_start: number;
+          quiet_hours_end: number;
+          sms_max_per_week: number;
+          email_max_per_week: number;
+          seasonal_toggles: Json;
+          winback_months: number[];
+          referrer_reward_cents: number;
+          referee_discount_cents: number;
+          loyalty_points_per_dollar: number;
+          vip_thresholds_cents: Json;
+          missed_call_text_back: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          sender_name?: string;
+          sender_email?: string | null;
+          reply_to_email?: string | null;
+          postal_address?: string | null;
+          sms_business_name?: string;
+          time_zone?: string;
+          quiet_hours_start?: number;
+          quiet_hours_end?: number;
+          sms_max_per_week?: number;
+          email_max_per_week?: number;
+          seasonal_toggles?: Json;
+          winback_months?: number[];
+          referrer_reward_cents?: number;
+          referee_discount_cents?: number;
+          loyalty_points_per_dollar?: number;
+          vip_thresholds_cents?: Json;
+          missed_call_text_back?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          sender_name?: string;
+          sender_email?: string | null;
+          reply_to_email?: string | null;
+          postal_address?: string | null;
+          sms_business_name?: string;
+          time_zone?: string;
+          quiet_hours_start?: number;
+          quiet_hours_end?: number;
+          sms_max_per_week?: number;
+          email_max_per_week?: number;
+          seasonal_toggles?: Json;
+          winback_months?: number[];
+          referrer_reward_cents?: number;
+          referee_discount_cents?: number;
+          loyalty_points_per_dollar?: number;
+          vip_thresholds_cents?: Json;
+          missed_call_text_back?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+
         ];
       };
       media: {
@@ -1042,6 +2987,187 @@ export interface Database {
           },
         ];
       };
+      nps_responses: {
+        Row: {
+          id: string;
+          customer_id: string | null;
+          invoice_id: string | null;
+          token_hash: string;
+          score: number | null;
+          comment: string | null;
+          channel: string | null;
+          review_link_sent: boolean;
+          requested_at: string;
+          responded_at: string | null;
+          owner_alerted_at: string | null;
+          is_sample: boolean;
+        };
+        Insert: {
+          id?: string;
+          customer_id?: string | null;
+          invoice_id?: string | null;
+          token_hash: string;
+          score?: number | null;
+          comment?: string | null;
+          channel?: string | null;
+          review_link_sent?: boolean;
+          requested_at?: string;
+          responded_at?: string | null;
+          owner_alerted_at?: string | null;
+          is_sample?: boolean;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string | null;
+          invoice_id?: string | null;
+          token_hash?: string;
+          score?: number | null;
+          comment?: string | null;
+          channel?: string | null;
+          review_link_sent?: boolean;
+          requested_at?: string;
+          responded_at?: string | null;
+          owner_alerted_at?: string | null;
+          is_sample?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'nps_responses_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'nps_responses_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: true;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      offer_redemptions: {
+        Row: {
+          id: string;
+          offer_id: string;
+          customer_id: string | null;
+          work_order_id: string | null;
+          invoice_id: string | null;
+          discount_cents: number;
+          redeemed_at: string;
+        };
+        Insert: {
+          id?: string;
+          offer_id: string;
+          customer_id?: string | null;
+          work_order_id?: string | null;
+          invoice_id?: string | null;
+          discount_cents?: number;
+          redeemed_at?: string;
+        };
+        Update: {
+          id?: string;
+          offer_id?: string;
+          customer_id?: string | null;
+          work_order_id?: string | null;
+          invoice_id?: string | null;
+          discount_cents?: number;
+          redeemed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'offer_redemptions_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_redemptions_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_redemptions_offer_id_fkey';
+            columns: ['offer_id'];
+            isOneToOne: false;
+            referencedRelation: 'offers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'offer_redemptions_work_order_id_fkey';
+            columns: ['work_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      offers: {
+        Row: {
+          id: string;
+          code: string;
+          name: string;
+          description: string | null;
+          kind: Database['public']['Enums']['mkt_offer_kind'];
+          value: number;
+          terms: string | null;
+          min_spend_cents: number;
+          max_redemptions: number | null;
+          per_customer_limit: number;
+          segment_id: string | null;
+          starts_at: string | null;
+          ends_at: string | null;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          name: string;
+          description?: string | null;
+          kind: Database['public']['Enums']['mkt_offer_kind'];
+          value: number;
+          terms?: string | null;
+          min_spend_cents?: number;
+          max_redemptions?: number | null;
+          per_customer_limit?: number;
+          segment_id?: string | null;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          name?: string;
+          description?: string | null;
+          kind?: Database['public']['Enums']['mkt_offer_kind'];
+          value?: number;
+          terms?: string | null;
+          min_spend_cents?: number;
+          max_redemptions?: number | null;
+          per_customer_limit?: number;
+          segment_id?: string | null;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'offers_segment_id_fkey';
+            columns: ['segment_id'];
+            isOneToOne: false;
+            referencedRelation: 'segments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       part_requests: {
         Row: {
           id: string;
@@ -1119,6 +3245,44 @@ export interface Database {
           },
         ];
       };
+      pipeline_stages: {
+        Row: {
+          id: string;
+          pipeline: string;
+          key: string;
+          name: string;
+          sort: number;
+          score_weight: number;
+          is_won: boolean;
+          is_lost: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          pipeline?: string;
+          key: string;
+          name: string;
+          sort?: number;
+          score_weight?: number;
+          is_won?: boolean;
+          is_lost?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          pipeline?: string;
+          key?: string;
+          name?: string;
+          sort?: number;
+          score_weight?: number;
+          is_won?: boolean;
+          is_lost?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       profiles: {
         Row: {
           id: string;
@@ -1152,6 +3316,381 @@ export interface Database {
           avatar_color?: string;
           active?: boolean;
           created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      referral_codes: {
+        Row: {
+          id: string;
+          customer_id: string;
+          code: string;
+          referrer_reward_cents: number;
+          referee_offer_id: string | null;
+          uses: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          code: string;
+          referrer_reward_cents?: number;
+          referee_offer_id?: string | null;
+          uses?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          code?: string;
+          referrer_reward_cents?: number;
+          referee_offer_id?: string | null;
+          uses?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'referral_codes_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: true;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'referral_codes_referee_offer_id_fkey';
+            columns: ['referee_offer_id'];
+            isOneToOne: false;
+            referencedRelation: 'offers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      referrals: {
+        Row: {
+          id: string;
+          referral_code_id: string;
+          referrer_customer_id: string;
+          referred_customer_id: string | null;
+          lead_id: string | null;
+          status: Database['public']['Enums']['mkt_referral_status'];
+          invoice_id: string | null;
+          reward_cents: number;
+          qualified_at: string | null;
+          rewarded_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          referral_code_id: string;
+          referrer_customer_id: string;
+          referred_customer_id?: string | null;
+          lead_id?: string | null;
+          status?: Database['public']['Enums']['mkt_referral_status'];
+          invoice_id?: string | null;
+          reward_cents?: number;
+          qualified_at?: string | null;
+          rewarded_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          referral_code_id?: string;
+          referrer_customer_id?: string;
+          referred_customer_id?: string | null;
+          lead_id?: string | null;
+          status?: Database['public']['Enums']['mkt_referral_status'];
+          invoice_id?: string | null;
+          reward_cents?: number;
+          qualified_at?: string | null;
+          rewarded_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'referrals_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'referrals_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'referrals_referral_code_id_fkey';
+            columns: ['referral_code_id'];
+            isOneToOne: false;
+            referencedRelation: 'referral_codes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'referrals_referred_customer_id_fkey';
+            columns: ['referred_customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'referrals_referrer_customer_id_fkey';
+            columns: ['referrer_customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      review_replies: {
+        Row: {
+          id: string;
+          review_id: string;
+          draft_text: string;
+          final_text: string | null;
+          status: string;
+          generator: string;
+          ai_generation_id: string | null;
+          compliance_status: string;
+          compliance_issues: Json;
+          posted_at: string | null;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          review_id: string;
+          draft_text: string;
+          final_text?: string | null;
+          status?: string;
+          generator?: string;
+          ai_generation_id?: string | null;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          posted_at?: string | null;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          review_id?: string;
+          draft_text?: string;
+          final_text?: string | null;
+          status?: string;
+          generator?: string;
+          ai_generation_id?: string | null;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          posted_at?: string | null;
+          error?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'review_replies_ai_generation_id_fkey';
+            columns: ['ai_generation_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_generation_jobs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'review_replies_review_id_fkey';
+            columns: ['review_id'];
+            isOneToOne: false;
+            referencedRelation: 'reviews';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      reviews: {
+        Row: {
+          id: string;
+          source: string;
+          external_id: string | null;
+          rating: number;
+          body: string | null;
+          author_name: string;
+          reviewed_at: string;
+          replied: boolean;
+          customer_id: string | null;
+          owner_alerted_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          source: string;
+          external_id?: string | null;
+          rating: number;
+          body?: string | null;
+          author_name: string;
+          reviewed_at?: string;
+          replied?: boolean;
+          customer_id?: string | null;
+          owner_alerted_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          source?: string;
+          external_id?: string | null;
+          rating?: number;
+          body?: string | null;
+          author_name?: string;
+          reviewed_at?: string;
+          replied?: boolean;
+          customer_id?: string | null;
+          owner_alerted_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reviews_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      segment_members: {
+        Row: {
+          segment_id: string;
+          customer_id: string;
+          added_at: string;
+        };
+        Insert: {
+          segment_id: string;
+          customer_id: string;
+          added_at?: string;
+        };
+        Update: {
+          segment_id?: string;
+          customer_id?: string;
+          added_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'segment_members_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'segment_members_segment_id_fkey';
+            columns: ['segment_id'];
+            isOneToOne: false;
+            referencedRelation: 'segments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      segments: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          rules: Json;
+          member_count: number;
+          refreshed_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          rules?: Json;
+          member_count?: number;
+          refreshed_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          rules?: Json;
+          member_count?: number;
+          refreshed_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'segments_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      seo_content: {
+        Row: {
+          id: string;
+          kind: string;
+          title: string;
+          slug: string;
+          summary: string;
+          body: Json;
+          faq: Json;
+          meta_description: string | null;
+          source_type: string | null;
+          source_id: string | null;
+          status: string;
+          generator: string;
+          compliance_status: string;
+          compliance_issues: Json;
+          is_sample: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: string;
+          title: string;
+          slug: string;
+          summary?: string;
+          body?: Json;
+          faq?: Json;
+          meta_description?: string | null;
+          source_type?: string | null;
+          source_id?: string | null;
+          status?: string;
+          generator?: string;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          is_sample?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          title?: string;
+          slug?: string;
+          summary?: string;
+          body?: Json;
+          faq?: Json;
+          meta_description?: string | null;
+          source_type?: string | null;
+          source_id?: string | null;
+          status?: string;
+          generator?: string;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          is_sample?: boolean;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [
 
@@ -1210,6 +3749,250 @@ export interface Database {
 
         ];
       };
+      short_links: {
+        Row: {
+          id: string;
+          code: string;
+          target_url: string;
+          campaign_id: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          clicks: number;
+          last_clicked_at: string | null;
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          target_url: string;
+          campaign_id?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          clicks?: number;
+          last_clicked_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          target_url?: string;
+          campaign_id?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          clicks?: number;
+          last_clicked_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'short_links_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'campaigns';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      social_post_targets: {
+        Row: {
+          id: string;
+          post_id: string;
+          platform: string;
+          connection_id: string | null;
+          caption_override: string | null;
+          platform_options: Json;
+          status: string;
+          simulated: boolean;
+          external_id: string | null;
+          permalink: string | null;
+          published_at: string | null;
+          error: string | null;
+          attempts: number;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          platform: string;
+          connection_id?: string | null;
+          caption_override?: string | null;
+          platform_options?: Json;
+          status?: string;
+          simulated?: boolean;
+          external_id?: string | null;
+          permalink?: string | null;
+          published_at?: string | null;
+          error?: string | null;
+          attempts?: number;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          platform?: string;
+          connection_id?: string | null;
+          caption_override?: string | null;
+          platform_options?: Json;
+          status?: string;
+          simulated?: boolean;
+          external_id?: string | null;
+          permalink?: string | null;
+          published_at?: string | null;
+          error?: string | null;
+          attempts?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'social_post_targets_connection_id_fkey';
+            columns: ['connection_id'];
+            isOneToOne: false;
+            referencedRelation: 'channel_connections';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'social_post_targets_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'social_posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      social_posts: {
+        Row: {
+          id: string;
+          title: string;
+          caption: string;
+          hashtags: string[];
+          link_url: string | null;
+          asset_ids: string[];
+          image_template: string | null;
+          image_params: Json;
+          pillar: string | null;
+          source_type: string;
+          source_id: string | null;
+          status: string;
+          scheduled_for: string | null;
+          published_at: string | null;
+          generator: string;
+          ai_generation_id: string | null;
+          compliance_status: string;
+          compliance_issues: Json;
+          needs_privacy_review: boolean;
+          privacy_note: string | null;
+          is_sample: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          caption: string;
+          hashtags?: string[];
+          link_url?: string | null;
+          asset_ids?: string[];
+          image_template?: string | null;
+          image_params?: Json;
+          pillar?: string | null;
+          source_type?: string;
+          source_id?: string | null;
+          status?: string;
+          scheduled_for?: string | null;
+          published_at?: string | null;
+          generator?: string;
+          ai_generation_id?: string | null;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          needs_privacy_review?: boolean;
+          privacy_note?: string | null;
+          is_sample?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          caption?: string;
+          hashtags?: string[];
+          link_url?: string | null;
+          asset_ids?: string[];
+          image_template?: string | null;
+          image_params?: Json;
+          pillar?: string | null;
+          source_type?: string;
+          source_id?: string | null;
+          status?: string;
+          scheduled_for?: string | null;
+          published_at?: string | null;
+          generator?: string;
+          ai_generation_id?: string | null;
+          compliance_status?: string;
+          compliance_issues?: Json;
+          needs_privacy_review?: boolean;
+          privacy_note?: string | null;
+          is_sample?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'social_posts_ai_generation_id_fkey';
+            columns: ['ai_generation_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_generation_jobs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'social_posts_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      suppressions: {
+        Row: {
+          id: string;
+          channel: Database['public']['Enums']['message_channel'];
+          address: string;
+          scope: string;
+          reason: string;
+          customer_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          channel: Database['public']['Enums']['message_channel'];
+          address: string;
+          scope?: string;
+          reason: string;
+          customer_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          channel?: Database['public']['Enums']['message_channel'];
+          address?: string;
+          scope?: string;
+          reason?: string;
+          customer_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'suppressions_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       time_entries: {
         Row: {
           id: string;
@@ -1248,6 +4031,50 @@ export interface Database {
             columns: ['work_order_id'];
             isOneToOne: false;
             referencedRelation: 'work_orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tracking_visitors: {
+        Row: {
+          anonymous_id: string;
+          customer_id: string | null;
+          first_seen_at: string;
+          last_seen_at: string;
+          ga_client_id: string | null;
+          fbp: string | null;
+          fbc: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          anonymous_id: string;
+          customer_id?: string | null;
+          first_seen_at?: string;
+          last_seen_at?: string;
+          ga_client_id?: string | null;
+          fbp?: string | null;
+          fbc?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          anonymous_id?: string;
+          customer_id?: string | null;
+          first_seen_at?: string;
+          last_seen_at?: string;
+          ga_client_id?: string | null;
+          fbp?: string | null;
+          fbc?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tracking_visitors_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
             referencedColumns: ['id'];
           },
         ];
@@ -1583,6 +4410,18 @@ export interface Database {
       message_channel: 'sms' | 'email';
       message_direction: 'outbound' | 'inbound';
       message_status: 'queued' | 'sent' | 'simulated' | 'failed' | 'skipped';
+      mkt_campaign_kind: 'broadcast' | 'drip' | 'lifecycle';
+      mkt_campaign_status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'active' | 'paused' | 'archived';
+      mkt_consent_action: 'granted' | 'revoked';
+      mkt_consent_purpose: 'transactional' | 'marketing';
+      mkt_conversion_kind: 'lead' | 'booking' | 'job_paid' | 'store_checkout_click';
+      mkt_email_status: 'subscribed' | 'unsubscribed' | 'bounced' | 'complained';
+      mkt_enrollment_status: 'active' | 'completed' | 'exited';
+      mkt_lifecycle_stage: 'subscriber' | 'lead' | 'customer' | 'repeat' | 'vip' | 'lapsed' | 'lost';
+      mkt_loyalty_tier: 'stock' | 'stage_1' | 'stage_2' | 'full_build';
+      mkt_offer_kind: 'percent' | 'amount' | 'free_service';
+      mkt_referral_status: 'pending' | 'qualified' | 'rewarded' | 'void';
+      mkt_send_status: 'scheduled' | 'sent' | 'simulated' | 'skipped' | 'failed' | 'cancelled';
       part_request_status: 'requested' | 'ordered' | 'received';
       work_order_status: 'estimate' | 'awaiting_approval' | 'approved' | 'in_progress' | 'waiting_parts' | 'quality_check' | 'ready' | 'invoiced' | 'paid' | 'cancelled';
     };

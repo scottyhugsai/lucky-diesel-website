@@ -1,7 +1,9 @@
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { deliverLead } from '@/lib/deliver-lead';
 import { createWebsiteLead } from '@/lib/domain/leads';
 import { parseLead } from '@/lib/lead';
+import { trackConversion } from '@/lib/marketing/wire';
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
@@ -42,5 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, delivered: result.delivered });
   }
 
+  const jar = await cookies();
+  await trackConversion({ kind: 'lead', leadId: saved.data.leadId, cookie: jar.get('ld_attr')?.value ?? null }, jar.get('ld_ref')?.value);
   return NextResponse.json({ ok: true, delivered: true });
 }

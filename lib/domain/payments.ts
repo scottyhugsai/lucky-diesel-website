@@ -1,5 +1,6 @@
 import 'server-only';
 import { emit } from '@/lib/automations/engine';
+import { trackConversion } from '@/lib/marketing/wire';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { attributeRecentEvents, type DomainResult } from './work-orders';
 
@@ -13,7 +14,7 @@ export async function recordPayment(
   options: { stripePaymentIntentId?: string; actorId?: string | null } = {},
 ): Promise<DomainResult> {
   const db = createAdminClient();
-  const { data: invoice } = await db.from('invoices').select('id, status, total_cents, work_order_id').eq('id', invoiceId).maybeSingle();
+  const { data: invoice } = await db.from('invoices').select('id, status, total_cents, work_order_id, customer_id').eq('id', invoiceId).maybeSingle();
   if (!invoice) return { ok: false, error: 'Invoice not found.' };
   if (invoice.status === 'paid') return { ok: true, data: undefined };
   if (invoice.status === 'void') return { ok: false, error: 'This invoice was voided.' };
@@ -37,6 +38,7 @@ export async function recordPayment(
   await attributeRecentEvents(db, invoice.work_order_id, options.actorId);
   await db.from('audit_log').insert({ actor_id: options.actorId ?? null, entity: 'invoice', entity_id: invoice.id, action: 'paid', data: { method, amount_cents: invoice.total_cents } });
 
+  await trackConversion({ kind: 'job_paid', invoiceId: invoice.id, customerId: invoice.customer_id, valueCents: invoice.total_cents });
   await emit({ name: 'invoice.paid', subjectType: 'invoice', subjectId: invoice.id });
   return { ok: true, data: undefined };
 }

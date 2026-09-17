@@ -59,7 +59,11 @@ export function CartContents({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <p className="mt-1 text-sm text-steel">Taxes &amp; shipping calculated at checkout.</p>
         {href && (
-          <a href={href} className={`${BTN_PRIMARY} mt-5 w-full`}>
+          <a
+            href={href}
+            onClick={() => navigator.sendBeacon?.('/api/marketing/track', new Blob([JSON.stringify({ event: 'store_checkout_click', path: window.location.pathname })], { type: 'application/json' }))}
+            className={`${BTN_PRIMARY} mt-5 w-full`}
+          >
             <Lock className="size-4" aria-hidden="true" /> Checkout
           </a>
         )}

@@ -150,3 +150,53 @@ describe('owner (admin)', () => {
     expect(data).toHaveLength(1);
   });
 });
+
+describe('marketing core tables (migration 008)', () => {
+  const MARKETING_TABLES = [
+    'contact_consent_events', 'suppressions', 'segments', 'segment_members', 'campaigns', 'campaign_steps', 'campaign_enrollments',
+    'campaign_sends', 'offers', 'offer_redemptions', 'referral_codes', 'referrals', 'loyalty_accounts', 'loyalty_events',
+    'tracking_visitors', 'attribution_touches', 'conversion_events', 'short_links', 'pipeline_stages', 'marketing_settings',
+    'fleet_accounts', 'event_registrations', 'marketing_call_events',
+  ] as const;
+
+  test('clients and anonymous visitors read none of them', async () => {
+    for (const table of MARKETING_TABLES) {
+      expect((await client.from(table).select('*').limit(1)).data ?? [], `client ${table}`).toHaveLength(0);
+      expect((await anon.from(table).select('*').limit(1)).data ?? [], `anon ${table}`).toHaveLength(0);
+    }
+  });
+
+  test('staff can read campaigns, segments and conversions', async () => {
+    for (const table of ['campaigns', 'segments', 'conversion_events'] as const) {
+      expect((await tech.from(table).select('*').limit(1)).data?.length, `tech ${table}`).toBe(1);
+    }
+  });
+
+  test('employees cannot write marketing data or the consent ledger', async () => {
+    const { data: campaign } = await tech.from('campaigns').select('id, name').limit(1).single();
+    expect((await tech.from('campaigns').update({ name: 'hijacked' }).eq('id', campaign!.id).select()).data ?? []).toHaveLength(0);
+    expect((await tech.from('segments').insert({ name: 'rls test' }).select()).error).not.toBeNull();
+    expect((await tech.from('suppressions').insert({ channel: 'sms', address: '+10000000000', reason: 'rls' }).select()).error).not.toBeNull();
+    expect((await tech.from('marketing_settings').update({ sms_max_per_week: 99 }).eq('id', 1).select()).data ?? []).toHaveLength(0);
+    expect((await tech.from('contact_consent_events').insert({ channel: 'sms', purpose: 'marketing', action: 'granted', method: 'rls', address: '+10000000000' }).select()).error).not.toBeNull();
+    expect((await tech.from('offers').delete().neq('code', '').select()).data ?? []).toHaveLength(0);
+  });
+
+  test('clients cannot grant themselves marketing consent or rewards', async () => {
+    expect((await client.from('loyalty_events').insert({ customer_id: '00000000-0000-4000-8000-000000000000', kind: 'adjust', points: 10000 }).select()).error).not.toBeNull();
+    expect((await client.from('contact_consent_events').insert({ channel: 'sms', purpose: 'marketing', action: 'granted', method: 'rls', address: '+10000000000' }).select()).error).not.toBeNull();
+  });
+
+  test('the consent ledger is append-only, even for the owner', async () => {
+    const { data: row } = await owner.from('contact_consent_events').select('id, method').limit(1).single();
+    expect((await owner.from('contact_consent_events').update({ method: 'edited' }).eq('id', row!.id).select()).data ?? []).toHaveLength(0);
+    expect((await owner.from('contact_consent_events').delete().eq('id', row!.id).select()).data ?? []).toHaveLength(0);
+  });
+
+  test('published events are public; the owner manages settings', async () => {
+    const { data: events } = await anon.from('events').select('published');
+    expect(events?.every((e) => e.published)).toBe(true);
+    const { data } = await owner.from('marketing_settings').update({ sms_max_per_week: 2 }).eq('id', 1).select();
+    expect(data).toHaveLength(1);
+  });
+});

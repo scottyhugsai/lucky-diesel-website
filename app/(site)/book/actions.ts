@@ -1,6 +1,7 @@
 'use server';
 
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { trackConversion } from '@/lib/marketing/wire';
 import { bookAppointment } from '@/lib/domain/appointments';
 import { findOrCreateCustomer } from '@/lib/domain/leads';
 import { parseLead, type LeadField } from '@/lib/lead';
@@ -83,6 +84,12 @@ export async function bookOnline(_prev: BookingState, formData: FormData): Promi
     source: 'online booking',
     converted_at: new Date().toISOString(),
   });
+
+  const jar = await cookies();
+  await trackConversion(
+    { kind: 'booking', customerId: customer.data.customerId, appointmentId: booking.data.appointmentId, cookie: jar.get('ld_attr')?.value ?? null },
+    jar.get('ld_ref')?.value,
+  );
 
   const when = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }).format(new Date(startsAt));
   return { ok: true, confirmation: { firstName: lead.name.split(' ')[0] ?? '', when, service: lead.serviceLabel } };

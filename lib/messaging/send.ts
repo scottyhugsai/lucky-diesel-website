@@ -1,5 +1,7 @@
 import 'server-only';
 import type { Enums } from '@/lib/db/database.types';
+import { gateOutbound } from '@/lib/marketing/core/gate';
+import { isMarketingAutomationKey, type MessagePurpose } from '@/lib/marketing/core/policy';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export interface OutboundMessage {
@@ -12,6 +14,12 @@ export interface OutboundMessage {
   automationKey?: string | null;
   /** Customer texts need recorded consent; owner/staff alerts don't. */
   requiresSmsConsent?: boolean;
+  /**
+   * `marketing` adds consent, suppression, weekly caps, quiet hours, the business
+   * name / STOP line and List-Unsubscribe. Defaults to `transactional`, except
+   * automation keys starting `mkt_` or `campaign:`, which are always marketing.
+   */
+  purpose?: MessagePurpose;
 }
 
 export interface SendResult {
@@ -22,7 +30,7 @@ export interface SendResult {
 
 const RESEND_TIMEOUT_MS = 8000;
 
-async function sendEmail(to: string, subject: string, body: string): Promise<{ id: string | null; error?: string; deliveredTo: string }> {
+async function sendEmail(to: string, subject: string, body: string, headers: Record<string, string> = {}): Promise<{ id: string | null; error?: string; deliveredTo: string }> {
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key) return { id: null, error: 'RESEND_API_KEY not set', deliveredTo: to };
 
@@ -35,7 +43,7 @@ async function sendEmail(to: string, subject: string, body: string): Promise<{ i
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: [deliveredTo], subject, text }),
+    body: JSON.stringify({ from, to: [deliveredTo], subject, text, ...(Object.keys(headers).length ? { headers } : {}) }),
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
   if (!response.ok) return { id: null, error: `Resend ${response.status}: ${await response.text().catch(() => '')}`, deliveredTo };
@@ -90,15 +98,22 @@ export async function sendMessage(message: OutboundMessage): Promise<SendResult>
   let status: Enums<'message_status'>;
   let providerId: string | null = null;
   let error: string | undefined;
+  let body = message.body;
+  const purpose: MessagePurpose = isMarketingAutomationKey(message.automationKey) ? 'marketing' : (message.purpose ?? 'transactional');
 
   try {
-    if (message.channel === 'sms') {
+    const gate = await gateOutbound(db, { channel: message.channel, to: message.to, customerId: message.customerId, purpose, body });
+    if (!gate.allowed) {
+      status = 'skipped';
+      error = gate.reason;
+    } else if (message.channel === 'sms') {
+      body = gate.body;
       const blocked = message.requiresSmsConsent ? await smsBlockedReason(message.customerId) : null;
       if (blocked) {
         status = 'skipped';
         error = blocked;
       } else if (process.env.MESSAGING_SMS_MODE === 'live') {
-        const result = await sendSms(message.to, message.body);
+        const result = await sendSms(message.to, body);
         status = result.error ? 'failed' : 'sent';
         providerId = result.id;
         error = result.error;
@@ -106,7 +121,8 @@ export async function sendMessage(message: OutboundMessage): Promise<SendResult>
         status = 'simulated';
       }
     } else {
-      const result = await sendEmail(message.to, message.subject ?? 'Lucky Diesel', message.body);
+      body = gate.body;
+      const result = await sendEmail(message.to, message.subject ?? 'Lucky Diesel', body, gate.headers);
       status = result.error ? 'failed' : 'sent';
       providerId = result.id;
       error = result.error;
@@ -124,7 +140,7 @@ export async function sendMessage(message: OutboundMessage): Promise<SendResult>
       channel: message.channel,
       to_address: message.to,
       subject: message.subject ?? null,
-      body: message.body,
+      body,
       status,
       provider_id: providerId,
       error: error ?? null,
