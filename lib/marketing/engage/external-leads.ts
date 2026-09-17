@@ -73,6 +73,9 @@ export function mapGoogleLead(payload: unknown): ExternalLead | null {
   return finish({ name, email: map.get('EMAIL') ?? '', phone: map.get('PHONE_NUMBER') ?? '', extra }, 'google_lead_form', typeof v.lead_id === 'string' ? v.lead_id : null);
 }
 
+// Labels are hardcoded literals from the call sites below (never request data), so this
+// cannot be driven by an attacker; the alternative would be ~20 duplicated literal regexes.
+// nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
 const LINE = (label: string) => new RegExp(`^\\s*(?:${label})\\s*[:\\-]\\s*(.+)$`, 'im');
 
 /** Forwarded lead notification emails (Angi, Thumbtack, Nextdoor, Marketplace…) with "Name: / Phone: / Email:" lines. */

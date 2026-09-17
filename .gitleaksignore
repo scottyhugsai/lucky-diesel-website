@@ -1,3 +1,9 @@
 # False positives: automation identifiers (key: 'appointment_reminder_…') matched the generic-api-key rule.
 28dea720d94b82ee796e2b007c03d3e2441f0ce6:lib/automations/catalog.ts:generic-api-key:98
 28dea720d94b82ee796e2b007c03d3e2441f0ce6:lib/automations/catalog.ts:generic-api-key:109
+e7d19d814eb1ee4ac2b06f8e9bb0116e0db33149:lib/automations/catalog.ts:generic-api-key:599
+e7d19d814eb1ee4ac2b06f8e9bb0116e0db33149:lib/automations/catalog.ts:generic-api-key:1120
+e7d19d814eb1ee4ac2b06f8e9bb0116e0db33149:lib/automations/catalog.ts:generic-api-key:1132
+e7d19d814eb1ee4ac2b06f8e9bb0116e0db33149:lib/automations/catalog.ts:generic-api-key:1143
+e7d19d814eb1ee4ac2b06f8e9bb0116e0db33149:lib/automations/catalog.ts:generic-api-key:1154
+e7d19d814eb1ee4ac2b06f8e9bb0116e0db33149:lib/marketing/core/lifecycle-retention.ts:generic-api-key:125

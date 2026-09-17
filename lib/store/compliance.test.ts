@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHmac, randomBytes } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { complianceFor, highValueCarts, isPromotable, normalizeEoNumber, productFeedTsv, type ComplianceMap } from './compliance';
 import { parseShopifyCustomer, parseShopifyOrder, verifyShopifyHmac } from './shopify-webhook';
@@ -46,10 +46,11 @@ describe('SKU compliance', () => {
 describe('Shopify webhooks', () => {
   it('verifies the HMAC', () => {
     const body = '{"id":1}';
-    const sig = createHmac('sha256', 'shh').update(body).digest('base64');
-    expect(verifyShopifyHmac(body, sig, 'shh')).toBe(true);
+    const secret = randomBytes(16).toString('hex');
+    const sig = createHmac('sha256', secret).update(body).digest('base64');
+    expect(verifyShopifyHmac(body, sig, secret)).toBe(true);
     expect(verifyShopifyHmac(body, sig, 'nope')).toBe(false);
-    expect(verifyShopifyHmac(body, null, 'shh')).toBe(false);
+    expect(verifyShopifyHmac(body, null, secret)).toBe(false);
     expect(verifyShopifyHmac(body, 'short', 'shh')).toBe(false);
   });
 

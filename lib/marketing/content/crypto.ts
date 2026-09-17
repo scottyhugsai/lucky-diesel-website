@@ -20,6 +20,8 @@ function parseKey(material: string | undefined): Buffer {
   throw new Error('MARKETING_TOKEN_KEY must be 32 bytes (base64) or 64 hex characters');
 }
 
+const TAG_BYTES = 16;
+
 export function keyId(material: string | undefined = process.env.MARKETING_TOKEN_KEY): string {
   return createHash('sha256').update(parseKey(material)).digest('hex').slice(0, 8);
 }
@@ -46,7 +48,7 @@ export function decryptToken(payload: string, material: string | undefined = pro
   const [version, id, iv, tag, data] = payload.split('.');
   if (version !== VERSION || !id || !iv || !tag || data === undefined) throw new Error('Unrecognised token ciphertext');
   if (id !== keyId(material)) throw new Error('Token was encrypted with a different MARKETING_TOKEN_KEY');
-  const decipher = createDecipheriv('aes-256-gcm', parseKey(material), Buffer.from(iv, 'base64url'));
+  const decipher = createDecipheriv('aes-256-gcm', parseKey(material), Buffer.from(iv, 'base64url'), { authTagLength: TAG_BYTES });
   decipher.setAuthTag(Buffer.from(tag, 'base64url'));
   return Buffer.concat([decipher.update(Buffer.from(data, 'base64url')), decipher.final()]).toString('utf8');
 }
