@@ -147,19 +147,19 @@ export const PART_LINES: readonly PartLine[] = [
     title: 'Turbochargers',
     brand: 'Dan’s Diesel Performance',
     image: '/images/part-turbo.png',
-    href: `${BUSINESS.store}/collections/parts`,
+    href: '/store/products?category=turbo',
   },
   {
     title: 'Performance injectors',
     brand: 'Dan’s Diesel Performance',
     image: '/images/part-injectors.png',
-    href: `${BUSINESS.store}/collections/parts`,
+    href: '/store/products?category=fuel',
   },
   {
     title: 'CP3 pumps & kits',
     brand: 'Dan’s Diesel Performance',
     image: '/images/part-cp3.png',
-    href: `${BUSINESS.store}/collections/parts`,
+    href: '/store/products?category=fuel',
   },
 ];
 

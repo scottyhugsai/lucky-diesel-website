@@ -4,9 +4,9 @@ import { SocialIcons } from '@/components/ui/SocialIcons';
 import { BUSINESS } from '@/lib/site';
 
 const SHOP_LINKS = [
-  { href: `${BUSINESS.store}/collections/parts`, label: 'Parts' },
-  { href: `${BUSINESS.store}/collections/tuning`, label: 'Tuning' },
-  { href: `${BUSINESS.store}/collections/merch`, label: 'Merch' },
+  { href: '/store', label: 'Parts' },
+  { href: '/store/products?category=tuning', label: 'Tuning' },
+  { href: '/store/products?category=merch', label: 'Merch' },
 ] as const;
 
 export function SiteFooter() {

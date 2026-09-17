@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 import { Reveal } from '@/components/ui/Reveal';
-import { BUSINESS, PART_LINES, TUNING_BRANDS } from '@/lib/site';
+import Link from 'next/link';
+import { PART_LINES, TUNING_BRANDS } from '@/lib/site';
 
 export function Parts() {
   const [lead, ...rest] = PART_LINES;
@@ -16,15 +17,13 @@ export function Parts() {
               The good stuff, in stock.
             </h2>
           </div>
-          <a
-            href={`${BUSINESS.store}/collections/parts`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/store"
             className="group inline-flex items-center gap-2 rounded-sm border border-chalk/25 px-5 py-3 font-semibold transition-colors hover:border-clover hover:text-clover"
           >
             Shop all parts
             <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
-          </a>
+          </Link>
         </Reveal>
 
         <div className="mt-12 grid gap-4 md:grid-cols-3 md:grid-rows-2">
@@ -49,14 +48,12 @@ export function Parts() {
               </li>
             ))}
           </ul>
-          <a
-            href={`${BUSINESS.store}/collections/tuning`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/store/products?category=tuning"
             className="btn-go display inline-flex items-center justify-center gap-2 rounded-sm px-6 py-3 text-xl not-italic"
           >
             Find a tune <ArrowUpRight className="size-5" aria-hidden="true" />
-          </a>
+          </Link>
         </Reveal>
       </div>
     </section>
@@ -73,10 +70,8 @@ interface PartCardProps {
 
 function PartCard({ title, brand, image, href, isFeatured = false }: PartCardProps) {
   return (
-    <a
+    <Link
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       className="group relative flex h-full flex-col overflow-hidden rounded-sm bg-chalk text-carbon"
     >
       <div className={`relative flex flex-1 items-center justify-center p-6 ${isFeatured ? 'min-h-72 md:min-h-0' : 'min-h-52'}`}>
@@ -98,6 +93,6 @@ function PartCard({ title, brand, image, href, isFeatured = false }: PartCardPro
           <ArrowUpRight className="size-5" aria-hidden="true" />
         </span>
       </div>
-    </a>
+    </Link>
   );
 }

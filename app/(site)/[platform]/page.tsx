@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowRight, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { Reveal } from '@/components/ui/Reveal';
 import { BUSINESS, PLATFORMS, SERVICES } from '@/lib/site';
 
@@ -58,14 +58,12 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
             <Link href={`/?truck=${platform.id}#quote`} className="btn-go display flex items-center justify-center gap-3 rounded-sm px-8 py-4 text-2xl not-italic">
               Get a {platform.name} quote <ArrowRight className="size-5" aria-hidden="true" />
             </Link>
-            <a
-              href={`${BUSINESS.store}/collections/${platform.collection}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/store/products?platform=${platform.id}`}
               className="flex items-center justify-center gap-2 rounded-sm border border-chalk/25 px-7 py-4 font-semibold hover:border-clover hover:text-clover"
             >
-              Shop {platform.name} parts <ArrowUpRight className="size-4" aria-hidden="true" />
-            </a>
+              Shop {platform.name} parts <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </section>
@@ -82,14 +80,12 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
                     <Link href={`/?truck=${platform.id}#quote`} className="rounded-sm bg-clover px-3 py-2 text-carbon">
                       Request service
                     </Link>
-                    <a
-                      href={`${BUSINESS.store}/collections/${platform.generationCollections[index]}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      href={`/store/products?platform=${platform.id}&gen=${platform.generationCollections[index]}`}
                       className="inline-flex items-center gap-1 rounded-sm border border-line px-3 py-2 hover:border-clover hover:text-clover"
                     >
-                      Parts <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                    </a>
+                      Parts <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </Link>
                   </div>
                 </div>
               </Reveal>
@@ -101,7 +97,7 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
       <section aria-labelledby="platform-services-heading" className="bg-carbon-2 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 id="platform-services-heading" className="display text-5xl">{platform.name} services</h2>
-          <ul className="mt-10 grid gap-px overflow-hidden rounded-sm border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
               <li key={service.id} className="bg-carbon">
                 <Link href={`/?truck=${platform.id}&service=${service.id}#quote`} className="group flex h-full flex-col gap-2 p-6 transition-colors hover:bg-gunmetal">

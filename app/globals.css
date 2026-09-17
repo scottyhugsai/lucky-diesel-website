@@ -151,6 +151,11 @@ input[type='radio'] {
   transform: none;
 }
 
+/* Without JavaScript the observer never runs: never leave content invisible. */
+@media (scripting: none) {
+  .reveal { opacity: 1; transform: none; }
+}
+
 @keyframes spool {
   to {
     transform: rotate(360deg);
@@ -230,3 +235,147 @@ input[type='radio'] {
 [data-design='v2'] .btn-go::before { display: none; }
 [data-design='v2'] .grain::after { display: none; }
 [data-design='v2'] .speed-stripes { display: none; }
+
+/* v2 base type: 17px body, SF-style tightness, no Barlow anywhere inside the band. */
+[data-design='v2'] {
+  font-size: 1.0625rem;
+  line-height: 1.47;
+  --v2-bar-bg: rgb(10 12 11 / 0.95);
+}
+[data-design='v2'] h1,
+[data-design='v2'] h2,
+[data-design='v2'] h3,
+[data-design='v2'] .font-display {
+  font-family: var(--font-v2);
+}
+/* Big tight headline used by every v2 section. */
+[data-design='v2'] .v2-title {
+  font-family: var(--font-v2);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+/* Translucent bars (header, home sub-nav). Solid fallback when blur is unavailable or unwanted. */
+[data-design='v2'] .v2-bar {
+  background: var(--v2-bar-bg);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  [data-design='v2'] .v2-bar {
+    background: rgb(10 12 11 / 0.72);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  [data-design='v2'] .v2-bar {
+    background: var(--v2-bar-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+[data-design='v2'] .v2-sheet {
+  background: rgb(10 12 11 / 0.97);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  [data-design='v2'] .v2-sheet {
+    background: rgb(10 12 11 / 0.9);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    backdrop-filter: saturate(180%) blur(24px);
+  }
+}
+/* Text links underline on hover, Apple style; the chevron never underlines. */
+[data-design='v2'] .v2-link:hover > span:first-child {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+/* Tiles lift very slightly. Transform only. */
+[data-design='v2'] .v2-tile {
+  transition: transform 400ms var(--ease-out-expo);
+}
+[data-design='v2'] .v2-tile:hover {
+  transform: translateY(-3px);
+}
+/* Product rows scroll without a visible bar. */
+[data-design='v2'] .v2-scroll {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+[data-design='v2'] .v2-scroll::-webkit-scrollbar {
+  display: none;
+}
+/* Product row: first card lines up with the 1024px content column, then bleeds to the viewport edge. */
+[data-design='v2'] .v2-row {
+  --v2-gutter: 1rem;
+  padding-inline: var(--v2-gutter);
+  scroll-padding-inline: var(--v2-gutter);
+}
+@media (min-width: 640px) {
+  [data-design='v2'] .v2-row {
+    --v2-gutter: max(1.5rem, calc((100vw - 1024px) / 2 + 1.5rem));
+  }
+}
+/* Footer social circles at fine-print scale. */
+[data-design='v2'] .v2-socials a {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-color: rgb(238 242 239 / 0.14);
+}
+[data-design='v2'] .v2-socials svg {
+  width: 15px;
+  height: 15px;
+}
+/* The hero photo bleeds into the band rather than sitting boxed on it. */
+[data-design='v2'] .v2-hero-photo {
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
+
+/* Shared pages (platform, book, builds, policy, store, planner, gallery): soften v1's hard edges. */
+[data-design='v2'] .rounded-sm { border-radius: 0.875rem; }
+[data-design='v2'] .rounded-md { border-radius: 1.25rem; }
+[data-design='v2'] .rounded-lg { border-radius: 1.5rem; }
+[data-design='v2'] input:not([type='checkbox']):not([type='radio']),
+[data-design='v2'] select,
+[data-design='v2'] textarea {
+  border-radius: 0.875rem;
+  font-family: var(--font-v2);
+}
+[data-design='v2'] button,
+[data-design='v2'] a,
+[data-design='v2'] label {
+  font-family: var(--font-v2);
+}
+/* v1's italic-condensed display spans inside shared pages become sentence-case sans. */
+[data-design='v2'] .display .text-clover,
+[data-design='v2'] .display span {
+  font-style: normal;
+}
+[data-design='v2'] .text-\[length\:var\(--text-mega\)\] {
+  font-size: clamp(3rem, 1.6rem + 6.5vw, 6.5rem);
+}
+[data-design='v2'] .text-\[length\:var\(--text-display\)\] {
+  font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4rem);
+}
+/* Mobile action bar in v2: pill buttons, hairline top. */
+[data-design='v2'] nav[aria-label='Quick contact'] {
+  border-color: rgb(238 242 239 / 0.1);
+}
+[data-design='v2'] nav[aria-label='Quick contact'] a {
+  border-radius: 999px;
+  font-weight: 500;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-design='v2'] .v2-tile,
+  [data-design='v2'] .v2-tile:hover {
+    transition: none;
+    transform: none;
+  }
+}
+/* No JavaScript, no IntersectionObserver: content is still visible. */
+@media (scripting: none) {
+  [data-design='v2'] .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
