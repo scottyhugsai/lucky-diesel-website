@@ -38,9 +38,9 @@ export function MarketingNav({ demoChip }: { demoChip?: React.ReactNode }) {
 
   return (
     <div className="sticky top-14 z-20 -mx-4 mb-6 border-b border-line bg-carbon/92 backdrop-blur-xl sm:-mx-6 lg:top-0 lg:mx-0 lg:mb-8 lg:rounded-md lg:border">
-      <div className="flex items-center gap-2 pr-3 lg:pr-2">
-        <nav aria-label="Marketing" className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <ul className="flex w-max items-center gap-1 px-3 py-2 lg:px-2">
+      <div className="flex flex-col items-stretch gap-1 pb-2 pr-3 lg:flex-row lg:items-center lg:gap-2 lg:pb-0 lg:pr-2">
+        <nav aria-label="Marketing" className="min-w-0 flex-1 lg:overflow-x-auto lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
+          <ul className="flex flex-wrap items-center gap-1 px-3 pt-2 lg:w-max lg:flex-nowrap lg:px-2 lg:py-2">
             {MARKETING_NAV.map((item) => {
               const active = isActive(pathname, item);
               return (
@@ -54,7 +54,7 @@ export function MarketingNav({ demoChip }: { demoChip?: React.ReactNode }) {
                     }`}
                   >
                     {item.label}
-                    {active && <span className="absolute inset-x-3 -bottom-2 h-0.5 rounded-full bg-clover" aria-hidden="true" />}
+                    {active && <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-clover lg:-bottom-2" aria-hidden="true" />}
                   </Link>
                 </li>
               );

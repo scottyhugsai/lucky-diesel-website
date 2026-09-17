@@ -4,6 +4,7 @@ import { LogOut } from 'lucide-react';
 import { signOut } from '@/app/auth/actions';
 import type { Viewer } from '@/lib/auth';
 import { AppNav, type NavItem } from './AppNav';
+import { MobileNavSheet } from './MobileNavSheet';
 import { Avatar } from './ui';
 
 interface AppShellProps {
@@ -51,7 +52,7 @@ export function AppShell({ viewer, area, nav, children, mobileTabs }: AppShellPr
             <span className="display text-lg not-italic"><span className="text-clover">Lucky</span> Diesel</span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-widest text-steel">{area}</span>
+            <MobileNavSheet items={nav} area={area} />
             <form action={signOut}>
               <button type="submit" className="grid size-9 place-items-center rounded-sm text-steel hover:text-chalk" aria-label="Sign out">
                 <LogOut className="size-4" />
