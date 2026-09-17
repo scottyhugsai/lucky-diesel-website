@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { DesignToggle } from '@/components/design/DesignToggle';
 import { MobileActionBar } from '@/components/layout/MobileActionBar';
+import { MarketingWidgets } from '@/components/marketing-public/MarketingWidgets';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { CartDrawer } from '@/components/store/CartDrawer';
@@ -37,6 +38,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           </>
         )}
         <CartDrawer />
+        <MarketingWidgets design={design} />
         <Suspense>
           <DesignToggle design={design} labels={DESIGN_LABELS} />
         </Suspense>
