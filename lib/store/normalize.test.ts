@@ -25,6 +25,11 @@ describe('normalizeProduct', () => {
     expect(byTitle('Tee').platforms).toEqual([]);
   });
 
+  test('trusts a title that names one platform over conflicting store tags', () => {
+    const cummins = { ...raw[0]!, title: 'DDP 2004.5-2007 5.9L Cummins Performance Injector Set', tags: ['Cummins', 'Duramax', 'Duramax 2004.5-2005 LLY'] };
+    expect(normalizeProduct(cummins, new Map()).platforms).toEqual(['cummins']);
+  });
+
   test('flags off-road-only products', () => {
     expect(byTitle('Transmission Tuning').offRoadOnly).toBe(true);
     expect(byTitle('CP3 Conversion').offRoadOnly).toBe(false);

@@ -82,6 +82,8 @@ export function filterProducts(products: readonly StoreProduct[], filter: Catalo
   return products.filter((product) => {
     if (filter.category && product.category !== filter.category) return false;
     if (filter.platform && product.platforms.length && !product.platforms.includes(filter.platform)) return false;
+    // Shopping for a truck means parts: keep universal devices, drop apparel unless merch was asked for.
+    if (filter.platform && product.category === 'merch' && filter.category !== 'merch') return false;
     if (filter.generationCollection && product.platforms.length) {
       const forPlatform = product.generationCollections.filter((h) => h.startsWith(`${filter.platform ?? ''}`));
       if (forPlatform.length && !forPlatform.includes(filter.generationCollection)) return false;

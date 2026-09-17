@@ -3,6 +3,7 @@ import { DesignToggle } from '@/components/design/DesignToggle';
 import { MobileActionBar } from '@/components/layout/MobileActionBar';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
+import { CartDrawer } from '@/components/store/CartDrawer';
 import { CartProvider } from '@/components/store/CartProvider';
 import { SiteFooterV2 } from '@/components/v2/SiteFooterV2';
 import { SiteHeaderV2 } from '@/components/v2/SiteHeaderV2';
@@ -18,6 +19,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <main>{children}</main>
         {isV2 ? <SiteFooterV2 /> : <SiteFooter />}
         <MobileActionBar />
+        <CartDrawer />
         <Suspense>
           <DesignToggle design={design} labels={DESIGN_LABELS} />
         </Suspense>

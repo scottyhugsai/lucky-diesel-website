@@ -4,15 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, MessageSquare, Phone, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { CartButton } from '@/components/store/CartButton';
 import { BUSINESS } from '@/lib/site';
+import { PRIMARY_NAV } from '@/lib/site-nav';
 
-const NAV = [
-  { href: '/#trucks', label: 'Trucks' },
-  { href: '/#services', label: 'Services' },
-  { href: '/builds', label: 'Builds' },
-  { href: '/#parts', label: 'Parts & tuning' },
-  { href: '/#quote', label: 'Contact' },
-] as const;
+const NAV = PRIMARY_NAV;
 
 export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,33 +52,36 @@ export function SiteHeader() {
           </Link>
 
           <nav aria-label="Main" className="hidden lg:block">
-            <ul className="flex items-center gap-8 text-[0.95rem] font-semibold text-chalk/80">
+            <ul className="flex items-center gap-5 text-[0.95rem] xl:gap-7 font-semibold text-chalk/80">
               {NAV.map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="relative py-2 transition-colors hover:text-chalk after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-clover after:transition-transform after:duration-300 hover:after:scale-x-100">
+                  <Link href={item.href} className="relative py-2 transition-colors hover:text-chalk after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-clover after:transition-transform after:duration-300 hover:after:scale-x-100">
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </nav>
 
-          <div className="hidden items-center gap-5 lg:flex">
-            <a href={BUSINESS.phoneHref} className="flex items-center gap-2 font-semibold tabular-nums transition-colors hover:text-clover">
+          <div className="hidden items-center gap-4 lg:flex">
+            <a href={BUSINESS.phoneHref} className="hidden items-center gap-2 xl:flex font-semibold tabular-nums transition-colors hover:text-clover">
               <Phone className="size-4 text-clover" aria-hidden="true" />
               {BUSINESS.phoneDisplay}
             </a>
             <Link href="/login" className="text-[0.95rem] font-semibold text-chalk/80 transition-colors hover:text-clover">
               Log in
             </Link>
+            <CartButton />
             <Link href="/book" className="btn-go display rounded-sm px-5 py-2.5 text-lg not-italic">
               Book online
             </Link>
           </div>
 
+          <div className="flex items-center gap-1 lg:hidden">
+          <CartButton className="size-11" />
           <button
             type="button"
-            className="grid size-11 place-items-center rounded-full border border-line lg:hidden"
+            className="grid size-11 place-items-center rounded-full border border-line"
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
@@ -90,6 +89,7 @@ export function SiteHeader() {
           >
             {isMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
+          </div>
         </div>
 
         <div
@@ -101,13 +101,13 @@ export function SiteHeader() {
             <ul className="space-y-1">
               {NAV.map((item, index) => (
                 <li key={item.href} className="rise" style={{ '--rise-delay': `${index * 60}ms` } as React.CSSProperties}>
-                  <a href={item.href} onClick={closeMenu} className="display block py-2 text-6xl text-chalk active:text-clover">
+                  <Link href={item.href} onClick={closeMenu} className="display block py-2 text-5xl text-chalk active:text-clover">
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li className="rise" style={{ '--rise-delay': '300ms' } as React.CSSProperties}>
-                <Link href="/login" onClick={closeMenu} className="display block py-2 text-6xl text-clover">
+                <Link href="/login" onClick={closeMenu} className="display block py-2 text-5xl text-clover">
                   Log in
                 </Link>
               </li>

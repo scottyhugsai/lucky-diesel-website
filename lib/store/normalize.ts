@@ -131,6 +131,11 @@ function categorize(product: ShopifyProduct): CategoryId {
 }
 
 function platformsOf(product: ShopifyProduct): PlatformId[] {
+  // A title that names exactly one platform wins over tags: the live store has
+  // Cummins injector sets also tagged Duramax, which would show them for the wrong truck.
+  const named = PLATFORM_WORDS.filter(([, pattern]) => pattern.test(product.title)).map(([platform]) => platform);
+  if (named.length === 1) return named;
+
   const tagged = new Set<PlatformId>();
   for (const tag of product.tags) {
     const lower = tag.toLowerCase();
