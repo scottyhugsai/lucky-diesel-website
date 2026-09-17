@@ -1,11 +1,11 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 
-export const DESIGNS = ['v1', 'v2'] as const;
+export const DESIGNS = ['v1', 'v2', 'v3'] as const;
 export type Design = (typeof DESIGNS)[number];
 export const DESIGN_COOKIE = 'ld_design';
 
-export const DESIGN_LABELS: Record<Design, string> = { v1: 'Garage', v2: 'Showroom' };
+export const DESIGN_LABELS: Record<Design, string> = { v1: 'Garage', v2: 'Showroom', v3: 'Telemetry' };
 
 export function isDesign(value: unknown): value is Design {
   return typeof value === 'string' && (DESIGNS as readonly string[]).includes(value);

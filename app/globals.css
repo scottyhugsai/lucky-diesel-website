@@ -379,3 +379,241 @@ input[type='radio'] {
     transform: none;
   }
 }
+
+/* ─── Design v3 "Telemetry": dark, data-forward, app-like shell ────────────────
+ * Scoped to [data-design='v3']. Space Grotesk for display and UI, JetBrains Mono
+ * for every number. 6–8px radii on cards and buttons, 0px on data readouts.
+ * Font variables come from components/v3/fonts.ts and exist only in the v3 shell.
+ */
+[data-design='v3'] {
+  --font-v3: var(--font-v3-display), 'Space Grotesk', system-ui, sans-serif;
+  --font-v3-num: var(--font-v3-mono), 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --v3-bar-bg: rgb(10 12 11 / 0.96);
+  --v3-tabbar-h: 3.5rem;
+  --v3-safe: env(safe-area-inset-bottom, 0px);
+  font-family: var(--font-v3);
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+[data-design='v3'] h1,
+[data-design='v3'] h2,
+[data-design='v3'] h3,
+[data-design='v3'] button,
+[data-design='v3'] a,
+[data-design='v3'] label,
+[data-design='v3'] input:not([type='checkbox']):not([type='radio']),
+[data-design='v3'] select,
+[data-design='v3'] textarea,
+[data-design='v3'] .font-display {
+  font-family: var(--font-v3);
+}
+[data-design='v3'] .v3-title,
+[data-design='v3'] .display {
+  font-family: var(--font-v3);
+  font-style: normal;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+[data-design='v3'] .display span,
+[data-design='v3'] .display .text-clover {
+  font-style: normal;
+}
+/* Readout label: mono, spaced, clover. */
+[data-design='v3'] .kicker {
+  font-family: var(--font-v3-num);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+}
+/* Every number is an instrument. Shared pages already mark numerals with tabular-nums. */
+[data-design='v3'] .v3-mono,
+[data-design='v3'] .tabular-nums,
+[data-design='v3'] time,
+[data-design='v3'] output {
+  font-family: var(--font-v3-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+/* Clover numerals on prices and dyno figures; the cart badge (text-carbon on clover) keeps its own ink. */
+[data-design='v3'] .font-bold.tabular-nums:not(.text-carbon),
+[data-design='v3'] .display.tabular-nums:not(.text-steel\/50) {
+  color: var(--clover);
+}
+[data-design='v3'] .v3-chip {
+  border-radius: 0;
+}
+/* Primary buttons: square-ish, sentence case, no sheen. */
+[data-design='v3'] .btn-go {
+  border-radius: 6px !important;
+  font-family: var(--font-v3);
+  font-style: normal;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  font-size: 1rem;
+}
+[data-design='v3'] .btn-go::before { display: none; }
+[data-design='v3'] .grain::after { display: none; }
+[data-design='v3'] .speed-stripes { display: none; }
+
+/* Radii on shared pages: 6px controls, 8px surfaces. */
+[data-design='v3'] .rounded-sm { border-radius: 6px; }
+[data-design='v3'] .rounded-md,
+[data-design='v3'] .rounded-lg { border-radius: 8px; }
+[data-design='v3'] input:not([type='checkbox']):not([type='radio']),
+[data-design='v3'] select,
+[data-design='v3'] textarea {
+  border-radius: 6px;
+}
+/* Shared page hero type sits closer to the instrument scale. */
+[data-design='v3'] .text-\[length\:var\(--text-mega\)\] {
+  font-size: clamp(2.5rem, 1.4rem + 5.2vw, 5.25rem);
+}
+[data-design='v3'] .text-\[length\:var\(--text-display\)\] {
+  font-size: clamp(2rem, 1.3rem + 3vw, 3.5rem);
+}
+
+/* Chrome: bars are solid by default, translucent when blur is available and wanted. */
+[data-design='v3'] .v3-bar,
+[data-design='v3'] .v3-menu {
+  background: var(--v3-bar-bg);
+}
+[data-design='v3'] .v3-sheet {
+  background: rgb(18 22 20 / 0.98);
+}
+[data-design='v3'] .v3-scrim {
+  background: rgb(10 12 11 / 0.6);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  [data-design='v3'] .v3-bar {
+    background: rgb(10 12 11 / 0.8);
+    -webkit-backdrop-filter: saturate(160%) blur(16px);
+    backdrop-filter: saturate(160%) blur(16px);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  [data-design='v3'] .v3-bar {
+    background: var(--v3-bar-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+[data-design='v3'] .v3-tabbar {
+  padding-bottom: var(--v3-safe);
+}
+/* Active tab gets a 2px clover tick at the top edge; transform-only so it can animate. */
+[data-design='v3'] .v3-tab {
+  position: relative;
+}
+[data-design='v3'] .v3-tab[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--clover);
+}
+[data-design='v3'] .v3-navlink[aria-current='page'] {
+  background: rgb(31 191 63 / 0.1);
+}
+/* Floating call/text pill: above the tab bar on phones, bottom-right on desktop. */
+[data-design='v3'] .v3-pill {
+  bottom: calc(var(--v3-tabbar-h) + var(--v3-safe) + 0.75rem);
+  background: var(--clover);
+}
+/* Sticky buy bar sits directly on the tab bar; while it is shown, the pill (its next sibling) rides above it. */
+[data-design='v3'] .v3-buybar {
+  --v3-buybar-h: 3.875rem;
+  bottom: calc(var(--v3-tabbar-h) + var(--v3-safe));
+}
+[data-design='v3'] .v3-buybar:not([aria-hidden='true']) ~ .v3-pill {
+  bottom: calc(var(--v3-tabbar-h) + var(--v3-safe) + 3.875rem + 0.75rem);
+}
+/* Design toggle: clear of the tab bar and the pill row. */
+[data-design='v3'] .design-toggle {
+  bottom: calc(var(--v3-tabbar-h) + var(--v3-safe) + 0.75rem + 2.75rem + 0.5rem);
+  left: 0.75rem;
+}
+/* Nothing hides behind the tab bar: pages keep their own pb-24/28; the footer clears bar + pill. */
+[data-design='v3'] .v3-footer {
+  padding-bottom: calc(var(--v3-tabbar-h) + var(--v3-safe) + 4.5rem);
+}
+@media (min-width: 1024px) {
+  [data-design='v3'] .v3-pill { bottom: 1.5rem; }
+  [data-design='v3'] .v3-buybar { bottom: 0; }
+  [data-design='v3'] .v3-buybar:not([aria-hidden='true']) ~ .v3-pill { bottom: calc(3.875rem + 1rem); }
+  [data-design='v3'] .design-toggle { bottom: 1.25rem; left: 1rem; }
+  [data-design='v3'] .v3-footer { padding-bottom: 1rem; }
+}
+/* Legacy mobile action bar never renders in v3, but shared pages' "Quick contact" nav styles must not leak. */
+[data-design='v3'] .v3-socials a {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 6px;
+}
+[data-design='v3'] .v3-socials svg {
+  width: 15px;
+  height: 15px;
+}
+/* Hero photo becomes a surface: dark from the text side, darker at the bottom. */
+[data-design='v3'] .v3-hero-shade {
+  background:
+    linear-gradient(to top, var(--carbon) 0%, rgb(10 12 11 / 0.7) 45%, rgb(10 12 11 / 0.35) 100%),
+    linear-gradient(to right, rgb(10 12 11 / 0.92) 0%, rgb(10 12 11 / 0.7) 45%, rgb(10 12 11 / 0.3) 100%);
+}
+[data-design='v3'] .v3-readout {
+  border-radius: 0;
+  transition: border-color 150ms ease;
+}
+[data-design='v3'] .v3-readout:hover {
+  border-color: var(--clover);
+}
+/* The one violet element: the planner band. Violet only on large text, borders and glow. */
+[data-design='v3'] .v3-planner-band {
+  background: linear-gradient(180deg, rgb(107 44 245 / 0.12), transparent 70%);
+  border-top: 1px solid rgb(107 44 245 / 0.45);
+}
+[data-design='v3'] .v3-planner {
+  border-color: rgb(107 44 245 / 0.5);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgb(107 44 245 / 0.15), 0 24px 60px -30px rgb(107 44 245 / 0.6);
+}
+[data-design='v3'] .v3-planner .btn-go {
+  background: var(--violet);
+  color: var(--chalk);
+  font-size: 1.125rem;
+}
+[data-design='v3'] .v3-planner .btn-go:hover {
+  box-shadow: 0 10px 40px -8px rgb(107 44 245 / 0.55);
+  filter: brightness(1.08);
+}
+[data-design='v3'] .v3-planner .display {
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
+}
+[data-design='v3'] .v3-tile {
+  transition: transform 300ms var(--ease-out-expo), border-color 150ms ease;
+}
+[data-design='v3'] .v3-tile:hover {
+  transform: translateY(-2px);
+}
+[data-design='v3'] .v3-scroll {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+[data-design='v3'] .v3-scroll::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-design='v3'] .v3-tile,
+  [data-design='v3'] .v3-tile:hover,
+  [data-design='v3'] .v3-buybar {
+    transition: none;
+    transform: none;
+  }
+}
+@media (scripting: none) {
+  [data-design='v3'] .reveal { opacity: 1; transform: none; }
+}
