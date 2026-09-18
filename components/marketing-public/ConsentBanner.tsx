@@ -21,12 +21,16 @@ export function ConsentBanner({ onSave }: ConsentBannerProps) {
       aria-labelledby="consent-title"
       className="fixed inset-x-0 z-50 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] px-3 lg:bottom-4"
     >
-      <div className="mx-auto grid max-w-3xl gap-3 rounded-md border border-line bg-carbon-2/98 p-4 shadow-[0_18px_50px_-12px_rgb(0_0_0/0.8)] backdrop-blur [[data-design=v2]_&]:rounded-2xl">
+      <div className="mx-auto grid max-w-3xl gap-2 rounded-md border border-line bg-carbon-2/98 p-3 sm:gap-3 sm:p-4 shadow-[0_18px_50px_-12px_rgb(0_0_0/0.8)] backdrop-blur [[data-design=v2]_&]:rounded-2xl">
         <p id="consent-title" className="flex items-center gap-2 font-semibold">
           <Cookie className="size-4 shrink-0 text-clover" aria-hidden="true" /> Cookies
         </p>
+        {/* The long sentence costs three lines on a 320px screen, where this
+            sheet sits directly over the hero's truck picker. The short form says
+            the same thing; the full one returns as soon as there is room. */}
         <p className="text-sm text-chalk/70">
-          We always count our own page views. Analytics and ad cookies are yours to allow.{' '}
+          <span className="sm:hidden">Analytics and ad cookies are yours to allow.{' '}</span>
+          <span className="hidden sm:inline">We always count our own page views. Analytics and ad cookies are yours to allow.{' '}</span>
           <Link href="/privacy#tracking" className="underline underline-offset-2 hover:text-clover">How we track</Link>
         </p>
 

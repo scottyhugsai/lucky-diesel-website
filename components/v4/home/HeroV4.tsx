@@ -43,7 +43,7 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
           a phone never downloads the desktop art or vice versa. */}
       <div aria-hidden="true" className="v4-art v4-art-hero v4-hero-bg" />
 
-      <div className={`${WRAP} grid items-center gap-8 py-10 sm:py-14 lg:grid-cols-12 lg:gap-12 lg:py-24`}>
+      <div className={`${WRAP} grid items-center gap-5 py-6 sm:gap-8 sm:py-14 lg:grid-cols-12 lg:gap-12 lg:py-24`}>
         <div className="v4-hero-type lg:col-span-7">
           <p className="kicker">{str(values, 'eyebrow')}</p>
           <h1 id="hero-heading" className="v4-title mt-4 text-[length:var(--text-mega)]">
@@ -53,9 +53,13 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
               </span>
             ))}
           </h1>
-          <p className="mt-6 max-w-md text-lg leading-snug text-steel">{str(values, 'subhead')}</p>
+          <p className="mt-4 max-w-md text-lg leading-snug text-steel sm:mt-6">{str(values, 'subhead')}</p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+          {/* Hidden on phones, where the action bar pinned to the bottom of the
+              screen already offers Call, Text and Book Online. Repeating them
+              here cost 136px above the picker — which at 320px was the whole
+              reason the picker, the hero of this design, started below the fold. */}
+          <div className="mt-8 hidden flex-wrap items-center gap-x-8 gap-y-4 sm:flex">
             <a href={BUSINESS.phoneHref} className="inline-flex min-h-11 items-center gap-2 text-lg font-semibold transition-colors hover:text-clover">
               <Phone className="size-4 text-clover" aria-hidden="true" />
               <span className="v4-num">{BUSINESS.phoneDisplay}</span>
