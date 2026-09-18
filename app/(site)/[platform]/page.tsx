@@ -90,12 +90,12 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
                       the accent mean nothing. The page's one primary sits in the
                       hero; in here the two links only have to outrank each other. */}
                   <div className="flex flex-wrap gap-2 text-sm font-semibold">
-                    <Link href={`/?truck=${platform.id}#quote`} className="rounded-sm border border-chalk/45 px-3 py-2 text-chalk transition-colors hover:border-clover hover:text-clover">
+                    <Link href={`/?truck=${platform.id}#quote`} className="inline-flex min-h-11 items-center rounded-sm border border-chalk/45 px-3 text-chalk transition-colors hover:border-clover hover:text-clover">
                       Request service
                     </Link>
                     <Link
                       href={`/store/products?platform=${platform.id}&gen=${platform.generationCollections[index]}`}
-                      className="inline-flex items-center gap-1 rounded-sm px-3 py-2 text-steel transition-colors hover:text-clover"
+                      className="inline-flex min-h-11 items-center gap-1 rounded-sm px-3 text-steel transition-colors hover:text-clover"
                     >
                       Parts <ArrowRight className="size-3.5" aria-hidden="true" />
                     </Link>

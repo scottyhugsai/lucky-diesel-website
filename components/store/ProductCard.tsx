@@ -79,9 +79,13 @@ function DenseCard({ product, compare, truck }: { product: StoreProduct; compare
   return (
     <article className={`group relative flex h-full flex-col gap-2 border border-line bg-carbon-2 p-3 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-clover hover:border-clover/60 sm:p-4 ${TILE} [[data-design=v2]_&]:border-transparent [[data-design=v2]_&]:hover:border-transparent [[data-design=v2]_&]:hover:bg-gunmetal`}>
       <div className="flex items-center gap-2">
-        <span className="border border-line px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-steel [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sample</span>
+        {/* Read off the product, never off the caller: a real listing that happens
+            to have no photograph must not pick up a Sample badge from the layout. */}
+        {product.source === 'demo' && (
+          <span className="border border-line px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-steel [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sample</span>
+        )}
         {/* The sample catalogue's own "vendor" is the word the badge already says. */}
-        {!/^sample/i.test(product.vendor) && (
+        {!(product.source === 'demo' && /^sample/i.test(product.vendor)) && (
           <p className="truncate text-xs font-semibold uppercase tracking-wider text-steel [[data-design=v2]_&]:normal-case [[data-design=v2]_&]:tracking-normal">{product.vendor}</p>
         )}
       </div>
