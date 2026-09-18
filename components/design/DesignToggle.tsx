@@ -22,11 +22,12 @@ export function DesignToggle({ design, labels }: DesignToggleProps) {
 
   return (
     <div
-      className="design-toggle fixed bottom-[5.5rem] left-3 z-40 flex items-center gap-0.5 rounded-full border border-line bg-carbon/85 p-0.5 text-[0.7rem] font-semibold shadow-2xl backdrop-blur-xl lg:bottom-5 lg:left-4 lg:gap-1 lg:p-1 lg:text-xs"
+      // Above the cookie bar: with four designs the row is wide enough to slide
+      // under it, and this is the control the whole pitch runs on.
+      className="design-toggle fixed bottom-[5.5rem] left-3 z-[55] flex items-center gap-0.5 rounded-full border border-line bg-carbon/85 p-0.5 text-[0.7rem] font-semibold shadow-2xl backdrop-blur-xl lg:bottom-5 lg:left-4 lg:gap-1 lg:p-1 lg:text-xs"
       role="group"
       aria-label="Website design"
     >
-      <span className="hidden px-2 text-steel lg:inline">Design</span>
       {OPTIONS.map((option) => (
         <a
           key={option}
