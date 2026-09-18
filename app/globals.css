@@ -880,7 +880,10 @@ input[type='radio'] {
   pointer-events: none;
   /* The asset is shallow-focus: only its middle band is sharp, so the crops
      all sit in that band and the size keeps a pyramid at about 40px. */
-  background: url('/images/texture-knurl-steel.jpg') 60% 60% / 110% auto no-repeat;
+  /* The corner renders at 12rem x 9rem — 192x144 CSS px. The full asset is
+     1100x1100 and 88KB, which is an absurd amount of data for that, so phones
+     get a 384px cut and only wider screens load the full one. */
+  background: url('/images/texture-knurl-steel-sm.jpg') 60% 60% / 110% auto no-repeat;
   mix-blend-mode: screen;
   /* Capped by the arrow, not by the texture. The tile's ArrowUpRight sits at
      right-4 top-4 — inside this mask's brightest zone — and it is 16px steel,
@@ -921,7 +924,7 @@ input[type='radio'] {
    can run under anything on the section. */
 [data-design='v4'] .v4-art-grid {
   inset: 0;
-  background-image: url('/images/overlay-grid.jpg');
+  background-image: url('/images/overlay-grid-sm.jpg');
   background-size: cover;
   background-position: 50% 0;
   opacity: 0.62;
@@ -937,9 +940,19 @@ input[type='radio'] {
   bottom: calc(2.5rem - 12.4vw);
   width: 100%;
   aspect-ratio: 16 / 9;
-  background-image: url('/images/overlay-scanline.jpg');
+  background-image: url('/images/overlay-scanline-sm.jpg');
   filter: contrast(1.2) brightness(1.25);
   opacity: 1;
+}
+
+/* Full-resolution art from 768px up. Below that the three section textures are
+   served as smaller cuts: they are low-opacity surfaces, not subjects, so the
+   detail is not missed, and it takes what a phone downloads for them from
+   209KB to 67KB. Desktop keeps the full files. */
+@media (min-width: 768px) {
+  [data-design='v4'] .v4-knurl::before { background-image: url('/images/texture-knurl-steel.jpg'); }
+  [data-design='v4'] .v4-art-grid { background-image: url('/images/overlay-grid.jpg'); }
+  [data-design='v4'] .v4-art-scan { background-image: url('/images/overlay-scanline.jpg'); }
 }
 
 /* The count-up numeral keeps the real number in flow so the row never reflows;
