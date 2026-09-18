@@ -777,12 +777,82 @@ input[type='radio'] {
   [data-design='v4'] .v4-tier:hover { transition: none; transform: none; }
 }
 
+/* Surfaces that motion is drawn on. These are the finished, static states;
+   nothing below moves unless the motion block further down says so. */
+[data-design='v4'] .v4-marquee-copy { display: none; }
+[data-design='v4'] .v4-marquee ul > li:first-child .v4-sep { display: none; }
+
+/* The turbo silhouette behind the hero: the mark used as a mask over a green-to-
+   steel wash, so it reads as a shape in the dark rather than as a logo. */
+[data-design='v4'] .v4-hero-mark {
+  z-index: -1;
+  right: -18%;
+  top: -4%;
+  width: min(84vw, 32rem);
+  aspect-ratio: 698 / 505;
+  mask: url('/images/logo-mark.png') center / contain no-repeat;
+  -webkit-mask: url('/images/logo-mark.png') center / contain no-repeat;
+  background: linear-gradient(155deg, rgb(31 191 63 / 0.55), rgb(139 148 144 / 0.3) 48%, rgb(139 148 144 / 0.08));
+  opacity: 0.75;
+  transform: perspective(1200px) rotateY(-14deg) rotateX(6deg);
+}
+@media (min-width: 1024px) {
+  [data-design='v4'] .v4-hero-mark {
+    right: auto;
+    left: 31%;
+    top: 50%;
+    width: min(46vw, 42rem);
+    translate: 0 -50%;
+  }
+}
+
+/* The count-up numeral keeps the real number in flow so the row never reflows;
+   the animated counter, where it runs, is painted over the top of it. */
+[data-design='v4'] .v4-count { position: relative; display: inline-block; }
+
+/* ── v4 hover craft ─────────────────────────────────────────────────────────
+ * Hover-only, transform-only. None of it runs for anyone who has asked for
+ * reduced motion; the colour changes on the tiles still do.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* A light sweep across a tile on hover — a sheen, not a glow. */
+  [data-design='v4'] .v4-sheen { overflow: clip; }
+  [data-design='v4'] .v4-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(112deg, transparent 38%, rgb(244 247 245 / 0.07) 50%, transparent 62%);
+    transform: translateX(-101%);
+  }
+  [data-design='v4'] .v4-sheen:hover::after {
+    transform: translateX(101%);
+    transition: transform 720ms var(--ease-out-expo);
+  }
+
+  /* The mark is a turbo. It spools once when the logo is hovered. */
+  [data-design='v4'] .v4-turbo { transition: transform 900ms var(--ease-out-expo); }
+  [data-design='v4'] .group:hover .v4-turbo { transform: rotate(1turn); }
+
+  /* The next tap in the picker breathes so the eye lands on it. */
+  [data-design='v4'] .v4-step[data-state='live'] .v4-step-num::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 1px solid var(--chalk);
+    animation: v4-pulse 2.2s var(--ease-out-expo) infinite;
+  }
+}
+
 /* ── v4 scroll-driven motion ────────────────────────────────────────────────
  * CSS scroll-driven animations: no IntersectionObserver, no rAF, nothing on the
  * main thread and not a byte of JavaScript. Everything lives inside @supports,
  * so a browser without the feature simply gets the finished state — the content
  * is never hidden waiting for a script that may not run.
  * ─────────────────────────────────────────────────────────────────────────── */
+@property --n { syntax: '<integer>'; inherits: false; initial-value: 0; }
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     /* Reading progress. Fixed hairline under the header, scrubbed by the page. */
@@ -799,6 +869,23 @@ input[type='radio'] {
       animation-range: entry 5% cover 28%;
     }
 
+    /* Children of a stagger group each ride their own view timeline, offset a
+       little further down the list so they land one after another. */
+    [data-design='v4'] .v4-stagger > * {
+      animation: v4-rise-item linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 32%;
+    }
+    [data-design='v4'] .v4-stagger > :nth-child(2) { animation-range: entry 8% cover 40%; }
+    [data-design='v4'] .v4-stagger > :nth-child(3) { animation-range: entry 16% cover 48%; }
+    [data-design='v4'] .v4-stagger > :nth-child(4) { animation-range: entry 24% cover 56%; }
+    [data-design='v4'] .v4-stagger > :nth-child(n + 5) { animation-range: entry 32% cover 64%; }
+    [data-design='v4'] .v4-drop {
+      animation: v4-drop linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 55%;
+    }
+
     /* The dyno bars fill in proportion to the gain, scrubbed by scroll. */
     [data-design='v4'] .v4-bar {
       transform-origin: 0 50%;
@@ -807,17 +894,141 @@ input[type='radio'] {
       animation-range: entry 10% cover 34%;
     }
 
-    /* The hero headline drifts and fades as the page moves past it, so the
-       picker becomes the focus rather than competing with the type. */
+    /* The gain counts up from zero to the real figure as the row arrives. */
+    [data-design='v4'] .v4-count {
+      counter-reset: gain var(--n);
+      animation: v4-count linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+    [data-design='v4'] .v4-count::before {
+      content: counter(gain);
+      position: absolute;
+      inset: 0 0 auto auto;
+    }
+    [data-design='v4'] .v4-count-real { visibility: hidden; }
+
+    /* The hero in three planes. The texture lags, the mark turns in 3D, and
+       the type leaves fastest, so the picker becomes the focus rather than
+       competing with the headline. */
+    [data-design='v4'] .v4-hero-bg {
+      animation: v4-hero-bg linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+    [data-design='v4'] .v4-hero-mark {
+      animation: v4-hero-mark linear both;
+      animation-timeline: view();
+      animation-range: exit -10% exit 100%;
+    }
     [data-design='v4'] .v4-hero-type {
       animation: v4-hero linear both;
       animation-timeline: view();
       animation-range: exit -10% exit 90%;
+    }
+    [data-design='v4'] .v4-hero-tool {
+      animation: v4-hero-tool linear both;
+      animation-timeline: view();
+      animation-range: exit -10% exit 90%;
+    }
+
+    /* First paint: the headline lines settle upward into place, then the panel
+       tips in. Transform only and deliberately unclipped — a clipped line is
+       painted at zero size on the first frame and Chrome then drops it as a
+       largest-paint candidate for good. */
+    [data-design='v4'] .v4-line-in { animation: v4-line-in 800ms var(--ease-out-expo) both; }
+    [data-design='v4'] .v4-line:nth-child(2) .v4-line-in { animation-delay: 110ms; }
+    [data-design='v4'] .v4-line:nth-child(3) .v4-line-in { animation-delay: 220ms; }
+    [data-design='v4'] .v4-hero-type > :not(h1) { animation: v4-fade-up 800ms var(--ease-out-expo) 380ms both; }
+    [data-design='v4'] .v4-panel-enter {
+      transform-origin: 50% 0;
+      animation: v4-panel-enter 1000ms var(--ease-out-expo) 160ms both;
+    }
+    [data-design='v4'] .v4-go { animation: v4-fade-up 500ms var(--ease-out-expo) both; }
+
+    /* The picker's border is a slow sweep of clover around a hairline: the one
+       thing on the page that is always quietly moving, because it is the one
+       thing we most want touched. */
+    [data-design='v4'] .v4-panel-live {
+      position: relative;
+      isolation: isolate;
+      overflow: clip;
+      border-color: transparent;
+      background: none;
+    }
+    [data-design='v4'] .v4-panel-live::before {
+      content: '';
+      position: absolute;
+      z-index: -2;
+      inset: -100%;
+      background: conic-gradient(from 0deg, var(--line) 0 58%, var(--clover) 71%, rgb(31 191 63 / 0) 80%, var(--line) 86%);
+      animation: v4-spin 9s linear infinite;
+    }
+    [data-design='v4'] .v4-panel-live::after {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      inset: 1px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, var(--carbon-2), var(--carbon));
+    }
+
+    /* Tiles in 3D. The list is the camera; each tile is a card. */
+    [data-design='v4'] .v4-deck { perspective: 1400px; }
+    [data-design='v4'] .v4-flip {
+      transform-origin: 50% 100%;
+      animation: v4-flip linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+    [data-design='v4'] .v4-flip:nth-child(2) { animation-range: entry 14% cover 50%; }
+    [data-design='v4'] .v4-flip:nth-child(3) { animation-range: entry 28% cover 60%; }
+
+    [data-design='v4'] .v4-door {
+      animation: v4-rise-item linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+    @media (min-width: 1024px) {
+      [data-design='v4'] .v4-door:nth-child(1) { transform-origin: 0 50%; animation-name: v4-door-left; }
+      [data-design='v4'] .v4-door:nth-child(2) { animation-range: entry 10% cover 46%; }
+      [data-design='v4'] .v4-door:nth-child(3) { transform-origin: 100% 50%; animation-name: v4-door-right; }
+    }
+
+    /* On a phone the fact strip is wider than the screen, so it drifts past on
+       its own rather than sitting cut off. Two copies make the loop seamless. */
+    @media (max-width: 639px) {
+      [data-design='v4'] .v4-marquee { overflow: clip; }
+      [data-design='v4'] .v4-marquee-copy { display: flex; }
+      [data-design='v4'] .v4-marquee ul > li:first-child .v4-sep { display: inline; }
+      [data-design='v4'] .v4-marquee-track {
+        flex: none;
+        padding-right: 1.25rem;
+        animation: v4-marquee 26s linear infinite;
+      }
     }
   }
 }
 
 @keyframes v4-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes v4-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes v4-rise-item { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes v4-drop { from { opacity: 0; transform: translateY(-14px) scale(0.88); } to { opacity: 1; transform: none; } }
 @keyframes v4-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes v4-count { from { --n: 0; } to { --n: var(--gain); } }
 @keyframes v4-hero { to { opacity: 0.25; transform: translateY(-22px); } }
+@keyframes v4-hero-tool { to { transform: translateY(-8px); } }
+@keyframes v4-hero-bg { to { transform: translateY(9%) scale(1.06); } }
+@keyframes v4-hero-mark {
+  from { transform: perspective(1200px) rotateY(-14deg) rotateX(6deg); }
+  to { opacity: 0.2; transform: perspective(1200px) translateY(-26%) rotateY(26deg) rotateX(-10deg) scale(0.92); }
+}
+@keyframes v4-line-in { from { transform: translateY(0.28em); } to { transform: none; } }
+@keyframes v4-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes v4-panel-enter { from { opacity: 0; transform: perspective(1400px) rotateX(9deg) translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes v4-spin { to { transform: rotate(1turn); } }
+@keyframes v4-pulse { from { opacity: 0.7; transform: none; } to { opacity: 0; transform: scale(1.9); } }
+@keyframes v4-flip { from { opacity: 0; transform: rotateX(32deg) translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes v4-door-left { from { opacity: 0; transform: rotateY(34deg); } to { opacity: 1; transform: none; } }
+@keyframes v4-door-right { from { opacity: 0; transform: rotateY(-34deg); } to { opacity: 1; transform: none; } }
+@keyframes v4-marquee { to { transform: translateX(-100%); } }

@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, CalendarClock, CircleHelp, Wrench } from 'lucide-react';
+import { TRUCK_ENDPOINT } from '@/components/store/TruckBar';
 import { FitmentPicker } from '@/components/v4/FitmentPicker';
 import { EmissionsNote, UseCaseTiers } from '@/components/v4/UseCaseTiers';
 import { BTN_GHOST, BTN_PRIMARY, WRAP } from '@/components/v4/ui';
-import { parseFitment, resolveFitment } from '@/lib/fitment/select';
+import { fitmentParams, parseFitment, resolveFitment } from '@/lib/fitment/select';
 import { findUseCase } from '@/lib/fitment/use-cases';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
 import { filterProducts, getStorefrontCatalog } from '@/lib/store/catalog';
@@ -56,9 +57,6 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
     }
   }
 
-  const storeHref = platform
-    ? `/store/products?platform=${platform.id}${result?.generationCollection ? `&gen=${result.generationCollection}` : ''}`
-    : '/store/products';
 
   return (
     <div className={`${WRAP} py-10 sm:py-14`}>
@@ -122,14 +120,22 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
                     <dt className="kicker mt-1">engine</dt>
                   </div>
                 </dl>
+                {/* Saving the truck here is what stops the store asking again. */}
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <Link href={storeHref} className={BTN_PRIMARY}>
-                    See the parts <ArrowRight className="size-4" aria-hidden="true" />
-                  </Link>
+                  <form method="post" action={TRUCK_ENDPOINT} className="contents">
+                    {[...fitmentParams(fitment).entries()].map(([key, value]) => (
+                      <input key={key} type="hidden" name={key} value={value} />
+                    ))}
+                    <input type="hidden" name="to" value="/store/products" />
+                    <button type="submit" className={BTN_PRIMARY}>
+                      Shop parts that fit <ArrowRight className="size-4" aria-hidden="true" />
+                    </button>
+                  </form>
                   <Link href="/book" className={BTN_GHOST}>
                     <CalendarClock className="size-4" aria-hidden="true" /> Book it in
                   </Link>
                 </div>
+                <p className="mt-3 text-sm text-steel">We remember it while you shop.</p>
               </section>
 
               <section aria-labelledby="goal-heading" className="mt-8">

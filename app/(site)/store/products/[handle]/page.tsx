@@ -3,15 +3,18 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, Info, MessageSquare, Phone, ShieldAlert, Wrench } from 'lucide-react';
 import { NotifyMeForm } from '@/components/marketing-public/NotifyMeForm';
+import { CompareWithSimilar } from '@/components/store/CompareWithSimilar';
 import { FitmentCheck } from '@/components/store/FitmentCheck';
 import { ProductBuyBox } from '@/components/store/ProductBuyBox';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ProductGallery } from '@/components/store/ProductGallery';
 import { SampleQuoteBox } from '@/components/store/SampleQuoteBox';
 import { StoreFallback } from '@/components/store/StoreFallback';
+import { TruckBar } from '@/components/store/TruckBar';
 import { productsHref, relatedProducts } from '@/components/store/listing';
 import { productJsonLd } from '@/components/store/product-json-ld';
 import { BTN_GHOST, PILL, TILE, WRAP } from '@/components/store/styles';
+import { readSavedTruck } from '@/lib/fitment/truck-server';
 import { BUSINESS } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -41,14 +44,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { handle } = await params;
-  const [{ products, ok }, content] = await Promise.all([getStorefrontCatalog(), getSiteContent()]);
+  const [{ products, ok }, content, truck] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck()]);
   if (!ok) return <StoreFallback />;
   const visible = applyOverrides(products, (key) => content.product(key));
   const product = visible.find((p) => p.handle === handle);
   if (!product) notFound();
 
   const category = CATEGORIES.find((c) => c.id === product.category);
-  const related = relatedProducts(visible, product);
+  const related = relatedProducts(visible, product, 4, truck);
   // Shipping and returns appear only once the owner has recorded them.
   const { data: settings } = await createAdminClient()
     .from('shop_settings')
@@ -70,6 +73,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <Link href="/store" className="hover:text-clover">Store</Link> <span aria-hidden="true">/</span>{' '}
           <Link href={productsHref({ category: product.category })} className="hover:text-clover">{category?.name}</Link>
         </nav>
+
+        <div className="mt-4"><TruckBar truck={truck} returnTo={`/store/products/${product.handle}`} /></div>
 
         <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
           <div className="lg:sticky lg:top-24 lg:self-start">
@@ -108,7 +113,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </aside>
             )}
 
-            <div className="mt-6"><FitmentCheck product={product} /></div>
+            <div className="mt-6"><FitmentCheck product={product} initialTruck={truck} /></div>
+            <div className="mt-6"><CompareWithSimilar product={product} similar={related} truck={truck} /></div>
             {!product.available && product.purchasable && <div className="mt-6"><NotifyMeForm topic={`product:${product.handle}`.slice(0, 120)} label={product.title} heading="Back-in-stock alert" endpoint="/api/marketing/stock-alert" /></div>}
 
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
@@ -148,7 +154,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <Link href={productsHref({ category: product.category, platform: product.platforms[0] ?? null })} className="flex min-h-11 shrink-0 items-center gap-1 font-semibold text-clover">More <ArrowRight className="size-4" aria-hidden="true" /></Link>
             </div>
             <ul className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-              {related.map((p) => <li key={p.handle}><ProductCard product={p} /></li>)}
+              {related.map((p) => <li key={p.handle}><ProductCard product={p} truck={truck} /></li>)}
             </ul>
           </div>
         </section>

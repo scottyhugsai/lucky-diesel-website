@@ -12,6 +12,10 @@ import { WRAP } from '../ui';
  * The tool takes the space a hero photo would normally take. That is the whole
  * idea of this design, and it is also what makes it viable for a shop with
  * seven photographs: the interface is the imagery.
+ *
+ * Depth comes from three layers that leave the viewport at different speeds
+ * as the page scrolls: the carbon texture (slowest), a large turbo silhouette
+ * turning in 3D behind everything, and the type (fastest). All of it is CSS.
  */
 export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitment: Fitment; stats: BuildStats }) {
   const headline = lines(values, 'headline');
@@ -34,9 +38,14 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
           stays the largest paint. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-20 bg-cover bg-center opacity-55"
+        className="v4-hero-bg absolute -inset-[6%] -z-30 bg-cover bg-center opacity-55"
         style={{ backgroundImage: 'url(/images/texture-carbon.jpg)' }}
       />
+      {/* The turbo mark as a silhouette, drawn with mask-image rather than an
+          <img> so it is never a largest-paint candidate and can sit at low
+          opacity. Layered above the scrim (z-index in CSS) but below the type,
+          and it tilts in 3D as the hero scrolls away. */}
+      <div aria-hidden="true" className="v4-hero-mark pointer-events-none absolute" />
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10"
@@ -48,7 +57,9 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
           <p className="kicker">{str(values, 'eyebrow')}</p>
           <h1 id="hero-heading" className="v4-title mt-4 text-[length:var(--text-mega)]">
             {headline.map((line, index) => (
-              <span key={line} className={`block ${index === headline.length - 1 ? 'text-clover' : ''}`}>{line}</span>
+              <span key={line} className="v4-line block">
+                <span className={`v4-line-in block ${index === headline.length - 1 ? 'text-clover' : ''}`}>{line}</span>
+              </span>
             ))}
           </h1>
           <p className="mt-6 max-w-md text-lg leading-snug text-steel">{str(values, 'subhead')}</p>
@@ -77,7 +88,7 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
           )}
         </div>
 
-        <div className="lg:col-span-5">
+        <div className="v4-hero-tool lg:col-span-5">
           <FitmentPicker fitment={fitment} />
         </div>
       </div>

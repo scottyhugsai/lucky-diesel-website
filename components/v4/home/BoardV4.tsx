@@ -1,6 +1,22 @@
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import type { BuildStats } from '@/components/v3/data';
 import { SECTION, SectionHead, WRAP } from '../ui';
+
+/**
+ * The gain numeral. The real number is in the DOM for everyone; where the
+ * browser can scrub a registered custom property by scroll, a counter drawn
+ * from that property is shown instead and counts up to the same figure as the
+ * row comes into view. Nothing here invents a number — it only animates the
+ * one the build already has.
+ */
+function Gain({ value }: { value: number }) {
+  return (
+    <span className="v4-count" style={{ '--gain': value } as CSSProperties}>
+      <span className="v4-count-real">{value}</span>
+    </span>
+  );
+}
 
 /** The dyno board. The gain is set as the biggest thing on the row, because it
  *  is the only number a customer actually cares about. */
@@ -15,7 +31,7 @@ export function BoardV4({ stats, step }: { stats: BuildStats; step: string }) {
     <section aria-labelledby="board-v4-heading" className={`${SECTION} border-t border-line`}>
       <div className={WRAP}>
         <SectionHead id="board-v4-heading" index={`${step} — Dyno board`} title="What we made" href="/builds" linkLabel="All builds" />
-        <ol className="mt-8">
+        <ol className="v4-stagger mt-8">
           {rows.map((build, index) => (
             <li key={build.slug} className="relative isolate border-b border-line">
               {build.hpGain !== null && (
@@ -36,7 +52,7 @@ export function BoardV4({ stats, step }: { stats: BuildStats; step: string }) {
                 </span>
                 {build.hpGain !== null && (
                   <span className="v4-num v4-title shrink-0 pr-1 text-right text-3xl text-clover sm:text-5xl">
-                    +{build.hpGain}<span className="ml-1 text-xs not-italic text-steel">hp</span>
+                    +<Gain value={build.hpGain} /><span className="ml-1 text-xs not-italic text-steel">hp</span>
                   </span>
                 )}
               </Link>

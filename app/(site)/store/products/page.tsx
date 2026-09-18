@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { MyTruckChip } from '@/components/store/MyTruckChip';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ProductFilters } from '@/components/store/ProductFilters';
 import { StoreFallback } from '@/components/store/StoreFallback';
-import { generationInfo, parseStoreParams, productsHref, sortProducts } from '@/components/store/listing';
+import { TruckBar } from '@/components/store/TruckBar';
+import { generationInfo, listingTruckFilter, parseStoreParams, productsHref, savedTruckLabel, sortProducts } from '@/components/store/listing';
 import { BTN_GHOST, BTN_PRIMARY, PILL, WRAP } from '@/components/store/styles';
+import { readSavedTruck } from '@/lib/fitment/truck-server';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
 import { filterProducts, getStorefrontCatalog } from '@/lib/store/catalog';
 import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
@@ -25,15 +26,19 @@ export const metadata: Metadata = {
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = parseStoreParams(await searchParams);
-  const [{ products, ok }, content] = await Promise.all([getStorefrontCatalog(), getSiteContent()]);
+  const [{ products, ok }, content, truck] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck()]);
   if (!ok) return <StoreFallback />;
 
+  // A visitor who has already told us their truck should not land on everything.
+  const fit = listingTruckFilter(params, truck);
   const lookup = (handle: string) => content.product(handle);
   const visible = applyOverrides(products, lookup);
-  const matched = filterProducts(visible, { category: params.category, platform: params.platform, generationCollection: params.gen, query: params.q });
+  const matched = filterProducts(visible, { category: params.category, platform: fit.platform, generationCollection: fit.gen, query: params.q });
   const results = params.sort === 'featured' ? featuredFirst(sortProducts(matched, params.sort), lookup) : sortProducts(matched, params.sort);
   const category = CATEGORIES.find((c) => c.id === params.category);
-  const heading = generationInfo(params.gen)?.name ?? PLATFORMS.find((p) => p.id === params.platform)?.name;
+  const heading = fit.fromSavedTruck
+    ? savedTruckLabel(truck)
+    : generationInfo(params.gen)?.name ?? PLATFORMS.find((p) => p.id === params.platform)?.name;
   const chip = (isOn: boolean) => `inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border px-4 text-sm font-semibold transition-colors ${PILL} ${isOn ? 'border-clover bg-clover text-carbon' : 'border-line hover:border-clover'}`;
 
   return (
@@ -43,11 +48,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       </nav>
       <h1 className="display mt-4 text-4xl sm:text-6xl">{category?.name ?? 'All parts'}{heading && <span className="text-clover"> · {heading}</span>}</h1>
 
+      <div className="mt-5"><TruckBar truck={truck} returnTo={productsHref(params)} params={params} filter={fit} /></div>
+
       <div className="mt-6"><ProductFilters params={params} resultCount={results.length} /></div>
 
       <div className="-mx-4 mt-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <ul className="flex gap-2 pb-1" aria-label="Categories">
-          <li><MyTruckChip params={params} /></li>
           <li><Link href={productsHref({ ...params, category: null })} aria-current={!params.category ? 'true' : undefined} className={chip(!params.category)}>All</Link></li>
           {CATEGORIES.map((c) => (
             <li key={c.id}>
@@ -57,7 +63,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </ul>
       </div>
 
-      <p className="mt-6 text-sm text-steel tabular-nums" aria-live="polite">{results.length} {results.length === 1 ? 'part' : 'parts'}</p>
+      <p className="mt-6 text-sm text-steel tabular-nums" aria-live="polite">
+        {results.length} {results.length === 1 ? 'part' : 'parts'}
+        {results.length > 1 && <span className="text-chalk/70"> · tick two to compare them side by side</span>}
+      </p>
 
       {/* The grid is a plain GET form: ticking parts and pressing Compare works
           with JavaScript off, and the result is a shareable URL. */}
@@ -65,7 +74,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <form method="get" action="/store/compare">
           <ul className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">
             {results.map((product, i) => (
-              <li key={product.handle}><ProductCard product={product} priority={i < 4} compare /></li>
+              <li key={product.handle}><ProductCard product={product} priority={i < 4} compare truck={truck} /></li>
             ))}
           </ul>
           {results.length > 1 && (
@@ -81,7 +90,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <p className="display text-3xl not-italic [[data-design=v2]_&]:text-2xl">No parts match that.</p>
           <p className="mt-2 text-chalk/70">Try fewer filters, or call <span className="whitespace-nowrap">{BUSINESS.phoneDisplay}</span> and we’ll find it.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/store/products" className={BTN_GHOST}>Clear filters</Link>
+            <Link href={fit.fromSavedTruck ? '/store/products?all=1' : '/store/products'} className={BTN_GHOST}>
+              {fit.fromSavedTruck ? 'Show every part' : 'Clear filters'}
+            </Link>
             <a href={BUSINESS.phoneHref} className={BTN_GHOST}>Call the shop</a>
           </div>
         </div>

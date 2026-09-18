@@ -47,7 +47,7 @@ function Step({ index, name, label, options, value, fitment, disabled }: {
         ))}
         <span
           aria-hidden="true"
-          className="v4-step-num v4-num grid size-7 shrink-0 place-items-center rounded-full border text-xs text-steel"
+          className="v4-step-num v4-num relative grid size-7 shrink-0 place-items-center rounded-full border text-xs text-steel"
         >
           {index}
         </span>
@@ -85,7 +85,7 @@ export function FitmentPicker({ fitment, action = '#fitment' }: { fitment: Fitme
 
   void action;
   return (
-    <section aria-labelledby="fitment-heading" id="fitment" className="v4-panel scroll-mt-20 p-5 sm:p-6">
+    <section aria-labelledby="fitment-heading" id="fitment" className="v4-panel v4-panel-live v4-panel-enter scroll-mt-20 p-5 sm:p-6">
       <h2 id="fitment-heading" className="v4-title text-2xl">Pick your truck</h2>
       <p className="mt-1.5 text-sm text-steel">Four taps. We show you what fits.</p>
 
@@ -98,7 +98,7 @@ export function FitmentPicker({ fitment, action = '#fitment' }: { fitment: Fitme
       </div>
 
       {fitment.engine ? (
-        <Link href={`/fitment?${fitmentParams(fitment).toString()}`} className="btn-go mt-5 flex min-h-12 items-center justify-center gap-2 px-6 font-bold">
+        <Link href={`/fitment?${fitmentParams(fitment).toString()}`} className="btn-go v4-go mt-5 flex min-h-12 items-center justify-center gap-2 px-6 font-bold">
           Show what fits <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       ) : (

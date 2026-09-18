@@ -45,26 +45,28 @@ export async function PartsV4({ values, step }: { values: BlockValues; step: str
           href="/store"
           linkLabel="Store"
         />
-        <ul className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
+        <ul className="v4-stagger mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
           {products.map((product) => (
-            <li key={product.handle} className="v4-tier group relative overflow-hidden">
-              <div className="relative aspect-square bg-white">
-                <Image
-                  src={product.images[0]?.src ?? ''}
-                  alt={product.images[0]?.alt ?? ''}
-                  fill
-                  sizes="(min-width: 768px) 320px, 45vw"
-                  className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]"
-                />
-              </div>
-              <div className="border-t border-line p-4">
-                <p className="kicker truncate">{product.vendor}</p>
-                <h3 data-copy="data" className="mt-1.5 line-clamp-2 text-[0.9375rem] font-semibold leading-snug">
-                  <Link href={`/store/products/${product.handle}`} className="after:absolute after:inset-0 focus-visible:outline-none">
-                    {product.title}
-                  </Link>
-                </h3>
-                <p className="v4-num mt-2 text-[0.9375rem] font-semibold text-clover">{money(product.priceMinCents)}</p>
+            <li key={product.handle}>
+              <div className="v4-tier v4-sheen group relative h-full overflow-hidden">
+                <div className="relative aspect-square bg-white">
+                  <Image
+                    src={product.images[0]?.src ?? ''}
+                    alt={product.images[0]?.alt ?? ''}
+                    fill
+                    sizes="(min-width: 768px) 320px, 45vw"
+                    className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
+                </div>
+                <div className="border-t border-line p-4">
+                  <p className="kicker truncate">{product.vendor}</p>
+                  <h3 data-copy="data" className="mt-1.5 line-clamp-2 text-[0.9375rem] font-semibold leading-snug">
+                    <Link href={`/store/products/${product.handle}`} className="after:absolute after:inset-0 focus-visible:outline-none">
+                      {product.title}
+                    </Link>
+                  </h3>
+                  <p className="v4-num mt-2 text-[0.9375rem] font-semibold text-clover">{money(product.priceMinCents)}</p>
+                </div>
               </div>
             </li>
           ))}

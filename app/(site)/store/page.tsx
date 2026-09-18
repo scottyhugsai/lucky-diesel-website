@@ -5,8 +5,10 @@ import { ArrowRight, ShieldAlert } from 'lucide-react';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ShopByTruck } from '@/components/store/ShopByTruck';
 import { StoreFallback } from '@/components/store/StoreFallback';
-import { featuredProducts, productsHref } from '@/components/store/listing';
+import { TruckBar } from '@/components/store/TruckBar';
+import { featuredProducts, productsHref, savedTruckLabel } from '@/components/store/listing';
 import { BTN_GHOST, BTN_PRIMARY, TILE, WRAP } from '@/components/store/styles';
+import { readSavedTruck } from '@/lib/fitment/truck-server';
 import { getStorefrontCatalog } from '@/lib/store/catalog';
 import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
 import { safeToPromote } from '@/lib/store/promotable';
@@ -20,8 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function StorePage() {
-  const [{ products, ok }, content] = await Promise.all([getStorefrontCatalog(), getSiteContent()]);
+  const [{ products, ok }, content, truck] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck()]);
   if (!ok) return <StoreFallback />;
+  const truckName = savedTruckLabel(truck);
   const copy = content.block('page.store');
   const lookup = (handle: string) => content.product(handle);
   const visible = applyOverrides(products, lookup);
@@ -43,9 +46,12 @@ export default async function StorePage() {
           <h1 id="store-heading" className="display rise mt-4 text-[length:var(--text-display)]">{str(copy, 'heading')}</h1>
           <p className="mt-5 max-w-lg text-lg text-chalk/75">{str(copy, 'intro')}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/store/products" className={BTN_PRIMARY}>Shop all parts <ArrowRight className="size-5" aria-hidden="true" /></Link>
+            <Link href="/store/products" className={BTN_PRIMARY}>
+              {truckName ? `Parts for your ${truckName}` : 'Shop all parts'} <ArrowRight className="size-5" aria-hidden="true" />
+            </Link>
             <Link href="/build-planner" className={BTN_GHOST}>Plan a build</Link>
           </div>
+          <div className="mt-6 max-w-xl"><TruckBar truck={truck} returnTo="/store" /></div>
         </div>
       </section>
 
@@ -91,7 +97,7 @@ export default async function StorePage() {
               <Link href="/store/products" className="flex min-h-11 items-center gap-1 font-semibold text-clover">See all <ArrowRight className="size-4" aria-hidden="true" /></Link>
             </div>
             <ul className="mt-8 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">
-              {featured.map((product) => <li key={product.handle}><ProductCard product={product} /></li>)}
+              {featured.map((product) => <li key={product.handle}><ProductCard product={product} truck={truck} /></li>)}
             </ul>
           </div>
         </section>

@@ -1,12 +1,21 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { SavedTruck } from '@/lib/fitment/truck-cookie';
 import type { StoreProduct } from '@/lib/store/normalize';
 import { Badge, FitBadge } from './FitBadge';
 import { priceLabel } from './listing';
 import { TILE } from './styles';
 
-/** Grid card. Server-rendered; only the fitment badge reads the saved truck on the client. */
-export function ProductCard({ product, priority = false, compare = false }: { product: StoreProduct; priority?: boolean; compare?: boolean }) {
+interface ProductCardProps {
+  product: StoreProduct;
+  priority?: boolean;
+  compare?: boolean;
+  /** The visitor's truck, read from the cookie by the page, so fitment is on the card at once. */
+  truck?: SavedTruck | null;
+}
+
+/** Grid card. Entirely server-rendered, fitment verdict included. */
+export function ProductCard({ product, priority = false, compare = false, truck = null }: ProductCardProps) {
   const image = product.images[0];
   return (
     <article className={`group relative flex has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-clover h-full flex-col overflow-hidden border border-line bg-carbon-2 transition-colors hover:border-clover/60 ${TILE} [[data-design=v2]_&]:border-transparent [[data-design=v2]_&]:hover:border-transparent [[data-design=v2]_&]:hover:bg-gunmetal`}>
@@ -47,7 +56,7 @@ export function ProductCard({ product, priority = false, compare = false }: { pr
           </Link>
         </h3>
         <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
-          <FitBadge product={product} />
+          <FitBadge product={product} truck={truck} />
           {product.offRoadOnly && <Badge tone="warn">Off-road use only</Badge>}
         </div>
         <p className="font-bold tabular-nums text-chalk">{priceLabel(product)}</p>

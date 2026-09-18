@@ -1,5 +1,6 @@
 'use client';
 
+import type { SavedTruck } from '@/lib/fitment/truck-cookie';
 import { PLATFORMS, type Platform } from '@/lib/site';
 import { useStore } from './CartProvider';
 import { FIELD } from './styles';
@@ -7,8 +8,10 @@ import { FIELD } from './styles';
 const SELECT = `min-h-12 w-full border border-line bg-carbon px-3 text-chalk ${FIELD}`;
 
 /** Compact platform + generation selects bound to the saved truck. */
-export function TruckSelect({ idPrefix }: { idPrefix: string }) {
-  const { truck, setTruck } = useStore();
+export function TruckSelect({ idPrefix, initialTruck = null }: { idPrefix: string; initialTruck?: SavedTruck | null }) {
+  const { savedTruck, setTruck, truckReady } = useStore();
+  // Before the cookie is read on the client, show what the server rendered from it.
+  const truck = (truckReady ? savedTruck : initialTruck)?.selection ?? null;
   const platform = PLATFORMS.find((p) => p.id === truck?.platform);
 
   return (

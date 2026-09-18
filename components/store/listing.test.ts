@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { StoreProduct } from '@/lib/store/normalize';
-import { featuredProducts, generationInfo, parseStoreParams, priceLabel, productsHref, relatedProducts, sortProducts, truckLabel } from './listing';
+import { featuredProducts, generationInfo, listingTruckFilter, parseStoreParams, priceLabel, productsHref, relatedProducts, savedTruckLabel, sortProducts, truckLabel } from './listing';
+import { truckFromFitment, truckFromSelection } from '@/lib/fitment/truck-cookie';
 
 const product = (over: Partial<StoreProduct>): StoreProduct => ({
   id: 1, handle: 'x', source: 'shopify', purchasable: true, title: 'X', vendor: 'DDP', category: 'turbo', platforms: ['duramax'], generationCollections: [],
@@ -11,9 +12,9 @@ const product = (over: Partial<StoreProduct>): StoreProduct => ({
 describe('listing params', () => {
   test('keeps valid values and drops the rest', () => {
     expect(parseStoreParams({ category: 'fuel', platform: 'duramax', gen: 'duramax-2017-present-l5p', q: ' cp3 ', sort: 'price-asc' }))
-      .toEqual({ category: 'fuel', platform: 'duramax', gen: 'duramax-2017-present-l5p', q: 'cp3', sort: 'price-asc' });
+      .toEqual({ category: 'fuel', platform: 'duramax', gen: 'duramax-2017-present-l5p', q: 'cp3', sort: 'price-asc', all: false });
     expect(parseStoreParams({ category: 'nope', platform: 'cummins', gen: 'duramax-2017-present-l5p', sort: ['bad'] }))
-      .toEqual({ category: null, platform: 'cummins', gen: null, q: '', sort: 'featured' });
+      .toEqual({ category: null, platform: 'cummins', gen: null, q: '', sort: 'featured', all: false });
   });
 
   test('builds short hrefs', () => {
@@ -84,5 +85,51 @@ describe('sample listings never outrank real ones', () => {
 
   test('the default order puts buyable parts first', () => {
     expect(sortProducts([sample, real], 'featured').map((p) => p.handle)).toEqual(['real', 'sample']);
+  });
+});
+
+describe('the saved truck on a listing', () => {
+  const l5p = truckFromFitment({ year: 2020, make: 'chevrolet', model: 'chevrolet-silverado-2500hd', engine: 'gm-6-6-l5p' });
+  const platformOnly = truckFromSelection('cummins', null);
+  const base = parseStoreParams({});
+
+  test('names the truck the way a shopper would', () => {
+    expect(savedTruckLabel(l5p)).toBe('2020 L5P');
+    expect(savedTruckLabel(platformOnly)).toBe('Cummins');
+    expect(savedTruckLabel(null)).toBeNull();
+  });
+
+  test('filters to the saved truck when nothing was asked for', () => {
+    expect(listingTruckFilter(base, l5p)).toEqual({ platform: 'duramax', gen: 'duramax-2017-present-l5p', fromSavedTruck: true });
+  });
+
+  test('an explicit filter beats the saved truck', () => {
+    const asked = parseStoreParams({ platform: 'cummins' });
+    expect(listingTruckFilter(asked, l5p)).toEqual({ platform: 'cummins', gen: null, fromSavedTruck: false });
+  });
+
+  test('"show everything" sets the truck aside without clearing it', () => {
+    expect(listingTruckFilter(parseStoreParams({ all: '1' }), l5p)).toEqual({ platform: null, gen: null, fromSavedTruck: false });
+    expect(productsHref({ ...base, all: true })).toBe('/store/products?all=1');
+  });
+
+  test('no saved truck means no filter', () => {
+    expect(listingTruckFilter(base, null)).toEqual({ platform: null, gen: null, fromSavedTruck: false });
+  });
+});
+
+describe('related parts ranked for the saved truck', () => {
+  const lml = truckFromSelection('duramax', 'duramax-2011-2016-lml');
+  const base = product({ handle: 'subject', category: 'turbo', platforms: ['duramax'], generationCollections: [] });
+  const wrongGen = product({ handle: 'wrong-gen', category: 'turbo', platforms: ['duramax'], generationCollections: ['duramax-2017-present-l5p'] });
+  const rightGen = product({ handle: 'right-gen', category: 'turbo', platforms: ['duramax'], generationCollections: ['duramax-2011-2016-lml'] });
+
+  test('puts parts that fit the truck first', () => {
+    const ranked = relatedProducts([base, wrongGen, rightGen], base, 4, lml);
+    expect(ranked.map((p) => p.handle)).toEqual(['right-gen', 'wrong-gen']);
+  });
+
+  test('without a truck it keeps the existing order', () => {
+    expect(relatedProducts([base, wrongGen, rightGen], base, 4).map((p) => p.handle)).toEqual(['wrong-gen', 'right-gen']);
   });
 });
