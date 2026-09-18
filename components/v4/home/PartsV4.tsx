@@ -35,7 +35,7 @@ export async function PartsV4({ values, step }: { values: BlockValues; step: str
   if (!products.length) return null;
 
   return (
-    <section id="parts" aria-labelledby="parts-v4-heading" className={`${SECTION} border-t border-line`}>
+    <section id="parts" aria-labelledby="parts-v4-heading" className={`v4-rise ${SECTION} border-t border-line`}>
       <div className={WRAP}>
         <SectionHead
           id="parts-v4-heading"

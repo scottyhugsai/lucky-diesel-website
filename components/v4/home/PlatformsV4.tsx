@@ -6,7 +6,7 @@ import { SECTION, SectionHead, WRAP } from '../ui';
 /** Three platforms, with the engine codes people actually search for. */
 export function PlatformsV4({ step }: { step: string }) {
   return (
-    <section id="trucks" aria-labelledby="platforms-v4-heading" className={`${SECTION} border-t border-line`}>
+    <section id="trucks" aria-labelledby="platforms-v4-heading" className={`v4-rise ${SECTION} border-t border-line`}>
       <div className={WRAP}>
         <SectionHead id="platforms-v4-heading" index={`${step} — Platforms`} title="What we work on" />
         <ul className="mt-8 grid gap-3 md:grid-cols-3">

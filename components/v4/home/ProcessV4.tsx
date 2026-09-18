@@ -8,7 +8,7 @@ const STEPS = [
 
 export function ProcessV4({ step }: { step: string }) {
   return (
-    <section aria-labelledby="process-v4-heading" className={`${SECTION} border-t border-line`}>
+    <section aria-labelledby="process-v4-heading" className={`v4-rise ${SECTION} border-t border-line`}>
       <div className={WRAP}>
         <SectionHead id="process-v4-heading" index={`${step} — How it works`} title="Three steps" />
         <ol className="mt-8 grid gap-px overflow-hidden border border-line bg-line md:grid-cols-3">

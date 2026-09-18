@@ -22,10 +22,23 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
 
   return (
     <section aria-labelledby="hero-heading" className="grain relative isolate overflow-hidden border-b border-line">
-      <div aria-hidden="true" className="absolute -left-40 top-[-10%] -z-10 size-[44rem] rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, var(--clover-glow), transparent 62%)' }} />
+      {/* Decorative only: an abstract carbon-and-light texture, not a photograph
+          of anything, so it makes no claim about a shop or a build. Set as a CSS
+          background so the browser fetches it at low priority and the headline
+          stays the largest paint. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-20 bg-cover bg-center opacity-55"
+        style={{ backgroundImage: 'url(/images/texture-carbon.jpg)' }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10"
+        style={{ background: 'linear-gradient(100deg, var(--carbon) 22%, rgb(11 13 12 / 0.72) 52%, rgb(11 13 12 / 0.55) 100%)' }}
+      />
 
       <div className={`${WRAP} grid items-center gap-8 py-10 sm:py-14 lg:grid-cols-12 lg:gap-12 lg:py-24`}>
-        <div className="lg:col-span-7">
+        <div className="v4-hero-type lg:col-span-7">
           <p className="kicker">{str(values, 'eyebrow')}</p>
           <h1 id="hero-heading" className="v4-title mt-4 text-[length:var(--text-mega)]">
             {headline.map((line, index) => (

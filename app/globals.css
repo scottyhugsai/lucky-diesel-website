@@ -764,3 +764,48 @@ input[type='radio'] {
   [data-design='v4'] .v4-tier,
   [data-design='v4'] .v4-tier:hover { transition: none; transform: none; }
 }
+
+/* ── v4 scroll-driven motion ────────────────────────────────────────────────
+ * CSS scroll-driven animations: no IntersectionObserver, no rAF, nothing on the
+ * main thread and not a byte of JavaScript. Everything lives inside @supports,
+ * so a browser without the feature simply gets the finished state — the content
+ * is never hidden waiting for a script that may not run.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Reading progress. Fixed hairline under the header, scrubbed by the page. */
+    [data-design='v4'] .v4-progress {
+      transform-origin: 0 50%;
+      animation: v4-progress linear;
+      animation-timeline: scroll(root block);
+    }
+
+    /* Sections rise as they come into view and settle by a third of the way up. */
+    [data-design='v4'] .v4-rise {
+      animation: v4-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 28%;
+    }
+
+    /* The dyno bars fill in proportion to the gain, scrubbed by scroll. */
+    [data-design='v4'] .v4-bar {
+      transform-origin: 0 50%;
+      animation: v4-bar linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 34%;
+    }
+
+    /* The hero headline drifts and fades as the page moves past it, so the
+       picker becomes the focus rather than competing with the type. */
+    [data-design='v4'] .v4-hero-type {
+      animation: v4-hero linear both;
+      animation-timeline: view();
+      animation-range: exit -10% exit 90%;
+    }
+  }
+}
+
+@keyframes v4-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes v4-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes v4-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes v4-hero { to { opacity: 0.25; transform: translateY(-22px); } }

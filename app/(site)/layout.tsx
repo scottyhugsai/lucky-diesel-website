@@ -28,13 +28,14 @@ async function loadV3() {
 
 /** Same deal for Vector: only its visitors download Inter Tight. */
 async function loadV4() {
-  const [{ SiteHeaderV4 }, { SiteFooterV4 }, { TickerV4 }, { V4_FONT_CLASS }] = await Promise.all([
+  const [{ SiteHeaderV4 }, { SiteFooterV4 }, { TickerV4 }, { ScrollProgress }, { V4_FONT_CLASS }] = await Promise.all([
     import('@/components/v4/SiteHeaderV4'),
     import('@/components/v4/SiteFooterV4'),
     import('@/components/v4/TickerV4'),
+    import('@/components/v4/ScrollProgress'),
     import('@/components/v4/fonts'),
   ]);
-  return { SiteHeaderV4, SiteFooterV4, TickerV4, fontClass: V4_FONT_CLASS };
+  return { SiteHeaderV4, SiteFooterV4, TickerV4, ScrollProgress, fontClass: V4_FONT_CLASS };
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -55,6 +56,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           <>
             <v4.TickerV4 />
             <v4.SiteHeaderV4 nav={nav} />
+            <v4.ScrollProgress />
             <main id="main">{children}</main>
             <v4.SiteFooterV4 nav={nav} />
             <MobileActionBar />

@@ -7,6 +7,9 @@ import { SECTION, SectionHead, WRAP } from '../ui';
 export function BoardV4({ stats, step }: { stats: BuildStats; step: string }) {
   const rows = stats.leaderboard.slice(0, 5);
   if (!rows.length) return null;
+  // Bars are drawn to the biggest gain on the board, so the ranking is legible
+  // at a glance instead of only in the numerals.
+  const best = Math.max(...rows.map((build) => build.hpGain ?? 0), 1);
 
   return (
     <section aria-labelledby="board-v4-heading" className={`${SECTION} border-t border-line`}>
@@ -14,8 +17,15 @@ export function BoardV4({ stats, step }: { stats: BuildStats; step: string }) {
         <SectionHead id="board-v4-heading" index={`${step} — Dyno board`} title="What we made" href="/builds" linkLabel="All builds" />
         <ol className="mt-8">
           {rows.map((build, index) => (
-            <li key={build.slug} className="border-b border-line">
-              <Link href={`/builds/${build.slug}`} className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-5 transition-colors hover:bg-carbon-2 sm:gap-6">
+            <li key={build.slug} className="relative isolate border-b border-line">
+              {build.hpGain !== null && (
+                <span
+                  aria-hidden="true"
+                  className="v4-bar absolute inset-y-0 left-0 -z-10 bg-clover/10"
+                  style={{ width: `${Math.round((build.hpGain / best) * 100)}%` }}
+                />
+              )}
+              <Link href={`/builds/${build.slug}`} className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-5 transition-colors hover:bg-carbon-2/60 sm:gap-6">
                 <span className="v4-num w-7 pl-1 text-sm text-steel">{String(index + 1).padStart(2, '0')}</span>
                 <span className="min-w-0">
                   <span className="v4-title block truncate text-xl transition-colors group-hover:text-clover sm:text-2xl">{build.title}</span>
