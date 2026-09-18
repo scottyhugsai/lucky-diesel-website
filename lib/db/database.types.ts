@@ -5768,6 +5768,13 @@ export interface Database {
           updated_at: string;
           fleet_reserved_bays: number;
           fleet_release_hours: number;
+          ships_products: boolean;
+          shipping_flat_cents: number | null;
+          shipping_free_over_cents: number | null;
+          shipping_handling_days: number | null;
+          shipping_transit_days: number | null;
+          returns_days: number | null;
+          returns_url: string | null;
         };
         Insert: {
           id?: number;
@@ -5786,6 +5793,13 @@ export interface Database {
           updated_at?: string;
           fleet_reserved_bays?: number;
           fleet_release_hours?: number;
+          ships_products?: boolean;
+          shipping_flat_cents?: number | null;
+          shipping_free_over_cents?: number | null;
+          shipping_handling_days?: number | null;
+          shipping_transit_days?: number | null;
+          returns_days?: number | null;
+          returns_url?: string | null;
         };
         Update: {
           id?: number;
@@ -5804,6 +5818,13 @@ export interface Database {
           updated_at?: string;
           fleet_reserved_bays?: number;
           fleet_release_hours?: number;
+          ships_products?: boolean;
+          shipping_flat_cents?: number | null;
+          shipping_free_over_cents?: number | null;
+          shipping_handling_days?: number | null;
+          shipping_transit_days?: number | null;
+          returns_days?: number | null;
+          returns_url?: string | null;
         };
         Relationships: [
 

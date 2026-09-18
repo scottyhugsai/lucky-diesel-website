@@ -14,6 +14,8 @@ import { productJsonLd } from '@/components/store/product-json-ld';
 import { BTN_GHOST, PILL, TILE, WRAP } from '@/components/store/styles';
 import { BUSINESS } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { merchantDetails, policyFromSettings } from '@/lib/store/merchant';
 import { getSiteContent } from '@/lib/site-content/read';
 import { getProduct, getStorefrontCatalog } from '@/lib/store/catalog';
 import { applyOverrides } from '@/lib/store/overrides';
@@ -47,7 +49,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const category = CATEGORIES.find((c) => c.id === product.category);
   const related = relatedProducts(visible, product);
-  const jsonLd = productJsonLd(product, `${siteUrl()}/store/products/${product.handle}`, BUSINESS.name);
+  // Shipping and returns appear only once the owner has recorded them.
+  const { data: settings } = await createAdminClient()
+    .from('shop_settings')
+    .select('ships_products, shipping_flat_cents, shipping_free_over_cents, shipping_handling_days, shipping_transit_days, returns_days, returns_url')
+    .eq('id', 1)
+    .maybeSingle();
+  const jsonLd = productJsonLd(
+    product,
+    `${siteUrl()}/store/products/${product.handle}`,
+    BUSINESS.name,
+    merchantDetails(policyFromSettings(settings)),
+  );
 
   return (
     <div className="pb-28 pt-24 sm:pt-32 lg:pb-20">
