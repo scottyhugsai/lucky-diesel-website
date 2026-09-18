@@ -25,7 +25,7 @@ export function FitBadge({ product, truck }: { product: FitProduct; truck: Saved
 
 const TONES = {
   good: 'bg-clover/15 text-clover',
-  warn: 'bg-amber-400/15 text-amber-300',
+  warn: 'bg-chalk/10 text-steel',
   neutral: 'bg-chalk/10 text-chalk/80',
   muted: 'bg-chalk/5 text-steel',
 } as const;

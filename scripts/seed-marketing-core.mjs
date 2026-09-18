@@ -247,7 +247,7 @@ async function seedCampaignsAndEvents({ db, sql, now, customers, vehicles, workO
   const dyno = new Date(now + 24 * DAY);
   dyno.setUTCDate(dyno.getUTCDate() + ((6 - dyno.getUTCDay() + 7) % 7));
   dyno.setUTCHours(14, 0, 0, 0);
-  const event = await must(db.from('events').insert({ slug: 'fall-dyno-day', name: 'Fall Dyno Day', kind: 'dyno_day', description: 'Timed pulls on the chassis dyno, food truck and a street-legal build showcase. Waiver required.', location: 'Lucky Diesel shop, Charleston SC', starts_at: iso(dyno.getTime()), ends_at: iso(dyno.getTime() + 6 * HOUR), capacity: 30, price_cents: 0, published: true }).select().single(), 'event');
+  const event = await must(db.from('events').insert({ slug: 'fall-dyno-day', name: 'Fall Dyno Day', kind: 'dyno_day', description: 'Timed pulls on the chassis dyno, food truck and a street-legal build showcase. Waiver required.', location: 'Lucky Diesel shop, Charleston SC', starts_at: iso(dyno.getTime()), ends_at: iso(dyno.getTime() + 6 * HOUR), capacity: 30, price_cents: 0, published: true, is_sample: true }).select().single(), 'event');
   await must(db.from('event_registrations').insert([
     { event_id: event.id, customer_id: byName.Cody.id, full_name: 'Cody Brooks', email: byName.Cody.email, phone: byName.Cody.phone, vehicle_label: '2021 GMC Sierra 2500HD L5P', platform: 'duramax', slot_at: iso(dyno.getTime() + HOUR), waiver_signed_at: ago(2), media_consent: true },
     { event_id: event.id, customer_id: byName.Luis.id, full_name: 'Luis Ortega', email: byName.Luis.email, phone: byName.Luis.phone, vehicle_label: '2022 Ford F-350 6.7', platform: 'powerstroke', slot_at: iso(dyno.getTime() + 1.5 * HOUR) },

@@ -2737,6 +2737,7 @@ export interface Database {
           waiver_text: string | null;
           charity: string | null;
           leaderboard_public: boolean;
+          is_sample: boolean;
         };
         Insert: {
           id?: string;
@@ -2756,6 +2757,7 @@ export interface Database {
           waiver_text?: string | null;
           charity?: string | null;
           leaderboard_public?: boolean;
+          is_sample?: boolean;
         };
         Update: {
           id?: string;
@@ -2775,6 +2777,7 @@ export interface Database {
           waiver_text?: string | null;
           charity?: string | null;
           leaderboard_public?: boolean;
+          is_sample?: boolean;
         };
         Relationships: [
 

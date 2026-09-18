@@ -42,7 +42,7 @@ export function ProductCard({ product, priority = false, compare = false, truck 
           </label>
         )}
         {product.source === 'demo' && (
-          <span className="absolute left-2 top-2 bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-carbon [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sample</span>
+          <span className="absolute left-2 top-2 border border-line bg-carbon/90 px-2 py-1 text-xs font-bold uppercase tracking-wide text-steel backdrop-blur [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sample</span>
         )}
         {!product.available && product.purchasable && (
           <span className="absolute left-2 top-2 bg-carbon px-2 py-1 text-xs font-bold uppercase tracking-wide text-chalk [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sold out</span>

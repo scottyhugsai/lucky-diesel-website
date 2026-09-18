@@ -55,10 +55,22 @@ export function FilterChips({ photos, filters }: { photos: GalleryPhoto[]; filte
     }),
   ];
 
+  // A chip that leads to an empty gallery is furniture advertising an absence —
+  // "DYNO 0", "EVENTS 0", "POWERSTROKE 0". With a handful of photos most facets
+  // are empty, so only offer the ones that go somewhere, and drop a row
+  // entirely when it would hold nothing but "All". The currently active chip
+  // always stays, so a filtered view never loses its own way back.
+  const offered = (options: ChipOption[]) => {
+    const kept = options.filter((option) => option.count > 0 || option.active);
+    return kept.length > 1 ? kept : [];
+  };
+  const categoryChips = offered(categories);
+  const platformChips = offered(platforms);
+
   return (
     <div className="grid gap-2">
-      <ChipRow label="Filter by category" options={categories} />
-      <ChipRow label="Filter by platform" options={platforms} />
+      {categoryChips.length > 0 && <ChipRow label="Filter by category" options={categoryChips} />}
+      {platformChips.length > 0 && <ChipRow label="Filter by platform" options={platformChips} />}
     </div>
   );
 }

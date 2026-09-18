@@ -705,17 +705,23 @@ input[type='radio'] {
   box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.9);
 }
 
+/* The picker is the hero of this design, and its four fields were the lowest
+   contrast elements on the page: --line over the panel measures 1.42:1, where
+   SC 1.4.11 asks 3:1 for the boundary that identifies a control. On a phone in
+   daylight they read as a list of words rather than as inputs. --line itself is
+   right for dividers and stays put; the control gets its own stronger edge,
+   measured at 3.62:1 against the panel fill behind it. */
 [data-design='v4'] .v4-field {
   appearance: none;
   background: var(--carbon);
-  border: 1px solid var(--line);
+  border: 1px solid rgb(244 247 245 / 0.4);
   border-radius: 2px;
   color: var(--chalk);
   font-family: var(--font-v4-ui);
   font-size: 0.9375rem;
   transition: border-color var(--duration-fast) ease;
 }
-[data-design='v4'] .v4-field:hover:not(:disabled) { border-color: rgb(244 247 245 / 0.3); }
+[data-design='v4'] .v4-field:hover:not(:disabled) { border-color: rgb(244 247 245 / 0.62); }
 [data-design='v4'] .v4-field:focus-visible {
   outline: 2px solid var(--clover);
   outline-offset: 1px;

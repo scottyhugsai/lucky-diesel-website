@@ -15,6 +15,9 @@ interface DesignToggleProps {
  * components re-render with the new cookie. v3 moves it above its tab bar and
  * call pill via the .design-toggle rule in globals.css.
  */
+// Demo furniture, so it sits below every real overlay. At z-55 it painted
+// across the consent banner's Allow all / Essential only buttons on a phone —
+// a pitch affordance covering a legal control.
 export function DesignToggle({ design, labels }: DesignToggleProps) {
   const pathname = usePathname();
   const search = useSearchParams().toString();
@@ -24,7 +27,7 @@ export function DesignToggle({ design, labels }: DesignToggleProps) {
     <div
       // Above the cookie bar: with four designs the row is wide enough to slide
       // under it, and this is the control the whole pitch runs on.
-      className="design-toggle fixed bottom-[5.5rem] left-3 z-[55] flex items-center gap-0.5 rounded-full border border-line bg-carbon/85 p-0.5 text-[0.7rem] font-semibold shadow-2xl backdrop-blur-xl lg:bottom-5 lg:left-4 lg:gap-1 lg:p-1 lg:text-xs"
+      className="design-toggle fixed bottom-[5.5rem] left-3 z-40 flex items-center gap-0.5 rounded-full border border-line bg-carbon/85 p-0.5 text-[0.7rem] font-semibold shadow-2xl backdrop-blur-xl lg:bottom-5 lg:left-4 lg:gap-1 lg:p-1 lg:text-xs"
       role="group"
       aria-label="Website design"
     >

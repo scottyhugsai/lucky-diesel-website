@@ -28,7 +28,7 @@ export function SiteHeaderV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-line bg-carbon/90 backdrop-blur">
+      <header className="sticky top-0 z-[60] border-b border-line bg-carbon/90 backdrop-blur">
         <div className={`${WRAP} flex h-14 items-center justify-between gap-6`}>
           <Link href="/" onClick={close} aria-label="Lucky Diesel home" className="group inline-flex min-h-11 items-center gap-2.5">
             <Image src="/images/logo-mark.png" alt="" width={698} height={505} priority className="v4-turbo h-6 w-auto" />
@@ -67,7 +67,13 @@ export function SiteHeaderV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
         </div>
       </header>
 
-      <div id="v4-menu" hidden={!isOpen} className="fixed inset-x-0 bottom-0 top-14 z-50 overflow-y-auto bg-carbon px-5 pb-12 pt-4 lg:hidden">
+      {/* Covers the viewport and sits BELOW the header, which now owns a higher
+          stacking level. It previously started at top-14 (56px) while the header,
+          pushed down by the ticker, really ran to about 87px — so the panel painted
+          over the wordmark, the cart and the top half of its own close button. The
+          padding clears the header in both its states: 87px with the ticker showing,
+          57px once it has scrolled away. */}
+      <div id="v4-menu" hidden={!isOpen} className="fixed inset-0 z-50 overflow-y-auto bg-carbon px-5 pb-12 pt-24 lg:hidden">
         <nav aria-label="Mobile">
           <ul>
             {nav.primary.map((item) => (

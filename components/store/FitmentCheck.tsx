@@ -10,7 +10,7 @@ import { TILE } from './styles';
 
 const RESULTS = {
   fits: { icon: Check, tone: 'text-clover', text: (label: string) => `Fits your ${label}.` },
-  platform: { icon: CircleHelp, tone: 'text-amber-300', text: () => 'Check fitment — pick your generation or call us.' },
+  platform: { icon: CircleHelp, tone: 'text-steel', text: () => 'Check fitment — pick your generation or call us.' },
   universal: { icon: Globe, tone: 'text-chalk', text: () => 'Universal — not truck-specific.' },
   no: { icon: X, tone: 'text-danger', text: (label: string) => `Doesn’t fit your ${label}.` },
 } as const;

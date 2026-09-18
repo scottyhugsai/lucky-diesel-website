@@ -93,8 +93,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl [[data-design=v2]_&]:font-semibold [[data-design=v2]_&]:tracking-tight">{product.title}</h1>
 
             {product.source === 'demo' && (
-              <aside className={`mt-5 flex gap-3 border border-amber-300/40 bg-amber-300/10 p-4 text-sm ${TILE}`} aria-label="Sample listing">
-                <Info className="size-5 shrink-0 text-amber-300" aria-hidden="true" />
+              <aside className={`mt-5 flex gap-3 border border-line bg-chalk/5 p-4 text-sm ${TILE}`} aria-label="Sample listing">
+                <Info className="size-5 shrink-0 text-steel" aria-hidden="true" />
                 <p><strong>Sample listing.</strong> Shown to demonstrate catalogue coverage. It is not stocked and cannot be bought here — ask us and we will price it.</p>
               </aside>
             )}

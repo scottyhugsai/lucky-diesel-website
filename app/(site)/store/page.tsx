@@ -35,13 +35,20 @@ export default async function StorePage() {
   // forward, it is the visitor's own trail back to what they were reading.
   const recent = recentProducts(visible, seen);
 
+  // A category tile states a count and shows a cover image, which is the shop
+  // advertising its own catalogue — so it follows the same rule the featured
+  // row below already follows. Counting every visible row inflated these with
+  // sample listings, and the cover was picked from them too: the accessories
+  // tile was a truck in a cloud of smoke, on a page whose own ticker says
+  // emissions equipment stays intact.
+  const promotable = safeToPromote(visible);
   const categories = CATEGORIES.map((category) => {
-    const members = visible.filter((p) => p.category === category.id);
+    const members = promotable.filter((p) => p.category === category.id);
     const cover = members.find((p) => p.available && p.images.length) ?? members.find((p) => p.images.length);
     return { ...category, count: members.length, image: cover?.images[0] ?? null };
   }).filter((c) => c.count > 0);
   // The featured row promotes specific SKUs, so it follows the promotion rule.
-  const featured = featuredFirst(featuredProducts(safeToPromote(visible), ['turbo', 'fuel', 'tuning'], 8), lookup);
+  const featured = featuredFirst(featuredProducts(promotable, ['turbo', 'fuel', 'tuning'], 8), lookup);
 
   return (
     <>
