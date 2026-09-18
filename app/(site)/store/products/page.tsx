@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { MyTruckChip } from '@/components/store/MyTruckChip';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ProductFilters } from '@/components/store/ProductFilters';
 import { StoreFallback } from '@/components/store/StoreFallback';
 import { generationInfo, parseStoreParams, productsHref, sortProducts } from '@/components/store/listing';
-import { BTN_GHOST, PILL, WRAP } from '@/components/store/styles';
+import { BTN_GHOST, BTN_PRIMARY, PILL, WRAP } from '@/components/store/styles';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
 import { filterProducts, getStorefrontCatalog } from '@/lib/store/catalog';
 import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
@@ -58,10 +59,23 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
       <p className="mt-6 text-sm text-steel tabular-nums" aria-live="polite">{results.length} {results.length === 1 ? 'part' : 'parts'}</p>
 
+      {/* The grid is a plain GET form: ticking parts and pressing Compare works
+          with JavaScript off, and the result is a shareable URL. */}
       {results.length ? (
-        <ul className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">
-          {results.map((product, i) => <li key={product.handle}><ProductCard product={product} priority={i < 4} /></li>)}
-        </ul>
+        <form method="get" action="/store/compare">
+          <ul className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">
+            {results.map((product, i) => (
+              <li key={product.handle}><ProductCard product={product} priority={i < 4} compare /></li>
+            ))}
+          </ul>
+          {results.length > 1 && (
+            <div className="sticky bottom-20 z-30 mt-6 flex justify-center lg:bottom-6">
+              <button type="submit" className={`${BTN_PRIMARY} shadow-2xl`}>
+                Compare selected <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+        </form>
       ) : (
         <div className="mt-6 border border-dashed border-line p-8 text-center [[data-design=v2]_&]:rounded-3xl">
           <p className="display text-3xl not-italic [[data-design=v2]_&]:text-2xl">No parts match that.</p>

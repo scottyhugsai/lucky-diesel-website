@@ -6,7 +6,7 @@ import { priceLabel } from './listing';
 import { TILE } from './styles';
 
 /** Grid card. Server-rendered; only the fitment badge reads the saved truck on the client. */
-export function ProductCard({ product, priority = false }: { product: StoreProduct; priority?: boolean }) {
+export function ProductCard({ product, priority = false, compare = false }: { product: StoreProduct; priority?: boolean; compare?: boolean }) {
   const image = product.images[0];
   return (
     <article className={`group relative flex has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-clover h-full flex-col overflow-hidden border border-line bg-carbon-2 transition-colors hover:border-clover/60 ${TILE} [[data-design=v2]_&]:border-transparent [[data-design=v2]_&]:hover:border-transparent [[data-design=v2]_&]:hover:bg-gunmetal`}>
@@ -24,6 +24,13 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
           <div className="grid h-full place-items-center bg-gunmetal px-3 text-center text-sm text-steel">
             {product.source === 'demo' ? 'Sample listing — no photo yet' : 'No photo'}
           </div>
+        )}
+        {compare && (
+          <label className="absolute bottom-2 right-2 z-10 flex min-h-11 cursor-pointer items-center gap-1.5 rounded-sm border border-line bg-carbon/90 px-2.5 text-xs font-semibold backdrop-blur transition-colors hover:border-clover">
+            <input type="checkbox" name="c" value={product.handle} className="size-4 accent-clover" />
+            <span>Compare</span>
+            <span className="sr-only">{product.title}</span>
+          </label>
         )}
         {product.source === 'demo' && (
           <span className="absolute left-2 top-2 bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-carbon [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sample</span>
