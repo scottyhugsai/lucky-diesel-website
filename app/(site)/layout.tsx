@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
+import { SkipLink } from '@/components/layout/SkipLink';
 import { ClosureBanner } from '@/components/seo/ClosureBanner';
 import { DesignToggle } from '@/components/design/DesignToggle';
 import { MobileActionBar } from '@/components/layout/MobileActionBar';
@@ -27,12 +28,13 @@ async function loadV3() {
 
 /** Same deal for Vector: only its visitors download Inter Tight. */
 async function loadV4() {
-  const [{ SiteHeaderV4 }, { SiteFooterV4 }, { V4_FONT_CLASS }] = await Promise.all([
+  const [{ SiteHeaderV4 }, { SiteFooterV4 }, { TickerV4 }, { V4_FONT_CLASS }] = await Promise.all([
     import('@/components/v4/SiteHeaderV4'),
     import('@/components/v4/SiteFooterV4'),
+    import('@/components/v4/TickerV4'),
     import('@/components/v4/fonts'),
   ]);
-  return { SiteHeaderV4, SiteFooterV4, fontClass: V4_FONT_CLASS };
+  return { SiteHeaderV4, SiteFooterV4, TickerV4, fontClass: V4_FONT_CLASS };
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -44,21 +46,23 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <CartProvider>
+      <SkipLink />
       <div data-design={design} className={`min-h-dvh bg-carbon ${v3?.fontClass ?? ''} ${v4?.fontClass ?? ''}`}>
         {v3 ? (
           // v3 brings its own top bar, tab bar, call/text pill and footer in place of MobileActionBar.
           <v3.V3Shell nav={nav}>{children}</v3.V3Shell>
         ) : v4 ? (
           <>
+            <v4.TickerV4 />
             <v4.SiteHeaderV4 nav={nav} />
-            <main>{children}</main>
+            <main id="main">{children}</main>
             <v4.SiteFooterV4 nav={nav} />
             <MobileActionBar />
           </>
         ) : (
           <>
             {isV2 ? <SiteHeaderV2 nav={nav} /> : <SiteHeader nav={nav} />}
-            <main>{children}</main>
+            <main id="main">{children}</main>
             {isV2 ? <SiteFooterV2 nav={nav} /> : <SiteFooter nav={nav} />}
             <MobileActionBar />
           </>

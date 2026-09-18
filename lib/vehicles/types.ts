@@ -1,4 +1,4 @@
-import type { PlatformId } from '../../normalize';
+import type { PlatformId } from '../store/normalize';
 
 export type Fuel = 'diesel' | 'gas';
 export type Make = 'ford' | 'ram' | 'chevrolet' | 'gmc';

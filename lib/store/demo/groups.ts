@@ -1,5 +1,5 @@
 import type { PlatformId } from '../normalize';
-import { findTruck } from './trucks';
+import { findTruck } from '@/lib/vehicles';
 
 /** One truck generation a sample product is listed for. */
 export interface TruckFit {

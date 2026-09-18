@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PLATFORMS } from '@/lib/site';
-import { TRUCKS, findTruck, truckLabel } from './trucks';
+import { TRUCKS, findTruck, truckLabel } from './index';
 
 const COLLECTIONS = new Set(PLATFORMS.flatMap((platform) => platform.generationCollections));
 const generations = TRUCKS.flatMap((truck) => truck.generations.map((generation) => ({ truck, generation })));

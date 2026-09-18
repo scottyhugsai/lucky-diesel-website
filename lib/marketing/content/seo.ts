@@ -215,15 +215,28 @@ export const LOCAL_SEO_CHECKLIST: readonly { key: string; label: string; done: (
 
 // ── JSON-LD ──
 
+/**
+ * Retired. Google stopped showing the FAQ rich result in May 2026, so emitting
+ * `FAQPage` buys nothing and quietly implies a feature that no longer exists.
+ * The FAQ *content* stays — it is useful to readers and can still be quoted by
+ * an AI answer — but there is no markup for it any more.
+ *
+ * Kept as a no-op rather than deleted so the call sites document the decision;
+ * `JsonLd` renders nothing for null.
+ */
 export function faqSchema(items: readonly FaqItem[]): Record<string, unknown> | null {
-  if (!items.length) return null;
-  return { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((i) => ({ '@type': 'Question', name: i.q, acceptedAnswer: { '@type': 'Answer', text: i.a } })) };
+  void items;
+  return null;
 }
 
 /**
  * Review schema only for real reviews shown on the page, attached to the
- * business (Google ignores self-serving LocalBusiness star markup, so this is
- * for accuracy, not stars). Returns null when there is nothing real to mark up.
+ * business. Returns null when there is nothing real to mark up.
+ *
+ * Do not wire this up to produce stars. Self-serving `AggregateRating` on a
+ * LocalBusiness is both ineligible for the rich result and a spam-policy risk,
+ * and Google's prohibition covers embedded third-party review widgets too. It
+ * stays unused on purpose — that is not an oversight to be "fixed".
  */
 export function reviewSchema(reviews: readonly { author: string; rating: number; body: string; source: string; reviewedAt: string }[]): Record<string, unknown> | null {
   const real = reviews.filter((r) => ['google', 'facebook', 'manual'].includes(r.source));

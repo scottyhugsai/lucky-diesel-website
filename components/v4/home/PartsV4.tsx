@@ -4,17 +4,17 @@ import { money } from '@/lib/format';
 import type { BlockValues } from '@/lib/site-content/fields';
 import { str } from '@/lib/site-content/values';
 import { getCatalog } from '@/lib/store/catalog';
-import { safeToPromote } from '@/lib/store/promotable';
 import type { StoreProduct } from '@/lib/store/normalize';
+import { safeToPromote } from '@/lib/store/promotable';
 import { SECTION, SectionHead, WRAP } from '../ui';
 
 const COUNT = 6;
 
 /** One product per category in rotation, so the row shows breadth. Real,
- *  buyable products only — getCatalog never carries a sample listing. */
+ *  buyable parts only — getCatalog never carries a sample listing, and
+ *  anything that trips the claims checker is out. */
 function pick(products: readonly StoreProduct[]): StoreProduct[] {
   const buckets = new Map<string, StoreProduct[]>();
-  // Apparel is not what a diesel shop's homepage should be selling.
   for (const product of products.filter((p) => p.available && p.images.length > 0 && p.category !== 'merch')) {
     buckets.set(product.category, [...(buckets.get(product.category) ?? []), product]);
   }
@@ -29,34 +29,32 @@ function pick(products: readonly StoreProduct[]): StoreProduct[] {
   return picked;
 }
 
-export async function PartsV4({ values }: { values: BlockValues }) {
+export async function PartsV4({ values, step }: { values: BlockValues; step: string }) {
   const catalog = await getCatalog();
-  // A homepage row is a promotion: off-road-only parts and anything whose
-  // listing trips the claims checker stay out of it.
   const products = catalog.ok ? pick(safeToPromote(catalog.products)) : [];
   if (!products.length) return null;
 
   return (
-    <section id="parts" aria-labelledby="parts-v4-heading" className={SECTION}>
+    <section id="parts" aria-labelledby="parts-v4-heading" className={`${SECTION} border-t border-line`}>
       <div className={WRAP}>
         <SectionHead
           id="parts-v4-heading"
-          index="04 — Parts"
+          index={`${step} — Parts`}
           title={str(values, 'heading').split('\n').filter(Boolean).join(' ')}
           line={str(values, 'intro')}
           href="/store"
           linkLabel="Store"
         />
-        <ul className="mt-9 grid grid-cols-2 gap-4 md:grid-cols-3">
+        <ul className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
           {products.map((product) => (
-            <li key={product.handle} className="v4-card relative overflow-hidden">
+            <li key={product.handle} className="v4-tier group relative overflow-hidden">
               <div className="relative aspect-square bg-white">
                 <Image
                   src={product.images[0]?.src ?? ''}
                   alt={product.images[0]?.alt ?? ''}
                   fill
                   sizes="(min-width: 768px) 320px, 45vw"
-                  className="object-contain p-4"
+                  className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]"
                 />
               </div>
               <div className="border-t border-line p-4">
@@ -66,7 +64,7 @@ export async function PartsV4({ values }: { values: BlockValues }) {
                     {product.title}
                   </Link>
                 </h3>
-                <p className="v4-num mt-2 text-[0.9375rem] text-chalk">{money(product.priceMinCents)}</p>
+                <p className="v4-num mt-2 text-[0.9375rem] font-semibold text-clover">{money(product.priceMinCents)}</p>
               </div>
             </li>
           ))}

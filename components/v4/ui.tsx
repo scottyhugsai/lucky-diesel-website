@@ -2,13 +2,13 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export const WRAP = 'mx-auto w-full max-w-[1180px] px-5 sm:px-8';
-export const SECTION = 'py-14 sm:py-20';
+export const SECTION = 'py-14 sm:py-18';
 
 export const BTN_PRIMARY =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-chalk px-6 text-[0.9375rem] font-semibold text-carbon transition-colors duration-150 hover:bg-clover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
+  'btn-go inline-flex min-h-12 items-center justify-center gap-2 px-6 text-[0.9375rem] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
 
 export const BTN_GHOST =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-line px-6 text-[0.9375rem] font-semibold text-chalk transition-colors duration-150 hover:border-chalk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-sm border border-line px-6 text-[0.9375rem] font-semibold text-chalk transition-colors duration-150 hover:border-chalk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
 
 /** Small uppercase label with a rule running off to the right. */
 export function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export function SectionHead({ id, index, title, line, href, linkLabel = 'See all
     <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
       <div className="max-w-xl">
         {index && <p className="kicker">{index}</p>}
-        <h2 id={id} className="v4-title mt-2 text-[length:var(--text-display)]">{title}</h2>
+        <h2 id={id} className="v4-title mt-2.5 text-[length:var(--text-display)]">{title}</h2>
         {line && <p className="mt-3 text-[1.0625rem] leading-snug text-steel">{line}</p>}
       </div>
       {href && (

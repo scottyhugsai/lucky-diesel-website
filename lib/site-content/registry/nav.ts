@@ -4,6 +4,7 @@ import type { BlockDef, Field } from '../fields';
 /** Everywhere the primary nav is allowed to point. Hrefs are fixed in code; the
  *  owner controls which five appear and what they are called. */
 export const NAV_DESTINATIONS = [
+  { value: 'fitment', label: 'What fits', href: '/fitment' },
   { value: 'book', label: 'Book', href: '/book' },
   { value: 'store', label: 'Store', href: '/store' },
   { value: 'planner', label: 'Plan', href: '/build-planner' },

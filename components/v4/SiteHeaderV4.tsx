@@ -9,7 +9,7 @@ import { BUSINESS } from '@/lib/site';
 import { resolveNav, type SiteNav } from '@/lib/site-nav';
 import { WRAP } from './ui';
 
-/** A hairline bar, 56px tall. No shadow, no blur — the rule does the work. */
+/** A hairline bar, 56px tall, sitting under the ticker. */
 export function SiteHeaderV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -46,9 +46,9 @@ export function SiteHeaderV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
           </nav>
 
           <div className="hidden items-center gap-4 lg:flex">
-            <a href={BUSINESS.phoneHref} className="v4-num text-[0.9375rem] text-chalk transition-colors hover:text-clover">{BUSINESS.phoneDisplay}</a>
+            <a href={BUSINESS.phoneHref} className="v4-num text-[0.9375rem] font-semibold text-chalk transition-colors hover:text-clover">{BUSINESS.phoneDisplay}</a>
             <CartButton />
-            <Link href="/book" className="inline-flex min-h-9 items-center rounded-full bg-chalk px-4 text-[0.875rem] font-semibold text-carbon transition-colors hover:bg-clover">Book</Link>
+            <Link href="/book" className="btn-go inline-flex min-h-10 items-center px-5 text-[0.875rem] font-bold">Book</Link>
           </div>
 
           <div className="flex items-center gap-1 lg:hidden">
@@ -82,7 +82,7 @@ export function SiteHeaderV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
             ))}
           </ul>
         </nav>
-        <a href={BUSINESS.phoneHref} className="mt-8 flex min-h-12 items-center justify-center gap-2 rounded-full bg-chalk font-semibold text-carbon">
+        <a href={BUSINESS.phoneHref} className="btn-go mt-8 flex min-h-12 items-center justify-center gap-2 font-bold">
           <Phone className="size-4" aria-hidden="true" /> {BUSINESS.phoneDisplay}
         </a>
       </div>

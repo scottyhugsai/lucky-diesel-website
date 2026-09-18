@@ -83,8 +83,8 @@ export const HOME_BLOCKS: readonly BlockDef[] = [
       },
       v4: {
         eyebrow: `Diesel performance — ${BUSINESS.city}, ${BUSINESS.region}`,
-        headline: 'Power you can measure.',
-        subhead: 'Tuning, turbos, fuel and repair for Duramax, Powerstroke and Cummins.',
+        headline: 'What are you\nrunning?',
+        subhead: 'Tell us the truck and what it is for. We will tell you what fits and what it costs.',
         primaryLabel: 'Book a slot',
         primaryHref: '/book',
       },
@@ -111,7 +111,7 @@ export const HOME_BLOCKS: readonly BlockDef[] = [
     designDefaults: {
       v2: { kicker: '', heading: 'Why Lucky.', intro: 'Nine ways we keep diesels working hard.' },
       v3: { kicker: '02 / SERVICES', heading: 'What we do', intro: 'Parts pricing is live. Labor is quoted per truck.' },
-      v4: { kicker: '', heading: 'What we do', intro: 'Parts pricing is live. Labor is quoted per truck.' },
+      v4: { kicker: '', heading: 'Three ways in', intro: 'Pick the one that matches your truck. Each says plainly what it costs you and what it does not.' },
     },
   },
   {

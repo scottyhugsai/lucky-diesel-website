@@ -4,7 +4,7 @@ import { isRealVariantId } from '../cart';
 import { buildDemoProducts, demoProductsByHandle, fitsTruck } from './catalog';
 import { FITMENT_GROUPS } from './groups';
 import { PART_FAMILIES } from './parts';
-import { findTruck } from './trucks';
+import { findTruck } from '@/lib/vehicles';
 
 const products = buildDemoProducts();
 const byHandle = demoProductsByHandle();

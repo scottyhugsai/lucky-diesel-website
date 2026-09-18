@@ -34,7 +34,9 @@ describe('NAP audit and schema', () => {
     const schema = reviewSchema([{ author: 'A', rating: 5, body: '</script><b>', source: 'google', reviewedAt: '2026-09-01T00:00:00Z' }]);
     expect(schema).not.toBeNull();
     expect(jsonLd(schema!)).not.toContain('</script>');
+    // FAQPage is retired: Google stopped rendering the rich result in May 2026,
+    // so the site emits no markup for it whether or not there are questions.
     expect(faqSchema([])).toBeNull();
-    expect(faqSchema([{ q: 'Q', a: 'A' }])).toMatchObject({ '@type': 'FAQPage' });
+    expect(faqSchema([{ q: 'Q', a: 'A' }])).toBeNull();
   });
 });

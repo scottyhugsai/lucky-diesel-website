@@ -619,130 +619,148 @@ input[type='radio'] {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
- * v4 "Vector" — the one light design.
+ * v4 "Fitment" — the tool is the hero.
  *
- * Every shared component already paints with the semantic tokens, so redefining
- * them inside this scope flips the whole site to light without touching a
- * single component. Precision over texture: hairlines, tabular numerals, one
- * signal green, and a single piece of motion behind the hero.
+ * Built from a teardown of how aftermarket-truck retailers actually convert:
+ * the vehicle picker takes the space a hero photo would normally occupy, and
+ * the answer is a taxonomy of consequences rather than a filtered list. That
+ * matters here because the shop has almost no photography — so the interface
+ * has to carry the page.
+ *
+ * Register borrowed from truck culture: condensed italic caps, near-black,
+ * clover as the one hot signal. Amber is a second signal reserved for the
+ * emissions note, because green cannot mean both "go" and "read this".
  * ─────────────────────────────────────────────────────────────────────────── */
 [data-design='v4'] {
-  --font-v4: var(--font-v4-family);
-  --carbon: #f4f6f5;
-  --carbon-2: #ffffff;
-  --gunmetal: #e8ecea;
-  --steel: #5a6462;
-  --chalk: #0b0f0e;
-  --clover: #0a7d28;
-  --clover-deep: #085f1e;
-  --clover-glow: rgb(10 125 40 / 0.18);
-  --violet: #4a1fd6;
-  --line: rgb(11 15 14 / 0.14);
-  --danger: #b4231a;
+  --font-v4: var(--font-v4-display), 'Arial Narrow', sans-serif;
+  --font-v4-ui: var(--font-v4-body), system-ui, sans-serif;
 
-  --text-mega: clamp(3rem, 1.2rem + 6.4vw, 6.75rem);
-  --text-display: clamp(2rem, 1.3rem + 2.6vw, 3.5rem);
+  --carbon: #0b0d0c;
+  --carbon-2: #141817;
+  --gunmetal: #1e2422;
+  --steel: #8b9490;
+  --chalk: #f4f7f5;
+  --line: rgb(244 247 245 / 0.13);
+  --amber: #f0a742;
 
-  color-scheme: light;
-  background: var(--carbon);
-  color: var(--chalk);
-}
+  --text-mega: clamp(2.9rem, 1rem + 6.6vw, 6.5rem);
+  --text-display: clamp(2.2rem, 1.3rem + 3.4vw, 4rem);
 
-/* The wrapper cannot style its own ancestors, so the page behind it is set here. */
-html:has([data-design='v4']) {
-  color-scheme: light;
-  background: #f4f6f5;
-}
-html:has([data-design='v4']) body {
-  background: #f4f6f5;
-  color: #0b0f0e;
+  font-family: var(--font-v4-ui);
 }
 
 [data-design='v4'] .v4-title,
 [data-design='v4'] .display {
-  font-family: var(--font-v4), system-ui, sans-serif;
-  font-style: normal;
-  font-weight: 620;
-  text-transform: none;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  text-wrap: balance;
+  font-family: var(--font-v4);
+  /* Saira Condensed has no italic cut; a stated angle beats letting the browser
+     pick one, and 11deg is where the lean reads at poster sizes. */
+  font-style: oblique 11deg;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 0.92;
 }
+
 [data-design='v4'] .kicker {
-  font-family: var(--font-v4), system-ui, sans-serif;
-  font-weight: 560;
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  font-family: var(--font-v4-ui);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--steel);
 }
 
-/* Numbers are the evidence on this design, so they are set like instruments. */
+/* Numbers are the content on this design: specs, years, offsets, prices. */
 [data-design='v4'] .v4-num {
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-  font-weight: 620;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.01em;
 }
 
-/* No slab buttons and no sheen: a flat pill with a crisp focus ring. */
+/* A hard-edged slab, not a pill — this is a shop, not a SaaS product. */
 [data-design='v4'] .btn-go {
-  background: var(--chalk);
-  color: #ffffff;
-  border-radius: 999px;
-  box-shadow: none;
+  background: var(--clover);
+  color: #04120a;
+  border-radius: 2px;
+  font-style: oblique 11deg;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 [data-design='v4'] .btn-go::before { display: none; }
 [data-design='v4'] .btn-go:hover {
-  background: var(--clover);
+  background: #2bd94f;
   box-shadow: none;
 }
 
-/* Texture belongs to v1. */
-[data-design='v4'] .grain::after,
+[data-design='v4'] .grain::after { opacity: 0.045; }
 [data-design='v4'] .speed-stripes { display: none; }
 
-[data-design='v4'] .v4-rule { border-top: 1px solid var(--line); }
-
-[data-design='v4'] .v4-card {
-  background: var(--carbon-2);
+/* The picker is the hero, so it gets the one piece of real surface treatment. */
+[data-design='v4'] .v4-panel {
+  background: linear-gradient(180deg, var(--carbon-2), var(--carbon));
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 3px;
+  box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.9);
+}
+
+[data-design='v4'] .v4-field {
+  appearance: none;
+  background: var(--carbon);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--chalk);
+  font-family: var(--font-v4-ui);
+  font-size: 0.9375rem;
+  transition: border-color var(--duration-fast) ease;
+}
+[data-design='v4'] .v4-field:hover:not(:disabled) { border-color: rgb(244 247 245 / 0.3); }
+[data-design='v4'] .v4-field:focus-visible {
+  outline: 2px solid var(--clover);
+  outline-offset: 1px;
+  border-color: var(--clover);
+}
+[data-design='v4'] .v4-field:disabled { opacity: 0.4; }
+
+/* A step that is answered reads as done; the live one carries the signal. */
+[data-design='v4'] .v4-step[data-state='done'] .v4-step-num { color: var(--clover); border-color: var(--clover); }
+[data-design='v4'] .v4-step[data-state='live'] .v4-step-num { color: var(--chalk); border-color: var(--chalk); }
+
+[data-design='v4'] .v4-tier {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--carbon-2);
   transition: border-color var(--duration-fast) ease, transform var(--duration-normal) var(--ease-out-expo);
 }
-[data-design='v4'] .v4-card:hover {
+[data-design='v4'] .v4-tier:hover { border-color: var(--clover); transform: translateY(-2px); }
+[data-design='v4'] .v4-tier[aria-current='true'] {
   border-color: var(--clover);
-  transform: translateY(-3px);
-}
-[data-design='v4'] .v4-card:focus-within {
-  border-color: var(--clover);
-  outline: 2px solid var(--clover);
-  outline-offset: 2px;
+  box-shadow: inset 3px 0 0 var(--clover);
 }
 
-/* A row that reads as a list, not a stack of boxes. */
-[data-design='v4'] .v4-row {
-  border-bottom: 1px solid var(--line);
-  transition: background-color var(--duration-fast) ease, padding-left var(--duration-normal) var(--ease-out-expo);
-}
-[data-design='v4'] .v4-row:hover {
-  background: var(--gunmetal);
-  padding-left: 0.75rem;
+/* The emissions line is the only amber on the site, and it is on every tier. */
+[data-design='v4'] .v4-emissions {
+  color: var(--amber);
+  border-top: 1px solid rgb(240 167 66 / 0.25);
 }
 
-[data-design='v4'] .v4-canvas {
-  /* Read by the shader so the field is painted in the design's own colours. */
-  --vf-ink: 11 15 14;
-  --vf-signal: 10 125 40;
-  mask-image: radial-gradient(130% 110% at 68% 42%, #000 58%, transparent 95%);
+[data-design='v4'] .v4-rule { border-color: var(--line); }
+
+[data-design='v4'] .v4-scroll {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+[data-design='v4'] .v4-scroll::-webkit-scrollbar { display: none; }
+
+[data-design='v4'] .v4-ticker {
+  background: var(--clover);
+  color: #04120a;
+  font-weight: 650;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-design='v4'] .v4-card,
-  [data-design='v4'] .v4-card:hover,
-  [data-design='v4'] .v4-row,
-  [data-design='v4'] .v4-row:hover {
-    transition: none;
-    transform: none;
-    padding-left: 0;
-  }
+  [data-design='v4'] .v4-tier,
+  [data-design='v4'] .v4-tier:hover { transition: none; transform: none; }
 }
