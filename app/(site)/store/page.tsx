@@ -3,11 +3,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ShieldAlert } from 'lucide-react';
 import { ProductCard } from '@/components/store/ProductCard';
+import { RecentlyViewed } from '@/components/store/RecentlyViewed';
 import { ShopByTruck } from '@/components/store/ShopByTruck';
 import { StoreFallback } from '@/components/store/StoreFallback';
 import { TruckBar } from '@/components/store/TruckBar';
 import { featuredProducts, productsHref, savedTruckLabel } from '@/components/store/listing';
 import { BTN_GHOST, BTN_PRIMARY, TILE, WRAP } from '@/components/store/styles';
+import { readRecent } from '@/components/store/recent-server';
+import { recentProducts } from '@/components/store/recent';
 import { readSavedTruck } from '@/lib/fitment/truck-server';
 import { getStorefrontCatalog } from '@/lib/store/catalog';
 import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
@@ -22,12 +25,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function StorePage() {
-  const [{ products, ok }, content, truck] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck()]);
+  const [{ products, ok }, content, truck, seen] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck(), readRecent()]);
   if (!ok) return <StoreFallback />;
   const truckName = savedTruckLabel(truck);
   const copy = content.block('page.store');
   const lookup = (handle: string) => content.product(handle);
   const visible = applyOverrides(products, lookup);
+  // Not filtered through safeToPromote: this is not the shop putting a part
+  // forward, it is the visitor's own trail back to what they were reading.
+  const recent = recentProducts(visible, seen);
 
   const categories = CATEGORIES.map((category) => {
     const members = visible.filter((p) => p.category === category.id);
@@ -99,6 +105,16 @@ export default async function StorePage() {
             <ul className="mt-8 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">
               {featured.map((product) => <li key={product.handle}><ProductCard product={product} truck={truck} /></li>)}
             </ul>
+          </div>
+        </section>
+      )}
+
+      {recent.length > 0 && (
+        <section aria-labelledby="recent-heading" className="border-t border-line py-14 sm:py-20 [[data-design=v2]_&]:border-transparent">
+          <div className={WRAP}>
+            <h2 id="recent-heading" className="display text-4xl sm:text-5xl">Recently viewed</h2>
+            <p className="mt-2 text-chalk/65">The parts you opened last, on this browser.</p>
+            <RecentlyViewed products={recent} />
           </div>
         </section>
       )}

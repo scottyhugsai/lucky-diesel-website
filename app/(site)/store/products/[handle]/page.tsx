@@ -8,12 +8,16 @@ import { FitmentCheck } from '@/components/store/FitmentCheck';
 import { ProductBuyBox } from '@/components/store/ProductBuyBox';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ProductGallery } from '@/components/store/ProductGallery';
+import { RecentlyViewed } from '@/components/store/RecentlyViewed';
+import { RecordRecent } from '@/components/store/RecordRecent';
 import { SampleQuoteBox } from '@/components/store/SampleQuoteBox';
 import { StoreFallback } from '@/components/store/StoreFallback';
 import { TruckBar } from '@/components/store/TruckBar';
 import { productsHref, relatedProducts } from '@/components/store/listing';
 import { productJsonLd } from '@/components/store/product-json-ld';
 import { BTN_GHOST, PILL, TILE, WRAP } from '@/components/store/styles';
+import { readRecent } from '@/components/store/recent-server';
+import { recentProducts } from '@/components/store/recent';
 import { readSavedTruck } from '@/lib/fitment/truck-server';
 import { BUSINESS } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
@@ -44,7 +48,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { handle } = await params;
-  const [{ products, ok }, content, truck] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck()]);
+  const [{ products, ok }, content, truck, seen] = await Promise.all([getStorefrontCatalog(), getSiteContent(), readSavedTruck(), readRecent()]);
   if (!ok) return <StoreFallback />;
   const visible = applyOverrides(products, (key) => content.product(key));
   const product = visible.find((p) => p.handle === handle);
@@ -52,6 +56,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const category = CATEGORIES.find((c) => c.id === product.category);
   const related = relatedProducts(visible, product, 4, truck);
+  // The part being read is left out; it is the one thing the visitor can already see.
+  const recent = recentProducts(visible, seen, { exclude: product.handle, limit: 4 });
   // Shipping and returns appear only once the owner has recorded them.
   const { data: settings } = await createAdminClient()
     .from('shop_settings')
@@ -68,6 +74,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="pb-28 pt-24 sm:pt-32 lg:pb-20">
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />}
+      <RecordRecent handle={product.handle} />
       <div className={WRAP}>
         <nav aria-label="Breadcrumb" className="truncate text-sm text-steel">
           <Link href="/store" className="hover:text-clover">Store</Link> <span aria-hidden="true">/</span>{' '}
@@ -156,6 +163,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <ul className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
               {related.map((p) => <li key={p.handle}><ProductCard product={p} truck={truck} /></li>)}
             </ul>
+          </div>
+        </section>
+      )}
+
+      {recent.length > 0 && (
+        <section aria-labelledby="recent-heading" className="mt-16 border-t border-line pt-12 [[data-design=v2]_&]:border-transparent">
+          <div className={WRAP}>
+            <h2 id="recent-heading" className="display text-4xl sm:text-5xl [[data-design=v2]_&]:text-3xl">Recently viewed</h2>
+            <RecentlyViewed products={recent} />
           </div>
         </section>
       )}

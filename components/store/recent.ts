@@ -27,3 +27,26 @@ export function withRecent(current: readonly string[], handle: string): string[]
   if (!HANDLE.test(handle)) return [...current];
   return [handle, ...current.filter((entry) => entry !== handle)].slice(0, MAX_RECENT);
 }
+
+/**
+ * The remembered handles, resolved against a catalogue the caller has already
+ * filtered. Order comes from the cookie — most recently opened first — because
+ * that is the only thing this strip is claiming to be. A handle the catalogue
+ * no longer carries is dropped rather than rendered as a dead tile.
+ */
+export function recentProducts<P extends { handle: string }>(
+  products: readonly P[],
+  handles: readonly string[],
+  { exclude, limit = MAX_RECENT }: { exclude?: string; limit?: number } = {},
+): P[] {
+  if (handles.length === 0) return [];
+  const byHandle = new Map(products.map((product) => [product.handle, product]));
+  const found: P[] = [];
+  for (const handle of handles) {
+    if (handle === exclude) continue;
+    const product = byHandle.get(handle);
+    if (product) found.push(product);
+    if (found.length >= limit) break;
+  }
+  return found;
+}
