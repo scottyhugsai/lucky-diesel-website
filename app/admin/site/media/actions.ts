@@ -2,31 +2,19 @@
 
 import { revalidatePath } from 'next/cache';
 import { type ActionState, InputError, guard, requiredText, requiredUuid, text } from '@/components/admin/core/parse';
+import { MEDIA_LIMITS, SITE_UPLOAD_PATH_RE, type UploadedSiteMedia } from '@/components/admin/site/media';
 import { GALLERY_BUCKET } from '@/components/gallery/constants';
 import { requireRole } from '@/lib/auth';
 import { audit } from '@/lib/site-content/write';
 import { createClient } from '@/lib/supabase/server';
 
-/** The only storage paths this area will record. Site photos live beside the gallery's. */
-export const SITE_UPLOAD_PATH_RE = /^site\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;
-const MAX_DIMENSION = 20_000;
-const MAX_BATCH = 20;
-
-export interface UploadedSiteMedia {
-  path: string;
-  title: string;
-  width: number;
-  height: number;
-  bytes: number;
-}
-
 function validUpload(input: unknown): UploadedSiteMedia {
   if (typeof input !== 'object' || input === null) throw new InputError('Upload details are missing.');
   const { path, title, width, height, bytes } = input as Record<string, unknown>;
   if (typeof path !== 'string' || !SITE_UPLOAD_PATH_RE.test(path)) throw new InputError('Upload path is not valid.');
-  const dimension = (value: unknown) => typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= MAX_DIMENSION;
+  const dimension = (value: unknown) => typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= MEDIA_LIMITS.dimension;
   if (!dimension(width) || !dimension(height)) throw new InputError('Photo dimensions are not valid.');
-  const clean = typeof title === 'string' ? title.trim().slice(0, 120) : '';
+  const clean = typeof title === 'string' ? title.trim().slice(0, MEDIA_LIMITS.title) : '';
   return {
     path,
     title: clean || 'Untitled photo',
@@ -40,8 +28,8 @@ function validUpload(input: unknown): UploadedSiteMedia {
 export async function addSiteMedia(uploads: unknown): Promise<ActionState> {
   const viewer = await requireRole('admin');
   return guard(async () => {
-    if (!Array.isArray(uploads) || uploads.length === 0 || uploads.length > MAX_BATCH) {
-      throw new InputError(`Add between 1 and ${MAX_BATCH} photos at a time.`);
+    if (!Array.isArray(uploads) || uploads.length === 0 || uploads.length > MEDIA_LIMITS.batch) {
+      throw new InputError(`Add between 1 and ${MEDIA_LIMITS.batch} photos at a time.`);
     }
     const items = uploads.map(validUpload);
     const supabase = await createClient();
@@ -72,8 +60,8 @@ export async function renameSiteMedia(_prev: ActionState, form: FormData): Promi
   return guard(async () => {
     const id = requiredUuid(form, 'id', 'Photo');
     const patch = {
-      title: requiredText(form, 'title', 'Title', 120),
-      alt_text: text(form, 'alt_text', { max: 200, label: 'Description' }),
+      title: requiredText(form, 'title', 'Title', MEDIA_LIMITS.title),
+      alt_text: text(form, 'alt_text', { max: MEDIA_LIMITS.alt, label: 'Description' }),
     };
     const supabase = await createClient();
     const { data, error } = await supabase.from('site_media').update(patch).eq('id', id).select('id').maybeSingle();

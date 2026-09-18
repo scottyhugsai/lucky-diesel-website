@@ -7,6 +7,8 @@ import { Reveal } from '@/components/ui/Reveal';
 import { serviceSchema } from '@/lib/marketing/content/seo-schema';
 import { BUSINESS, PLATFORMS, SERVICES } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
+import { getSiteContent } from '@/lib/site-content/read';
+import { str } from '@/lib/site-content/values';
 
 interface PlatformPageProps {
   params: Promise<{ platform: string }>;
@@ -35,6 +37,7 @@ const PLATFORM_SERVICES = ['tuning', 'turbo', 'fuel', 'transmission', 'diagnosti
 export default async function PlatformPage({ params }: PlatformPageProps) {
   const platform = findPlatform((await params).platform);
   if (!platform) notFound();
+  const copy = (await getSiteContent()).block(`platform.${platform.id}`);
 
   const services = SERVICES.filter((service) => PLATFORM_SERVICES.includes(service.id));
   const others = PLATFORMS.filter((p) => p.id !== platform.id);
@@ -55,11 +58,11 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
             <Link href="/" className="hover:text-clover">Home</Link> <span aria-hidden="true">/</span>{' '}
             <span className="text-chalk/80">{platform.name}</span>
           </nav>
-          <p className="kicker mt-8">{platform.make} · {BUSINESS.city}, {BUSINESS.region}</p>
+          <p className="kicker mt-8">{str(copy, 'kicker')}</p>
           <h1 id="platform-heading" className="display rise mt-4 text-[length:var(--text-mega)]">
-            {platform.name}
+            {str(copy, 'heading')}
           </h1>
-          <p className="mt-6 max-w-xl text-xl text-chalk/75">{platform.tagline}</p>
+          <p className="mt-6 max-w-xl text-xl text-chalk/75">{str(copy, 'intro')}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link href={`/?truck=${platform.id}#quote`} className="btn-go display flex items-center justify-center gap-3 rounded-sm px-8 py-4 text-2xl not-italic">
               Get a {platform.name} quote <ArrowRight className="size-5" aria-hidden="true" />

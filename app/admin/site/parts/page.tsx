@@ -2,7 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { Badge, EmptyState, PageHeader, TableWrap, tableClass } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
-import { getCatalog } from '@/lib/store/catalog';
+import { getStorefrontCatalog } from '@/lib/store/catalog';
 import { money } from '@/lib/format';
 import { productKey, toProductOverride } from '@/lib/site-content/registry';
 import { findStored, loadBlocks } from '../data';
@@ -16,7 +16,7 @@ interface PartsPageProps {
 export default async function SitePartsPage({ searchParams }: PartsPageProps) {
   await requireRole('admin');
   const query = ((await searchParams).q ?? '').trim().toLowerCase();
-  const [{ products, ok }, blocks] = await Promise.all([getCatalog(), loadBlocks()]);
+  const [{ products, ok }, blocks] = await Promise.all([getStorefrontCatalog(), loadBlocks()]);
 
   const rows = products
     .filter((product) => !query || `${product.title} ${product.vendor}`.toLowerCase().includes(query))

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Fragment, Suspense } from 'react';
 import { ReviewStrip } from '@/components/marketing-public/ReviewStrip';
 import { QuoteSection, QuoteSectionFromUrl } from '@/components/quote/QuoteSection';
@@ -9,8 +10,13 @@ import { Process } from '@/components/sections/Process';
 import { Services } from '@/components/sections/Services';
 import { HomeV2 } from '@/components/v2/home/HomeV2';
 import { HomeV3 } from '@/components/v3/home/HomeV3';
+import { seoMetadata } from '@/lib/site-content/metadata';
 import { getSiteContent } from '@/lib/site-content/read';
 import { list } from '@/lib/site-content/values';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMetadata('home', '/', '/images/shop-card.jpg');
+}
 
 export default async function Home() {
   const content = await getSiteContent();

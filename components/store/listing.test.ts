@@ -38,8 +38,12 @@ describe('sorting and labels', () => {
   });
 
   test('shows "From" only for price ranges', () => {
-    expect(priceLabel({ priceMinCents: 325000, priceMaxCents: 425000 })).toBe('From $3,250');
-    expect(priceLabel({ priceMinCents: 2599, priceMaxCents: 2599 })).toBe('$25.99');
+    expect(priceLabel({ priceMinCents: 325000, priceMaxCents: 425000, purchasable: true })).toBe('From $3,250');
+    expect(priceLabel({ priceMinCents: 2599, priceMaxCents: 2599, purchasable: true })).toBe('$25.99');
+  });
+
+  test('says "Quote" for a sample listing rather than inventing a price', () => {
+    expect(priceLabel({ priceMinCents: 0, priceMaxCents: 0, purchasable: false })).toBe('Quote');
   });
 
   test('names generations', () => {
@@ -67,5 +71,18 @@ describe('related and featured', () => {
       product({ handle: 'f0', category: 'fuel', images: [] }), product({ handle: 'tx', available: false }),
     ];
     expect(featuredProducts(all, ['turbo', 'fuel'], 3).map((p) => p.handle)).toEqual(['t1', 'f1', 't2']);
+  });
+});
+
+describe('sample listings never outrank real ones', () => {
+  const real = product({ handle: 'real', priceMinCents: 100000, available: true, purchasable: true });
+  const sample = product({ handle: 'sample', priceMinCents: 0, available: true, purchasable: false, source: 'demo' });
+
+  test('cheapest-first does not put a priceless sample at the top', () => {
+    expect(sortProducts([sample, real], 'price-asc').map((p) => p.handle)).toEqual(['real', 'sample']);
+  });
+
+  test('the default order puts buyable parts first', () => {
+    expect(sortProducts([sample, real], 'featured').map((p) => p.handle)).toEqual(['real', 'sample']);
   });
 });

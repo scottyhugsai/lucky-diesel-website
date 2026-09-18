@@ -1,4 +1,4 @@
-import { PLATFORMS } from '@/lib/site';
+import { BUSINESS, PLATFORMS } from '@/lib/site';
 import type { BlockDef, Field } from '../fields';
 
 /** Everywhere the primary nav is allowed to point. Hrefs are fixed in code; the
@@ -51,8 +51,9 @@ export const PLATFORM_BLOCKS: readonly BlockDef[] = PLATFORMS.map((platform) => 
   title: platform.name,
   description: `${platform.make} · /${platform.id}`,
   fields: [
+    { kind: 'text', name: 'kicker', label: 'Small line above', max: 60, maxWords: 8 },
     { kind: 'text', name: 'heading', label: 'Page heading', max: 60, maxWords: 6 },
     { kind: 'textarea', name: 'intro', label: 'Intro line', max: 240, maxWords: 40 },
   ],
-  defaults: { heading: `${platform.name} tuning & parts`, intro: platform.tagline },
+  defaults: { kicker: `${platform.make} · ${BUSINESS.city}, ${BUSINESS.region}`, heading: platform.name, intro: platform.tagline },
 }));

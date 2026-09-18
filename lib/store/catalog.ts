@@ -1,7 +1,16 @@
 import 'server-only';
 import { cache } from 'react';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
+import { buildDemoProducts } from './demo/catalog';
 import { normalizeProduct, type CategoryId, type PlatformId, type ShopifyProduct, type StoreProduct } from './normalize';
+
+/**
+ * Sample listings show what a full catalogue would look like for trucks the
+ * store does not stock yet. They carry negative ids, are labelled everywhere
+ * they appear, and route to a quote instead of checkout. Set DEMO_CATALOG to
+ * anything but 'true' — as go-live will — and they disappear completely.
+ */
+const DEMO_CATALOG_ENABLED = process.env.DEMO_CATALOG === 'true';
 
 const REVALIDATE_SECONDS = 3600;
 const PAGE_SIZE = 250;
@@ -43,8 +52,12 @@ async function fetchAllProducts(path: string): Promise<ShopifyProduct[] | null> 
 }
 
 /**
- * The live Shopify catalog, normalised. Generation fitment comes from the
- * store's own per-generation collections. Cached for an hour.
+ * The live Shopify catalog, normalised — real, sellable products only.
+ *
+ * This is the default on purpose. Product feeds, ad creative, campaigns, the
+ * build planner and stock alerts all read it, and none of them may ever carry a
+ * sample listing. Storefront pages that *should* show samples ask for them by
+ * calling `getStorefrontCatalog()`.
  */
 export const getCatalog = cache(async (): Promise<Catalog> => {
   const products = await fetchAllProducts('/products.json');
@@ -64,8 +77,16 @@ export const getCatalog = cache(async (): Promise<Catalog> => {
   return { products: products.map((product) => normalizeProduct(product, collectionsByHandle)), ok: true };
 });
 
+/** The catalogue as the shop pages show it: real products plus sample listings. */
+export const getStorefrontCatalog = cache(async (): Promise<Catalog> => {
+  const catalog = await getCatalog();
+  // The store being unreachable must not leave sample parts standing in as the shop.
+  if (!catalog.ok || !DEMO_CATALOG_ENABLED) return catalog;
+  return { products: [...catalog.products, ...buildDemoProducts()], ok: true };
+});
+
 export async function getProduct(handle: string): Promise<StoreProduct | null> {
-  const { products } = await getCatalog();
+  const { products } = await getStorefrontCatalog();
   return products.find((product) => product.handle === handle) ?? null;
 }
 
@@ -90,7 +111,10 @@ export function filterProducts(products: readonly StoreProduct[], filter: Catalo
     // Shopping for a truck means parts: keep universal devices, drop apparel unless merch was asked for.
     if (filter.platform && product.category === 'merch' && filter.category !== 'merch') return false;
     if (filter.generationCollection && product.platforms.length) {
-      const forPlatform = product.generationCollections.filter((h) => h.startsWith(`${filter.platform ?? ''}`));
+      // Without a platform, every handle would match the empty prefix, so fall
+      // back to the generation's own platform prefix.
+      const prefix = filter.platform ?? filter.generationCollection.split('-')[0] ?? '';
+      const forPlatform = product.generationCollections.filter((handle) => handle.startsWith(prefix));
       if (forPlatform.length && !forPlatform.includes(filter.generationCollection)) return false;
     }
     if (query) {

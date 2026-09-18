@@ -285,3 +285,72 @@ describe('marketing content tables (migration 009)', () => {
     expect(data).toHaveLength(1);
   });
 });
+
+describe('site control panel', () => {
+  const key = 'home.hero';
+
+  beforeAll(async () => {
+    await owner.from('site_blocks').upsert(
+      { key, design: 'all', draft: { headline: 'SECRET DRAFT' }, published: { headline: 'PUBLISHED' } },
+      { onConflict: 'key,design' },
+    );
+  });
+
+  afterAll(async () => {
+    await owner.from('site_blocks').delete().eq('key', key).eq('design', 'all');
+  });
+
+  test('a visitor reads published content', async () => {
+    const { data } = await anon.from('site_blocks').select('key, published').eq('key', key);
+    expect(data?.[0]?.published).toEqual({ headline: 'PUBLISHED' });
+  });
+
+  test('a visitor cannot read the draft column at all', async () => {
+    const { data, error } = await anon.from('site_blocks').select('key, draft').eq('key', key);
+    // The column grant makes this a privilege error, not an empty result.
+    expect(error).not.toBeNull();
+    expect(data).toBeNull();
+  });
+
+  test('a visitor cannot see a block that was never published', async () => {
+    await owner.from('site_blocks').upsert({ key: 'home.parts', design: 'all', draft: { heading: 'UNPUBLISHED' } }, { onConflict: 'key,design' });
+    const { data } = await anon.from('site_blocks').select('key').eq('key', 'home.parts');
+    expect(data ?? []).toHaveLength(0);
+    await owner.from('site_blocks').delete().eq('key', 'home.parts').eq('design', 'all');
+  });
+
+  test('a customer cannot write site content', async () => {
+    const { error } = await client.from('site_blocks').upsert({ key: 'seo.home', design: 'all', draft: { title: 'hacked' } }, { onConflict: 'key,design' });
+    expect(error).not.toBeNull();
+  });
+
+  test('a tech cannot write site content', async () => {
+    const { error } = await tech.from('site_blocks').upsert({ key: 'seo.home', design: 'all', draft: { title: 'hacked' } }, { onConflict: 'key,design' });
+    expect(error).not.toBeNull();
+  });
+
+  test('only the owner reads the audit trail', async () => {
+    const { data: byOwner } = await owner.from('site_audit_log').select('id').limit(1);
+    expect(byOwner).not.toBeNull();
+    const { data: byTech } = await tech.from('site_audit_log').select('id').limit(1);
+    expect(byTech ?? []).toHaveLength(0);
+    const { data: byAnon } = await anon.from('site_audit_log').select('id').limit(1);
+    expect(byAnon ?? []).toHaveLength(0);
+  });
+
+  // There is no update or delete policy on the audit log, so those statements
+  // match no rows and report success. What matters is that the row is untouched.
+  // The probe row stays behind on purpose — that is what append-only means.
+  test('the audit trail cannot be rewritten or erased, even by the owner', async () => {
+    const probeKey = `rls-probe-${Date.now()}`;
+    await owner.from('site_audit_log').insert({ action: 'save', entity: 'block', entity_key: probeKey, summary: 'probe' });
+
+    await owner.from('site_audit_log').update({ summary: 'rewritten' }).eq('entity_key', probeKey);
+    const { data: afterUpdate } = await owner.from('site_audit_log').select('summary').eq('entity_key', probeKey).maybeSingle();
+    expect(afterUpdate?.summary).toBe('probe');
+
+    await owner.from('site_audit_log').delete().eq('entity_key', probeKey);
+    const { data: afterDelete } = await owner.from('site_audit_log').select('summary').eq('entity_key', probeKey).maybeSingle();
+    expect(afterDelete?.summary).toBe('probe');
+  });
+});

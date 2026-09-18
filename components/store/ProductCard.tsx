@@ -21,9 +21,14 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             className={`object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] ${product.available ? '' : 'opacity-50 grayscale'}`}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-gunmetal text-sm text-steel">No photo</div>
+          <div className="grid h-full place-items-center bg-gunmetal px-3 text-center text-sm text-steel">
+            {product.source === 'demo' ? 'Sample listing — no photo yet' : 'No photo'}
+          </div>
         )}
-        {!product.available && (
+        {product.source === 'demo' && (
+          <span className="absolute left-2 top-2 bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-carbon [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sample</span>
+        )}
+        {!product.available && product.purchasable && (
           <span className="absolute left-2 top-2 bg-carbon px-2 py-1 text-xs font-bold uppercase tracking-wide text-chalk [[data-design=v2]_&]:rounded-full [[data-design=v2]_&]:normal-case">Sold out</span>
         )}
       </div>

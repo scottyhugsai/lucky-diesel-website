@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { CalendarClock, FileText, Gauge, Wrench } from 'lucide-react';
 import { BUSINESS } from '@/lib/site';
+import { seoMetadata } from '@/lib/site-content/metadata';
+import { getSiteContent } from '@/lib/site-content/read';
+import { str } from '@/lib/site-content/values';
 import { FleetInquiryForm } from './FleetInquiryForm';
 
-export const metadata: Metadata = {
-  title: `Fleet service | ${BUSINESS.name}`,
-  description: `Preventive maintenance, priority bays and net terms for work trucks in ${BUSINESS.city}, ${BUSINESS.region}.`,
-  alternates: { canonical: '/fleet' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMetadata('fleet', '/fleet');
+}
 
 const INCLUDED = [
   { icon: CalendarClock, title: 'PM on schedule', body: 'We track every unit by days or miles and tell you what’s coming due.' },
@@ -22,16 +23,15 @@ const STEPS = [
   { step: '03', title: 'Run the schedule', body: 'You get a weekly heads-up and a monthly report. We keep the trucks moving.' },
 ];
 
-export default function FleetPage() {
+export default async function FleetPage() {
+  const copy = (await getSiteContent()).block('page.fleet');
   return (
     <div className="pb-24 pt-28 sm:pt-36">
       <div className="mx-auto grid max-w-6xl gap-16 px-4 sm:px-6">
         <section aria-labelledby="fleet-heading" className="grid gap-4">
-          <p className="kicker">Fleet &amp; B2B</p>
-          <h1 id="fleet-heading" className="display text-[length:var(--text-display)]">Keep the trucks working</h1>
-          <p className="max-w-xl text-lg text-chalk/75">
-            Diesel PM, diagnostics and repair for work trucks around {BUSINESS.city}. One shop, one invoice, one schedule.
-          </p>
+          <p className="kicker">{str(copy, 'kicker')}</p>
+          <h1 id="fleet-heading" className="display text-[length:var(--text-display)]">{str(copy, 'heading')}</h1>
+          <p className="max-w-xl text-lg text-chalk/75">{str(copy, 'intro')}</p>
           <p className="text-sm text-steel">Serving {BUSINESS.areaServed.join(' · ')}</p>
         </section>
 

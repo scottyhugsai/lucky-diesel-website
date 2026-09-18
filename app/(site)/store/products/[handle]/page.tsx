@@ -1,19 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowRight, MessageSquare, Phone, ShieldAlert, Wrench } from 'lucide-react';
+import { ArrowRight, Info, MessageSquare, Phone, ShieldAlert, Wrench } from 'lucide-react';
 import { NotifyMeForm } from '@/components/marketing-public/NotifyMeForm';
 import { FitmentCheck } from '@/components/store/FitmentCheck';
 import { ProductBuyBox } from '@/components/store/ProductBuyBox';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ProductGallery } from '@/components/store/ProductGallery';
+import { SampleQuoteBox } from '@/components/store/SampleQuoteBox';
 import { StoreFallback } from '@/components/store/StoreFallback';
 import { productsHref, relatedProducts } from '@/components/store/listing';
 import { productJsonLd } from '@/components/store/product-json-ld';
 import { BTN_GHOST, PILL, TILE, WRAP } from '@/components/store/styles';
 import { BUSINESS } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
-import { getCatalog, getProduct } from '@/lib/store/catalog';
+import { getSiteContent } from '@/lib/site-content/read';
+import { getProduct, getStorefrontCatalog } from '@/lib/store/catalog';
+import { applyOverrides } from '@/lib/store/overrides';
 import { CATEGORIES } from '@/lib/store/normalize';
 
 interface ProductPageProps {
@@ -36,18 +39,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { handle } = await params;
-  const { products, ok } = await getCatalog();
+  const [{ products, ok }, content] = await Promise.all([getStorefrontCatalog(), getSiteContent()]);
   if (!ok) return <StoreFallback />;
-  const product = products.find((p) => p.handle === handle);
+  const visible = applyOverrides(products, (key) => content.product(key));
+  const product = visible.find((p) => p.handle === handle);
   if (!product) notFound();
 
   const category = CATEGORIES.find((c) => c.id === product.category);
-  const related = relatedProducts(products, product);
+  const related = relatedProducts(visible, product);
   const jsonLd = productJsonLd(product, `${siteUrl()}/store/products/${product.handle}`, BUSINESS.name);
 
   return (
     <div className="pb-28 pt-24 sm:pt-32 lg:pb-20">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />}
       <div className={WRAP}>
         <nav aria-label="Breadcrumb" className="truncate text-sm text-steel">
           <Link href="/store" className="hover:text-clover">Store</Link> <span aria-hidden="true">/</span>{' '}
@@ -62,7 +66,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div>
             <p className="kicker">{product.vendor}</p>
             <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl [[data-design=v2]_&]:font-semibold [[data-design=v2]_&]:tracking-tight">{product.title}</h1>
-            <div className="mt-6"><ProductBuyBox product={product} /></div>
+
+            {product.source === 'demo' && (
+              <aside className={`mt-5 flex gap-3 border border-amber-300/40 bg-amber-300/10 p-4 text-sm ${TILE}`} aria-label="Sample listing">
+                <Info className="size-5 shrink-0 text-amber-300" aria-hidden="true" />
+                <p><strong>Sample listing.</strong> Shown to demonstrate catalogue coverage. It is not stocked and cannot be bought here — ask us and we will price it.</p>
+              </aside>
+            )}
+
+            <div className="mt-6">
+              {product.purchasable ? <ProductBuyBox product={product} /> : <SampleQuoteBox product={product} />}
+            </div>
+
+            {product.fitmentLabels.length > 0 && (
+              <section aria-label="Fitment" className="mt-6">
+                <h2 className="text-sm font-semibold text-chalk/85">Fits</h2>
+                <ul className="mt-2 grid gap-1 text-sm text-steel">
+                  {product.fitmentLabels.map((line) => <li key={line}>{line}</li>)}
+                </ul>
+              </section>
+            )}
 
             {product.offRoadOnly && (
               <aside className={`mt-6 flex gap-3 border border-amber-300/40 bg-amber-300/10 p-4 text-sm ${TILE}`} aria-label="Emissions notice">
@@ -73,7 +96,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
 
             <div className="mt-6"><FitmentCheck product={product} /></div>
-            {!product.available && <div className="mt-6"><NotifyMeForm topic={`product:${product.handle}`.slice(0, 120)} label={product.title} heading="Back-in-stock alert" endpoint="/api/marketing/stock-alert" /></div>}
+            {!product.available && product.purchasable && <div className="mt-6"><NotifyMeForm topic={`product:${product.handle}`.slice(0, 120)} label={product.title} heading="Back-in-stock alert" endpoint="/api/marketing/stock-alert" /></div>}
 
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               <Link href="/book?service=install" className={BTN_GHOST}><Wrench className="size-4" aria-hidden="true" /> Book install</Link>

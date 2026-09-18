@@ -49,14 +49,18 @@ export function productsHref(params: Partial<StoreParams>): string {
 }
 
 /** Returns a new array. Featured keeps catalog order with in-stock items first. */
-export function sortProducts<P extends Pick<StoreProduct, 'priceMinCents' | 'available'>>(products: readonly P[], sort: SortId): P[] {
-  const stock = (a: P, b: P) => Number(b.available) - Number(a.available);
-  if (sort === 'price-asc') return [...products].sort((a, b) => stock(a, b) || a.priceMinCents - b.priceMinCents);
-  if (sort === 'price-desc') return [...products].sort((a, b) => stock(a, b) || b.priceMinCents - a.priceMinCents);
-  return [...products].sort(stock);
+export function sortProducts<P extends Pick<StoreProduct, 'priceMinCents' | 'available' | 'purchasable'>>(products: readonly P[], sort: SortId): P[] {
+  // Things you can actually buy come first in every ordering; sample listings
+  // have no price, so they would otherwise win "cheapest first" outright.
+  const rank = (a: P, b: P) => Number(b.purchasable) - Number(a.purchasable) || Number(b.available) - Number(a.available);
+  if (sort === 'price-asc') return [...products].sort((a, b) => rank(a, b) || a.priceMinCents - b.priceMinCents);
+  if (sort === 'price-desc') return [...products].sort((a, b) => rank(a, b) || b.priceMinCents - a.priceMinCents);
+  return [...products].sort(rank);
 }
 
-export function priceLabel(product: Pick<StoreProduct, 'priceMinCents' | 'priceMaxCents'>): string {
+export function priceLabel(product: Pick<StoreProduct, 'priceMinCents' | 'priceMaxCents' | 'purchasable'>): string {
+  // Sample listings carry no price: quoting one would be inventing the shop's.
+  if (!product.purchasable) return 'Quote';
   const min = money(product.priceMinCents, { whole: product.priceMinCents % 100 === 0 });
   return product.priceMaxCents > product.priceMinCents ? `From ${min}` : min;
 }

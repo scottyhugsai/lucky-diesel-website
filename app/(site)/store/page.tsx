@@ -7,35 +7,39 @@ import { ShopByTruck } from '@/components/store/ShopByTruck';
 import { StoreFallback } from '@/components/store/StoreFallback';
 import { featuredProducts, productsHref } from '@/components/store/listing';
 import { BTN_GHOST, BTN_PRIMARY, TILE, WRAP } from '@/components/store/styles';
-import { BUSINESS } from '@/lib/site';
-import { getCatalog } from '@/lib/store/catalog';
+import { getStorefrontCatalog } from '@/lib/store/catalog';
+import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
 import { CATEGORIES } from '@/lib/store/normalize';
+import { seoMetadata } from '@/lib/site-content/metadata';
+import { getSiteContent } from '@/lib/site-content/read';
+import { str } from '@/lib/site-content/values';
 
-export const metadata: Metadata = {
-  title: `Diesel Performance Parts | ${BUSINESS.name} Store`,
-  description: `Turbos, injectors, CP3s and tunes for Duramax, Powerstroke and Cummins. Shipped or installed in ${BUSINESS.city}, ${BUSINESS.region}.`,
-  alternates: { canonical: '/store' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMetadata('store', '/store');
+}
 
 export default async function StorePage() {
-  const { products, ok } = await getCatalog();
+  const [{ products, ok }, content] = await Promise.all([getStorefrontCatalog(), getSiteContent()]);
   if (!ok) return <StoreFallback />;
+  const copy = content.block('page.store');
+  const lookup = (handle: string) => content.product(handle);
+  const visible = applyOverrides(products, lookup);
 
   const categories = CATEGORIES.map((category) => {
-    const members = products.filter((p) => p.category === category.id);
+    const members = visible.filter((p) => p.category === category.id);
     const cover = members.find((p) => p.available && p.images.length) ?? members.find((p) => p.images.length);
     return { ...category, count: members.length, image: cover?.images[0] ?? null };
   }).filter((c) => c.count > 0);
-  const featured = featuredProducts(products, ['turbo', 'fuel', 'tuning'], 8);
+  const featured = featuredFirst(featuredProducts(visible, ['turbo', 'fuel', 'tuning'], 8), lookup);
 
   return (
     <>
       <section aria-labelledby="store-heading" className="grain relative isolate overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-40">
         <div aria-hidden="true" className="absolute -right-40 -top-20 -z-10 size-[36rem] rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, var(--clover-glow), transparent 65%)' }} />
         <div className={WRAP}>
-          <p className="kicker">Lucky Diesel parts store</p>
-          <h1 id="store-heading" className="display rise mt-4 text-[length:var(--text-display)]">Parts for your truck.</h1>
-          <p className="mt-5 max-w-lg text-lg text-chalk/75">Turbos, fuel and tunes we run in our own bays. Ships fast, or we install it.</p>
+          <p className="kicker">{str(copy, 'kicker')}</p>
+          <h1 id="store-heading" className="display rise mt-4 text-[length:var(--text-display)]">{str(copy, 'heading')}</h1>
+          <p className="mt-5 max-w-lg text-lg text-chalk/75">{str(copy, 'intro')}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/store/products" className={BTN_PRIMARY}>Shop all parts <ArrowRight className="size-5" aria-hidden="true" /></Link>
             <Link href="/build-planner" className={BTN_GHOST}>Plan a build</Link>

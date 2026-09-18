@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import { BookingForm } from '@/components/booking/BookingForm';
 import { BUSINESS } from '@/lib/site';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { seoMetadata } from '@/lib/site-content/metadata';
+import { getSiteContent } from '@/lib/site-content/read';
+import { lines, str } from '@/lib/site-content/values';
 
-export const metadata: Metadata = {
-  title: `Book Diesel Service Online | Lucky Diesel ${BUSINESS.city}`,
-  description: `Pick a day and time for tuning, diagnostics or repair on your Duramax, Powerstroke or Cummins. ${BUSINESS.city}, ${BUSINESS.region}.`,
-  alternates: { canonical: '/book' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMetadata('book', '/book');
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -29,20 +30,20 @@ async function openDates(): Promise<{ value: string; weekday: string; day: strin
 }
 
 export default async function BookPage() {
-  const dates = await openDates();
+  const [dates, content] = await Promise.all([openDates(), getSiteContent()]);
+  const copy = content.block('page.book');
+  const [headline, ...headingRest] = lines(copy, 'heading');
   return (
     <section className="grain relative isolate overflow-hidden pb-24 pt-32 sm:pt-40">
       <div aria-hidden="true" className="absolute -left-40 top-20 -z-10 size-[36rem] rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, var(--clover-glow), transparent 65%)' }} />
       <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.4fr]">
         <div>
-          <p className="kicker">Book online</p>
+          <p className="kicker">{str(copy, 'kicker')}</p>
           <h1 className="display mt-4 text-[length:var(--text-display)]">
-            Pick a time.
-            <span className="block text-clover">We’ll handle the rest.</span>
+            {headline}
+            {headingRest.map((line) => <span key={line} className="block text-clover">{line}</span>)}
           </h1>
-          <p className="mt-6 max-w-sm text-lg text-chalk/70">
-            Choose a day and time that works. You’ll get a confirmation right away and a reminder before your appointment.
-          </p>
+          <p className="mt-6 max-w-sm text-lg text-chalk/70">{str(copy, 'intro')}</p>
           <p className="mt-8 text-chalk/60">
             Rather talk it through? Call or text{' '}
             <a href={BUSINESS.phoneHref} className="font-semibold text-clover">{BUSINESS.phoneDisplay}</a>.

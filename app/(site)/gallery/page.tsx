@@ -7,27 +7,18 @@ import { JustifiedGrid } from '@/components/gallery/JustifiedGrid';
 import { LightboxProvider } from '@/components/gallery/LightboxProvider';
 import { applyFilters, loadPublishedPhotos, parseFilters } from '@/components/gallery/data';
 import { TruckSubmitForm } from '@/components/marketing-public/TruckSubmitForm';
-import { BUSINESS } from '@/lib/site';
-
-const TITLE = `Gallery | Lucky Diesel ${BUSINESS.city}`;
-const DESCRIPTION = 'Duramax, Powerstroke and Cummins trucks, parts and dyno days from the Lucky Diesel shop in Charleston, SC.';
+import { getSiteContent } from '@/lib/site-content/read';
+import { seoMetadata } from '@/lib/site-content/metadata';
+import { str } from '@/lib/site-content/values';
 
 export async function generateMetadata(): Promise<Metadata> {
+  // The first published photo stands in as the share image until one is chosen.
   const { photos } = await loadPublishedPhotos();
-  const cover = photos[0];
-  return {
-    title: TITLE,
-    description: DESCRIPTION,
-    alternates: { canonical: '/gallery' },
-    openGraph: {
-      title: TITLE,
-      description: DESCRIPTION,
-      images: cover ? [{ url: cover.src, width: cover.width, height: cover.height, alt: cover.title }] : undefined,
-    },
-  };
+  return seoMetadata('gallery', '/gallery', photos[0]?.src);
 }
 
 export default async function GalleryPage({ searchParams }: PageProps<'/gallery'>) {
+  const copy = (await getSiteContent()).block('page.gallery');
   const [params, { photos, failed }] = await Promise.all([searchParams, loadPublishedPhotos()]);
   const filters = parseFilters(params);
   const visible = applyFilters(photos, filters);
@@ -36,10 +27,10 @@ export default async function GalleryPage({ searchParams }: PageProps<'/gallery'
   return (
     <div className="pb-28 pt-28 sm:pt-40">
       <header className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="kicker">Straight off the shop floor</p>
+        <p className="kicker">{str(copy, 'kicker')}</p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-          <h1 className="display text-[length:var(--text-display)]">Gallery</h1>
-          <p className="max-w-sm text-chalk/65 sm:pb-2 sm:text-lg">Trucks we’ve built, parts we trust, days on the dyno.</p>
+          <h1 className="display text-[length:var(--text-display)]">{str(copy, 'heading')}</h1>
+          <p className="max-w-sm text-chalk/65 sm:pb-2 sm:text-lg">{str(copy, 'intro')}</p>
         </div>
       </header>
 

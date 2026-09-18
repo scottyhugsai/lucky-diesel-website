@@ -2,12 +2,11 @@
 
 import { ImagePlus, LoaderCircle } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
-import { addSiteMedia, type UploadedSiteMedia } from '@/app/admin/site/media/actions';
+import { addSiteMedia } from '@/app/admin/site/media/actions';
+import { MEDIA_LIMITS, type UploadedSiteMedia } from './media';
 import { GALLERY_BUCKET, GALLERY_MIME_EXT } from '@/components/gallery/constants';
 import { readDimensions, rejectReason, titleFromName, uploadWithProgress } from '@/components/gallery/admin/upload';
 import { createClient } from '@/lib/supabase/browser';
-
-const MAX_BATCH = 20;
 
 /** Site photos share the gallery's public bucket, under their own `site/` prefix. */
 function sitePathFor(file: File): string {
@@ -23,7 +22,7 @@ export function SiteUploader() {
 
   async function handleFiles(list: FileList | null) {
     if (!list?.length || busy) return;
-    const files = Array.from(list).slice(0, MAX_BATCH);
+    const files = Array.from(list).slice(0, MEDIA_LIMITS.batch);
     const rejected = files.filter((file) => rejectReason(file));
     const accepted = files.filter((file) => !rejectReason(file));
     if (!accepted.length) {

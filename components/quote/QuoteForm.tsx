@@ -12,6 +12,8 @@ import { Field, inputClass } from './Field';
 interface QuoteFormProps {
   initialPlatform: string;
   initialService: string;
+  /** Pre-filled detail, e.g. the part someone asked about. */
+  initialDetails?: string;
 }
 
 type Status =
@@ -32,7 +34,7 @@ function fallbackBody(lead: Lead): string {
   return `Service request\nName: ${lead.name}\nPhone: ${lead.phone}\nTruck: ${lead.platformLabel}\nMileage: ${lead.mileage || '-'}\nService: ${lead.serviceLabel}\n\n${lead.details}`;
 }
 
-export function QuoteForm({ initialPlatform, initialService }: QuoteFormProps) {
+export function QuoteForm({ initialPlatform, initialService, initialDetails = '' }: QuoteFormProps) {
   const [values, setValues] = useState<Values>({
     name: '',
     phone: '',
@@ -41,7 +43,7 @@ export function QuoteForm({ initialPlatform, initialService }: QuoteFormProps) {
     generation: '',
     mileage: '',
     service: SERVICES.some((s) => s.id === initialService) ? initialService : '',
-    details: '',
+    details: initialDetails.slice(0, 2000),
     company: '',
     heardAbout: '',
     vin: '',

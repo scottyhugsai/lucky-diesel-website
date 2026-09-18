@@ -7,7 +7,9 @@ import { StoreFallback } from '@/components/store/StoreFallback';
 import { generationInfo, parseStoreParams, productsHref, sortProducts } from '@/components/store/listing';
 import { BTN_GHOST, PILL, WRAP } from '@/components/store/styles';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
-import { filterProducts, getCatalog } from '@/lib/store/catalog';
+import { filterProducts, getStorefrontCatalog } from '@/lib/store/catalog';
+import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
+import { getSiteContent } from '@/lib/site-content/read';
 import { CATEGORIES } from '@/lib/store/normalize';
 
 interface ProductsPageProps {
@@ -22,13 +24,13 @@ export const metadata: Metadata = {
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = parseStoreParams(await searchParams);
-  const { products, ok } = await getCatalog();
+  const [{ products, ok }, content] = await Promise.all([getStorefrontCatalog(), getSiteContent()]);
   if (!ok) return <StoreFallback />;
 
-  const results = sortProducts(
-    filterProducts(products, { category: params.category, platform: params.platform, generationCollection: params.gen, query: params.q }),
-    params.sort,
-  );
+  const lookup = (handle: string) => content.product(handle);
+  const visible = applyOverrides(products, lookup);
+  const matched = filterProducts(visible, { category: params.category, platform: params.platform, generationCollection: params.gen, query: params.q });
+  const results = params.sort === 'featured' ? featuredFirst(sortProducts(matched, params.sort), lookup) : sortProducts(matched, params.sort);
   const category = CATEGORIES.find((c) => c.id === params.category);
   const heading = generationInfo(params.gen)?.name ?? PLATFORMS.find((p) => p.id === params.platform)?.name;
   const chip = (isOn: boolean) => `inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border px-4 text-sm font-semibold transition-colors ${PILL} ${isOn ? 'border-clover bg-clover text-carbon' : 'border-line hover:border-clover'}`;

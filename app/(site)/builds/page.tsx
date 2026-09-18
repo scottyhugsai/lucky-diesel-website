@@ -3,27 +3,29 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { Reveal } from '@/components/ui/Reveal';
-import { BUSINESS } from '@/lib/site';
+import { seoMetadata } from '@/lib/site-content/metadata';
+import { getSiteContent } from '@/lib/site-content/read';
+import { str } from '@/lib/site-content/values';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = {
-  title: `Diesel Builds & Dyno Results | Lucky Diesel ${BUSINESS.city}`,
-  description: 'Duramax, Powerstroke and Cummins builds from the shop, with before-and-after dyno numbers and the parts that got them there.',
-  alternates: { canonical: '/builds' },
-};
-
-export const revalidate = 300;
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMetadata('builds', '/builds');
+}
 
 export default async function BuildsPage() {
   const supabase = await createClient();
-  const { data: builds } = await supabase.from('builds').select('*').eq('published', true).order('created_at', { ascending: false });
+  const [{ data: builds }, content] = await Promise.all([
+    supabase.from('builds').select('*').eq('published', true).order('created_at', { ascending: false }),
+    getSiteContent(),
+  ]);
+  const copy = content.block('page.builds');
 
   return (
     <div className="pb-24 pt-32 sm:pt-40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="kicker">From the shop</p>
-        <h1 className="display mt-4 text-[length:var(--text-display)]">Builds &amp; dyno numbers</h1>
-        <p className="mt-4 max-w-xl text-lg text-chalk/70">Real trucks, the parts that went on them, and what they made on the dyno before and after.</p>
+        <p className="kicker">{str(copy, 'kicker')}</p>
+        <h1 className="display mt-4 text-[length:var(--text-display)]">{str(copy, 'heading')}</h1>
+        <p className="mt-4 max-w-xl text-lg text-chalk/70">{str(copy, 'intro')}</p>
 
         <ul className="mt-14 grid gap-6 md:grid-cols-2">
           {(builds ?? []).map((build, index) => {
