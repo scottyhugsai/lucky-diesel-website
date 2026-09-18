@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, CalendarClock, CircleHelp, Wrench } from 'lucide-react';
+import { PlatformShortcuts } from '@/components/v4/PlatformShortcuts';
 import { TRUCK_ENDPOINT } from '@/components/store/TruckBar';
 import { FitmentPicker } from '@/components/v4/FitmentPicker';
 import { EmissionsNote, UseCaseTiers } from '@/components/v4/UseCaseTiers';
@@ -68,18 +69,35 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
       <h1 className="v4-title mt-4 text-[length:var(--text-display)]">
         {result ? result.truck.model : 'What fits your truck'}
       </h1>
-      {result && <p className="v4-num mt-2 text-lg text-steel">{result.label}</p>}
+      {result ? (
+        <p className="v4-num mt-2 text-lg text-steel">{result.label}</p>
+      ) : (
+        <p className="mt-3 max-w-xl text-base leading-snug text-steel sm:text-lg">
+          Four taps and we will tell you what we can do with your truck — or that it is not one of ours.
+        </p>
+      )}
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
+      {/* Before a truck is chosen there is no answer to put beside the picker, so
+          the page stops pretending there is a second column and fills the width
+          with the two other ways in: by engine family, or by what the job is. */}
+      <div className={`mt-8 grid gap-8 lg:items-start ${result ? 'lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]'}`}>
         <div className="lg:sticky lg:top-20">
-          <FitmentPicker fitment={fitment} />
+          <FitmentPicker fitment={fitment} goal={goal?.id ?? null} />
         </div>
 
         <div id="answer" className="scroll-mt-20">
           {!result && (
-            <p className="rounded-[3px] border border-dashed border-line p-6 text-steel">
-              Pick a year, make, model and engine and we will show you what we can do with it.
-            </p>
+            <>
+              {/* A goal chosen from the tiers below is held by the picker's hidden
+                  fields; saying so is the difference between a filter and a promise. */}
+              {goal && (
+                <p className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 border-l-2 border-clover bg-carbon-2 px-4 py-3 text-sm">
+                  <span className="font-semibold text-chalk">{goal.name}</span>
+                  <span className="text-steel">— held. Now tell us the truck.</span>
+                </p>
+              )}
+              <PlatformShortcuts />
+            </>
           )}
 
           {result && !result.supported && (
@@ -166,6 +184,17 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
           )}
         </div>
       </div>
+
+      {!result && (
+        <section aria-labelledby="jobs-heading" className="mt-14 border-t border-line pt-10">
+          <h2 id="jobs-heading" className="v4-title text-3xl sm:text-4xl">What is it for?</h2>
+          <p className="mt-2 max-w-xl text-steel">
+            Same truck, three different jobs. Pick one and we will hold it while you choose the truck.
+          </p>
+          <div className="mt-6"><UseCaseTiers current={goal?.id ?? null} /></div>
+          <EmissionsNote />
+        </section>
+      )}
     </div>
   );
 }

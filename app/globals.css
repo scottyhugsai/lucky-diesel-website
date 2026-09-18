@@ -199,6 +199,38 @@ input[type='radio'] {
   }
 }
 
+/* ─── The truck picker, in every design ───────────────────────────────────────
+ * /fitment renders the picker whatever design is on, but the panel, field and
+ * step rules below were written inside [data-design='v4'] only — so on v1, the
+ * design the site actually ships, the four selects had no boundary at all.
+ * That is the same SC 1.4.11 failure already fixed for v4, at 0:1 instead of
+ * 1.42:1. These are the base; v4's own rules out-specify them and still win.
+ */
+.v4-panel {
+  background: var(--carbon-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+.v4-field {
+  appearance: none;
+  background: var(--carbon);
+  border: 1px solid rgb(244 247 245 / 0.4);
+  border-radius: 2px;
+  color: var(--chalk);
+  font-size: 0.9375rem;
+  transition: border-color var(--duration-fast) ease;
+}
+.v4-field:hover:not(:disabled) { border-color: rgb(244 247 245 / 0.62); }
+.v4-field:focus-visible { outline: 2px solid var(--clover); outline-offset: 1px; border-color: var(--clover); }
+.v4-field:disabled { opacity: 0.4; }
+.v4-step[data-state='done'] .v4-step-num { color: var(--clover); border-color: var(--clover); }
+.v4-step[data-state='live'] .v4-step-num { color: var(--chalk); border-color: var(--chalk); }
+.v4-tier {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--carbon-2);
+}
+
 /* ─── Design v2 "Showroom": Apple-style presentation, same palette ─────────────
  * Scoped to [data-design='v2'] (set by the public site layout). Pages that are
  * shared between designs pick this up automatically; the v2 home, header and

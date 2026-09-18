@@ -23,7 +23,7 @@ interface Option {
   label: string;
 }
 
-function Step({ index, name, label, options, value, fitment, disabled }: {
+function Step({ index, name, label, options, value, fitment, disabled, carry }: {
   index: number;
   name: 'year' | 'make' | 'model' | 'engine';
   label: string;
@@ -31,6 +31,8 @@ function Step({ index, name, label, options, value, fitment, disabled }: {
   value: string | null;
   fitment: Fitment;
   disabled: boolean;
+  /** Anything the page wants kept across steps, such as a goal chosen first. */
+  carry: readonly (readonly [string, string])[];
 }) {
   // Steps after this one are dropped, so changing the year cannot leave a
   // model from a different truck behind.
@@ -42,7 +44,7 @@ function Step({ index, name, label, options, value, fitment, disabled }: {
   return (
     <div className="v4-step" data-state={state}>
       <form method="get" action="#fitment" className="flex items-center gap-3">
-        {[...carried.entries()].map(([key, carriedValue]) => (
+        {[...carried.entries(), ...carry].map(([key, carriedValue]) => (
           <input key={key} type="hidden" name={key} value={carriedValue} />
         ))}
         <span
@@ -73,7 +75,10 @@ function Step({ index, name, label, options, value, fitment, disabled }: {
   );
 }
 
-export function FitmentPicker({ fitment, action = '#fitment' }: { fitment: Fitment; action?: string }) {
+export function FitmentPicker({ fitment, action = '#fitment', goal = null }: { fitment: Fitment; action?: string; goal?: string | null }) {
+  // A goal chosen before a truck has to survive all four steps, or the tier
+  // links on the empty page promise something the picker then throws away.
+  const carry: readonly (readonly [string, string])[] = goal ? [['goal', goal]] : [];
   const years: Option[] = YEARS.map((year) => ({ value: String(year), label: String(year) }));
   const makes: Option[] = fitment.year ? makesFor(fitment.year).map((make) => ({ value: make.id, label: make.label })) : [];
   const models: Option[] = fitment.year && fitment.make
@@ -91,14 +96,14 @@ export function FitmentPicker({ fitment, action = '#fitment' }: { fitment: Fitme
 
       <AutoSubmit selector="#fitment" />
       <div className="mt-5 grid gap-2.5">
-        <Step index={1} name="year" label="Year" options={years} value={fitment.year ? String(fitment.year) : null} fitment={fitment} disabled={false} />
-        <Step index={2} name="make" label="Make" options={makes} value={fitment.make} fitment={fitment} disabled={!fitment.year} />
-        <Step index={3} name="model" label="Model" options={models} value={fitment.model} fitment={fitment} disabled={!fitment.make} />
-        <Step index={4} name="engine" label="Engine" options={engines} value={fitment.engine} fitment={fitment} disabled={!fitment.model} />
+        <Step index={1} name="year" label="Year" options={years} value={fitment.year ? String(fitment.year) : null} fitment={fitment} disabled={false} carry={carry} />
+        <Step index={2} name="make" label="Make" options={makes} value={fitment.make} fitment={fitment} disabled={!fitment.year} carry={carry} />
+        <Step index={3} name="model" label="Model" options={models} value={fitment.model} fitment={fitment} disabled={!fitment.make} carry={carry} />
+        <Step index={4} name="engine" label="Engine" options={engines} value={fitment.engine} fitment={fitment} disabled={!fitment.model} carry={carry} />
       </div>
 
       {fitment.engine ? (
-        <Link href={`/fitment?${fitmentParams(fitment).toString()}`} className="btn-go v4-go mt-5 flex min-h-12 items-center justify-center gap-2 px-6 font-bold">
+        <Link href={`/fitment?${new URLSearchParams([...fitmentParams(fitment), ...carry.map(([k, v]) => [k, v] as [string, string])]).toString()}`} className="btn-go v4-go mt-5 flex min-h-12 items-center justify-center gap-2 px-6 font-bold">
           Show what fits <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       ) : (

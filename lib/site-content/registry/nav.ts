@@ -19,8 +19,15 @@ export const NAV_DESTINATIONS = [
 
 export type NavDestinationId = (typeof NAV_DESTINATIONS)[number]['value'];
 
-/** The five the site ships with. More than five and the nav stops being scannable. */
-export const DEFAULT_NAV: readonly NavDestinationId[] = ['book', 'store', 'planner', 'builds', 'gallery'];
+/**
+ * The five the site ships with. More than five and the nav stops being scannable.
+ *
+ * "What fits" leads because the truck picker is the idea the whole design is
+ * built around, and it was reachable only from the footer. It takes the slot
+ * Builds had: Builds is worth linking once there are real builds on it, and
+ * until the owner supplies them every entry there is labelled an example.
+ */
+export const DEFAULT_NAV: readonly NavDestinationId[] = ['fitment', 'book', 'store', 'planner', 'gallery'];
 
 const labelFields: Field[] = NAV_DESTINATIONS.map((destination) => ({
   kind: 'text',
