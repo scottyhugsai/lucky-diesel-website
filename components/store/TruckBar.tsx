@@ -45,10 +45,10 @@ export function TruckBar({ truck, returnTo, params, filter }: {
       </p>
 
       {filter?.fromSavedTruck && params && (
-        <Link href={productsHref({ ...params, all: true })} className={LINK}>Show all parts</Link>
+        <Link href={productsHref({ ...params, page: 1, all: true })} className={LINK}>Show all parts</Link>
       )}
       {params?.all && !params.platform && (
-        <Link href={productsHref({ ...params, all: false })} className={LINK}>Only what fits</Link>
+        <Link href={productsHref({ ...params, page: 1, all: false })} className={LINK}>Only what fits</Link>
       )}
       <Link href={change} className={LINK}>Change</Link>
 

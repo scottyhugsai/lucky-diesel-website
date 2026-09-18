@@ -19,6 +19,10 @@ export interface StoreParams {
   sort: SortId;
   /** Set aside the saved truck for this view, without forgetting it. */
   all: boolean;
+  /** Hide the sample listings and show only parts the shop actually sells. */
+  stocked: boolean;
+  /** 1-based; the listing is far too long to hand over in one document. */
+  page: number;
 }
 
 type RawParams = Record<string, string | string[] | undefined>;
@@ -30,6 +34,7 @@ export function parseStoreParams(raw: RawParams): StoreParams {
   const platform = PLATFORMS.find((p) => p.id === first(raw.platform)) ?? null;
   const gen = first(raw.gen);
   const sort = SORTS.find((s) => s.id === first(raw.sort))?.id ?? 'featured';
+  const page = Number.parseInt(first(raw.page), 10);
   return {
     category,
     platform: platform?.id ?? null,
@@ -37,6 +42,8 @@ export function parseStoreParams(raw: RawParams): StoreParams {
     q: first(raw.q).trim().slice(0, 80),
     sort,
     all: first(raw.all) === '1',
+    stocked: first(raw.stocked) === '1',
+    page: Number.isFinite(page) && page > 1 ? page : 1,
   };
 }
 
@@ -49,6 +56,8 @@ export function productsHref(params: Partial<StoreParams>): string {
   if (params.q) search.set('q', params.q);
   if (params.sort && params.sort !== 'featured') search.set('sort', params.sort);
   if (params.all && !params.platform) search.set('all', '1');
+  if (params.stocked) search.set('stocked', '1');
+  if (params.page && params.page > 1) search.set('page', String(params.page));
   const query = search.toString();
   return query ? `/store/products?${query}` : '/store/products';
 }
@@ -61,6 +70,72 @@ export function sortProducts<P extends Pick<StoreProduct, 'priceMinCents' | 'ava
   if (sort === 'price-asc') return [...products].sort((a, b) => rank(a, b) || a.priceMinCents - b.priceMinCents);
   if (sort === 'price-desc') return [...products].sort((a, b) => rank(a, b) || b.priceMinCents - a.priceMinCents);
   return [...products].sort(rank);
+}
+
+/** How many parts one page of the listing holds. Divides by 2, 3 and 4, which are the grid's column counts. */
+export const PAGE_SIZE = 24;
+
+export interface PageSlice<T> {
+  items: T[];
+  /** Clamped into range, so a hand-typed ?page=900 still shows the last page. */
+  page: number;
+  pages: number;
+  total: number;
+  /** 1-based positions of the slice within the whole result, for "25–48 of 237". */
+  from: number;
+  to: number;
+}
+
+/** Cuts a result set into one page. 237 parts in a single document is not a page, it is a scroll. */
+export function paginate<T>(items: readonly T[], page: number, size = PAGE_SIZE): PageSlice<T> {
+  const total = items.length;
+  const pages = Math.max(1, Math.ceil(total / size));
+  const current = Math.min(Math.max(1, Math.trunc(page) || 1), pages);
+  const start = (current - 1) * size;
+  const slice = items.slice(start, start + size);
+  return { items: slice, page: current, pages, total, from: slice.length ? start + 1 : 0, to: start + slice.length };
+}
+
+/**
+ * Page numbers to draw, with `null` for an elision. Always keeps the first and
+ * last page and the one either side of the current one; a gap is only drawn when
+ * it actually hides more than one page, since "1 … 3 4 5" is longer than "1 2 3 4 5".
+ */
+export function pageWindow(page: number, pages: number): (number | null)[] {
+  // Three abreast even at the ends, so the row does not shrink on page 1.
+  const start = Math.min(Math.max(1, page - 1), Math.max(1, pages - 2));
+  const keep = new Set([1, pages, start, start + 1, start + 2]);
+  const shown = [...Array(pages).keys()].map((i) => i + 1).filter((n) => keep.has(n));
+  return shown.flatMap((n, i) => {
+    const previous = shown[i - 1];
+    if (previous === undefined || n - previous === 1) return [n];
+    // A gap that hides one page is longer than the page it hides.
+    return n - previous === 2 ? [n - 1, n] : [null, n];
+  });
+}
+
+const isExample = (product: Pick<StoreProduct, 'source'>) => product.source === 'demo';
+
+/**
+ * Real, sellable parts ahead of the sample listings, each group keeping the order
+ * it arrived in. `sortProducts` already ranks buyable parts first, but a pinned
+ * featured slot can pull one back out of order — and with samples outnumbering
+ * the real catalogue two to one, a visitor must never page through examples to
+ * reach something they can buy.
+ */
+export function stockedFirst<P extends Pick<StoreProduct, 'source'>>(products: readonly P[]): P[] {
+  return [...products.filter((p) => !isExample(p)), ...products.filter(isExample)];
+}
+
+/** The real/sample split, so the page can state it instead of implying 237 buyable parts. */
+export function countStocked(products: readonly Pick<StoreProduct, 'source'>[]): { stocked: number; examples: number } {
+  const examples = products.filter(isExample).length;
+  return { stocked: products.length - examples, examples };
+}
+
+/** Where the sample listings start on this page, or -1 if none are on it. */
+export function firstExampleIndex(products: readonly Pick<StoreProduct, 'source'>[]): number {
+  return products.findIndex(isExample);
 }
 
 export function priceLabel(product: Pick<StoreProduct, 'priceMinCents' | 'priceMaxCents' | 'purchasable'>): string {

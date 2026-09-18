@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { StoreProduct } from '@/lib/store/normalize';
-import { featuredProducts, generationInfo, listingTruckFilter, parseStoreParams, priceLabel, productsHref, relatedProducts, savedTruckLabel, sortProducts, truckLabel } from './listing';
+import { countStocked, featuredProducts, pageWindow, firstExampleIndex, generationInfo, listingTruckFilter, paginate, parseStoreParams, priceLabel, productsHref, relatedProducts, savedTruckLabel, sortProducts, stockedFirst, truckLabel } from './listing';
 import { truckFromFitment, truckFromSelection } from '@/lib/fitment/truck-cookie';
 
 const product = (over: Partial<StoreProduct>): StoreProduct => ({
@@ -12,9 +12,9 @@ const product = (over: Partial<StoreProduct>): StoreProduct => ({
 describe('listing params', () => {
   test('keeps valid values and drops the rest', () => {
     expect(parseStoreParams({ category: 'fuel', platform: 'duramax', gen: 'duramax-2017-present-l5p', q: ' cp3 ', sort: 'price-asc' }))
-      .toEqual({ category: 'fuel', platform: 'duramax', gen: 'duramax-2017-present-l5p', q: 'cp3', sort: 'price-asc', all: false });
+      .toEqual({ category: 'fuel', platform: 'duramax', gen: 'duramax-2017-present-l5p', q: 'cp3', sort: 'price-asc', all: false, stocked: false, page: 1 });
     expect(parseStoreParams({ category: 'nope', platform: 'cummins', gen: 'duramax-2017-present-l5p', sort: ['bad'] }))
-      .toEqual({ category: null, platform: 'cummins', gen: null, q: '', sort: 'featured', all: false });
+      .toEqual({ category: null, platform: 'cummins', gen: null, q: '', sort: 'featured', all: false, stocked: false, page: 1 });
   });
 
   test('builds short hrefs', () => {
@@ -131,5 +131,97 @@ describe('related parts ranked for the saved truck', () => {
 
   test('without a truck it keeps the existing order', () => {
     expect(relatedProducts([base, wrongGen, rightGen], base, 4).map((p) => p.handle)).toEqual(['wrong-gen', 'right-gen']);
+  });
+});
+
+describe('paging a long listing', () => {
+  const items = Array.from({ length: 50 }, (_, i) => i);
+
+  test('slices the requested page and reports where you are', () => {
+    expect(paginate(items, 1, 24)).toMatchObject({ page: 1, pages: 3, total: 50, from: 1, to: 24 });
+    expect(paginate(items, 1, 24).items).toEqual(items.slice(0, 24));
+    expect(paginate(items, 3, 24)).toMatchObject({ page: 3, pages: 3, from: 49, to: 50 });
+    expect(paginate(items, 3, 24).items).toEqual([48, 49]);
+  });
+
+  test('clamps a page number out of range rather than showing nothing', () => {
+    expect(paginate(items, 99, 24).page).toBe(3);
+    expect(paginate(items, 0, 24).page).toBe(1);
+    expect(paginate(items, -5, 24).items).toEqual(items.slice(0, 24));
+  });
+
+  test('an empty result is one page, not zero', () => {
+    expect(paginate([], 1, 24)).toEqual({ items: [], page: 1, pages: 1, total: 0, from: 0, to: 0 });
+  });
+
+  test('does not mutate the input', () => {
+    const input = [3, 1, 2];
+    paginate(input, 1, 2);
+    expect(input).toEqual([3, 1, 2]);
+  });
+});
+
+describe('page and stocked params', () => {
+  test('reads a page number and drops nonsense', () => {
+    expect(parseStoreParams({ page: '4' }).page).toBe(4);
+    expect(parseStoreParams({ page: 'nope' }).page).toBe(1);
+    expect(parseStoreParams({ page: '-2' }).page).toBe(1);
+    expect(parseStoreParams({ page: '0' }).page).toBe(1);
+  });
+
+  test('reads the stocked-only flag', () => {
+    expect(parseStoreParams({ stocked: '1' }).stocked).toBe(true);
+    expect(parseStoreParams({}).stocked).toBe(false);
+  });
+
+  test('keeps page and stocked in the URL, and page 1 out of it', () => {
+    expect(productsHref({ page: 1 })).toBe('/store/products');
+    expect(productsHref({ page: 3 })).toBe('/store/products?page=3');
+    expect(productsHref({ stocked: true })).toBe('/store/products?stocked=1');
+    expect(productsHref({ category: 'fuel', stocked: true, page: 2 })).toBe('/store/products?category=fuel&stocked=1&page=2');
+  });
+});
+
+describe('sample listings are kept behind the real catalogue', () => {
+  const real = product({ handle: 'real' });
+  const other = product({ handle: 'other' });
+  const sample = product({ handle: 'sample', purchasable: false, source: 'demo' });
+
+  test('examples sort after everything the shop actually sells', () => {
+    expect(stockedFirst([sample, real, other]).map((p) => p.handle)).toEqual(['real', 'other', 'sample']);
+  });
+
+  test('order inside each group is left alone, and the input is not mutated', () => {
+    const input = [other, sample, real];
+    expect(stockedFirst(input).map((p) => p.handle)).toEqual(['other', 'real', 'sample']);
+    expect(input.map((p) => p.handle)).toEqual(['other', 'sample', 'real']);
+  });
+
+  test('counts the split so the page can say it out loud', () => {
+    expect(countStocked([real, other, sample])).toEqual({ stocked: 2, examples: 1 });
+    expect(countStocked([])).toEqual({ stocked: 0, examples: 0 });
+  });
+
+  test('the first example on a page is where the divider goes', () => {
+    expect(firstExampleIndex([real, other, sample])).toBe(2);
+    expect(firstExampleIndex([sample, real])).toBe(0);
+    expect(firstExampleIndex([real, other])).toBe(-1);
+  });
+});
+
+describe('the page-number window', () => {
+  test('shows every page while they still fit', () => {
+    expect(pageWindow(1, 1)).toEqual([1]);
+    expect(pageWindow(3, 5)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  test('keeps the first, last and current pages, with gaps between', () => {
+    expect(pageWindow(1, 10)).toEqual([1, 2, 3, null, 10]);
+    expect(pageWindow(6, 10)).toEqual([1, null, 5, 6, 7, null, 10]);
+    expect(pageWindow(10, 10)).toEqual([1, null, 8, 9, 10]);
+  });
+
+  test('never draws a gap that hides a single page', () => {
+    expect(pageWindow(4, 6)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

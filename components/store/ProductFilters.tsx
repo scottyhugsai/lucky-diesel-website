@@ -15,7 +15,8 @@ const LABEL = 'mb-1 block text-xs font-semibold uppercase tracking-wider text-st
 export function ProductFilters({ params, resultCount }: { params: StoreParams; resultCount: number }) {
   const router = useRouter();
   const sheet = useRef<HTMLDialogElement>(null);
-  const go = (next: Partial<StoreParams>) => router.push(productsHref({ ...params, ...next }), { scroll: false });
+  // Any change to the filters restarts the listing: page 7 of turbos is not page 7 of fuel.
+  const go = (next: Partial<StoreParams>) => router.push(productsHref({ ...params, page: 1, ...next }), { scroll: false });
   const activeCount = [params.platform, params.gen, params.q].filter(Boolean).length;
 
   const fields = (prefix: string) => {
