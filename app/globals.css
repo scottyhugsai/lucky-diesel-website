@@ -999,10 +999,17 @@ input[type='radio'] {
     }
 
     /* Sections rise as they come into view and settle by a third of the way up. */
+    /* Reveal ranges are fixed scroll DISTANCES, not percentages of `cover`.
+       `cover` spans the element's height plus the viewport's, so a percentage
+       end point means a tall element finishes revealing far later than a short
+       one: a 400px card at `cover 64%` was still at 0.31 opacity sitting in the
+       middle of the screen, and a full-height section at `cover 28%` was barely
+       legible. A length is the same on every element, so everything is solid
+       well before it reaches the middle of the viewport. */
     [data-design='v4'] .v4-rise {
       animation: v4-rise linear both;
       animation-timeline: view();
-      animation-range: entry 5% cover 28%;
+      animation-range: cover 0px cover 260px;
     }
 
     /* Children of a stagger group each ride their own view timeline, offset a
@@ -1010,16 +1017,16 @@ input[type='radio'] {
     [data-design='v4'] .v4-stagger > * {
       animation: v4-rise-item linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 32%;
+      animation-range: cover 0px cover 250px;
     }
-    [data-design='v4'] .v4-stagger > :nth-child(2) { animation-range: entry 8% cover 40%; }
-    [data-design='v4'] .v4-stagger > :nth-child(3) { animation-range: entry 16% cover 48%; }
-    [data-design='v4'] .v4-stagger > :nth-child(4) { animation-range: entry 24% cover 56%; }
-    [data-design='v4'] .v4-stagger > :nth-child(n + 5) { animation-range: entry 32% cover 64%; }
+    [data-design='v4'] .v4-stagger > :nth-child(2) { animation-range: cover 40px cover 290px; }
+    [data-design='v4'] .v4-stagger > :nth-child(3) { animation-range: cover 80px cover 330px; }
+    [data-design='v4'] .v4-stagger > :nth-child(4) { animation-range: cover 110px cover 360px; }
+    [data-design='v4'] .v4-stagger > :nth-child(n + 5) { animation-range: cover 140px cover 390px; }
     [data-design='v4'] .v4-drop {
       animation: v4-drop linear both;
       animation-timeline: view();
-      animation-range: entry 30% cover 55%;
+      animation-range: cover 120px cover 380px;
     }
 
     /* The dyno bars fill in proportion to the gain, scrubbed by scroll. */
@@ -1027,7 +1034,7 @@ input[type='radio'] {
       transform-origin: 0 50%;
       animation: v4-bar linear both;
       animation-timeline: view();
-      animation-range: entry 10% cover 34%;
+      animation-range: cover 60px cover 340px;
     }
 
     /* The gain counts up from zero to the real figure as the row arrives. */
@@ -1035,7 +1042,7 @@ input[type='radio'] {
       counter-reset: gain var(--n);
       animation: v4-count linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 45%;
+      animation-range: cover 0px cover 340px;
     }
     [data-design='v4'] .v4-count::before {
       content: counter(gain);
@@ -1109,19 +1116,19 @@ input[type='radio'] {
       transform-origin: 50% 100%;
       animation: v4-flip linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 40%;
+      animation-range: cover 0px cover 260px;
     }
-    [data-design='v4'] .v4-flip:nth-child(2) { animation-range: entry 14% cover 50%; }
-    [data-design='v4'] .v4-flip:nth-child(3) { animation-range: entry 28% cover 60%; }
+    [data-design='v4'] .v4-flip:nth-child(2) { animation-range: cover 70px cover 330px; }
+    [data-design='v4'] .v4-flip:nth-child(3) { animation-range: cover 140px cover 400px; }
 
     [data-design='v4'] .v4-door {
       animation: v4-rise-item linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 40%;
+      animation-range: cover 0px cover 260px;
     }
     @media (min-width: 1024px) {
       [data-design='v4'] .v4-door:nth-child(1) { transform-origin: 0 50%; animation-name: v4-door-left; }
-      [data-design='v4'] .v4-door:nth-child(2) { animation-range: entry 10% cover 46%; }
+      [data-design='v4'] .v4-door:nth-child(2) { animation-range: cover 70px cover 330px; }
       [data-design='v4'] .v4-door:nth-child(3) { transform-origin: 100% 50%; animation-name: v4-door-right; }
     }
 
