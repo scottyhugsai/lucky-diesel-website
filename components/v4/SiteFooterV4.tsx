@@ -23,7 +23,12 @@ export function SiteFooterV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
 
         <nav aria-label="Site">
           <h2 className="kicker">Site</h2>
-          <ul className="mt-2 grid grid-cols-2 gap-x-6 sm:block">
+          {/* Two columns at every width. Stacked, these fifteen links ran 660px
+              of a 914px footer — on /faq, /blog, /review and /events that made
+              the footer 58-61% of the whole document, longer than the page it
+              belonged to. Splitting the column keeps every link, which the
+              internal linking wants, and gives back about 300px everywhere. */}
+          <ul className="mt-2 grid grid-cols-2 gap-x-6">
             {[...nav.primary, ...nav.more].map((link) => (
               <li key={link.href}><Link href={link.href} className="flex min-h-11 items-center hover:text-chalk">{link.label}</Link></li>
             ))}
