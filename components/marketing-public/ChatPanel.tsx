@@ -105,8 +105,8 @@ export function ChatPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <a href={BUSINESS.smsHref} onClick={() => trackEvent('text_click')} className="btn-go flex h-11 items-center justify-center gap-2 rounded-sm text-sm font-bold [[data-design=v2]_&]:rounded-lg"><MessageSquare className="size-4" aria-hidden="true" /> Text</a>
-        <a href={BUSINESS.phoneHref} onClick={() => trackEvent('call_click')} className="flex h-11 items-center justify-center gap-2 rounded-sm border border-line text-sm font-semibold hover:border-clover [[data-design=v2]_&]:rounded-lg"><Phone className="size-4 text-clover" aria-hidden="true" /> Call</a>
+        <a href={BUSINESS.smsHref} className="btn-go flex h-11 items-center justify-center gap-2 rounded-sm text-sm font-bold [[data-design=v2]_&]:rounded-lg"><MessageSquare className="size-4" aria-hidden="true" /> Text</a>
+        <a href={BUSINESS.phoneHref} className="flex h-11 items-center justify-center gap-2 rounded-sm border border-line text-sm font-semibold hover:border-clover [[data-design=v2]_&]:rounded-lg"><Phone className="size-4 text-clover" aria-hidden="true" /> Call</a>
       </div>
 
       {!isLoaded ? (

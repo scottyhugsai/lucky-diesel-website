@@ -4,6 +4,7 @@ import { SkipLink } from '@/components/layout/SkipLink';
 import { ClosureBanner } from '@/components/seo/ClosureBanner';
 import { DesignToggle } from '@/components/design/DesignToggle';
 import { MobileActionBar } from '@/components/layout/MobileActionBar';
+import { ContactClicks } from '@/components/marketing-public/ContactClicks';
 import { MarketingWidgets } from '@/components/marketing-public/MarketingWidgets';
 import { PreviewBar } from '@/components/layout/PreviewBar';
 import { SiteFooter } from '@/components/layout/SiteFooter';
@@ -72,6 +73,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         {/* One notice slot: shop hours beat a promotion. */}
         {closure ? <ClosureBanner closure={closure} /> : <AnnouncementBar values={content.block('announcement')} />}
         <CartDrawer />
+        {/* Measures every tel:/sms: click on the site from one listener, in every
+            design, including links inside server components. */}
+        <ContactClicks />
         <MarketingWidgets design={design} />
         <Suspense>
           <DesignToggle design={design} labels={DESIGN_LABELS} />

@@ -43,13 +43,13 @@ interface TagWindow extends Window {
  * `eventId` is the same value our server sends to the Conversions API, so Meta
  * can collapse the browser and server copies into one conversion.
  */
-export function trackEvent(event: SiteEvent, params: { valueCents?: number; eventId?: string } = {}): void {
+export function trackEvent(event: SiteEvent, params: { valueCents?: number; eventId?: string; source?: string } = {}): void {
   if (typeof window === 'undefined') return;
   const map = EVENT_MAP[event];
   const w = window as TagWindow;
   const value = params.valueCents ? Math.round(params.valueCents) / 100 : undefined;
   try {
-    w.gtag?.('event', map.ga4, { currency: 'USD', ...(value ? { value } : {}) });
+    w.gtag?.('event', map.ga4, { currency: 'USD', ...(value ? { value } : {}), ...(params.source ? { source: params.source } : {}) });
     if (map.adsLead && w.__ldAdsLead) w.gtag?.('event', 'conversion', { send_to: w.__ldAdsLead, ...(value ? { value, currency: 'USD' } : {}) });
     if (map.meta) w.fbq?.('track', map.meta, value ? { value, currency: 'USD' } : {}, params.eventId ? { eventID: params.eventId } : undefined);
     if (map.tiktok) w.ttq?.track(map.tiktok, { ...(value ? { value, currency: 'USD' } : {}), ...(params.eventId ? { event_id: params.eventId } : {}) });

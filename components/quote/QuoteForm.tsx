@@ -10,6 +10,8 @@ import { ReferFriendPrompt } from '@/components/marketing-public/ReferFriendProm
 import { Field, inputClass } from './Field';
 
 interface QuoteFormProps {
+  /** Carried from the fitment picker so the truck is not asked for twice. */
+  initialGeneration?: string;
   initialPlatform: string;
   initialService: string;
   /** Pre-filled detail, e.g. the part someone asked about. */
@@ -34,13 +36,13 @@ function fallbackBody(lead: Lead): string {
   return `Service request\nName: ${lead.name}\nPhone: ${lead.phone}\nTruck: ${lead.platformLabel}\nMileage: ${lead.mileage || '-'}\nService: ${lead.serviceLabel}\n\n${lead.details}`;
 }
 
-export function QuoteForm({ initialPlatform, initialService, initialDetails = '' }: QuoteFormProps) {
+export function QuoteForm({ initialPlatform, initialService, initialDetails = '', initialGeneration = '' }: QuoteFormProps) {
   const [values, setValues] = useState<Values>({
     name: '',
     phone: '',
     email: '',
     platform: PLATFORM_OPTIONS.some((p) => p.id === initialPlatform) ? initialPlatform : '',
-    generation: '',
+    generation: initialGeneration,
     mileage: '',
     service: SERVICES.some((s) => s.id === initialService) ? initialService : '',
     details: initialDetails.slice(0, 2000),

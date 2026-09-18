@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { BookingForm } from '@/components/booking/BookingForm';
+import { truckPrefill } from '@/lib/fitment/prefill';
+import { readSavedTruck } from '@/lib/fitment/truck-server';
 import { BUSINESS } from '@/lib/site';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { seoMetadata } from '@/lib/site-content/metadata';
@@ -30,8 +32,11 @@ async function openDates(): Promise<{ value: string; weekday: string; day: strin
 }
 
 export default async function BookPage() {
-  const [dates, content] = await Promise.all([openDates(), getSiteContent()]);
+  const [dates, content, saved] = await Promise.all([openDates(), getSiteContent(), readSavedTruck()]);
   const copy = content.block('page.book');
+  // Read on the server so the form arrives already knowing the truck, rather
+  // than asking again for something the fitment picker was told.
+  const prefill = truckPrefill(saved);
   const [headline, ...headingRest] = lines(copy, 'heading');
   return (
     <section className="grain relative isolate overflow-hidden pb-24 pt-32 sm:pt-40">
@@ -50,7 +55,7 @@ export default async function BookPage() {
           </p>
         </div>
         <div className="rounded-md border border-line bg-carbon-2/90 p-5 backdrop-blur sm:p-8">
-          <BookingForm dates={dates} />
+          <BookingForm dates={dates} initialPlatform={prefill.platform} initialGeneration={prefill.generation} />
         </div>
       </div>
     </section>

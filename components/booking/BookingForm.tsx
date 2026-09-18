@@ -21,12 +21,16 @@ interface SlotOption {
   label: string;
 }
 
-export function BookingForm({ dates }: { dates: BookingDate[] }) {
+export function BookingForm({ dates, initialPlatform = '', initialGeneration = '' }: { dates: BookingDate[]; initialPlatform?: string; initialGeneration?: string }) {
   const [state, action, isPending] = useActionState<BookingState, FormData>(bookOnline, {});
   const [date, setDate] = useState(dates[0]?.value ?? '');
   const [slots, setSlots] = useState<SlotOption[] | null>(null);
   const [startsAt, setStartsAt] = useState('');
-  const [platformId, setPlatformId] = useState('');
+  // Both come from the truck cookie, read on the server, so the form arrives
+  // already knowing the truck the visitor picked rather than asking again in a
+  // different vocabulary.
+  const [platformId, setPlatformId] = useState(initialPlatform);
+  const [generation, setGeneration] = useState(initialGeneration);
   const platform = PLATFORMS.find((p) => p.id === platformId);
 
   useEffect(() => {
@@ -128,7 +132,7 @@ export function BookingForm({ dates }: { dates: BookingDate[] }) {
         <div className="grid gap-5 sm:grid-cols-[2fr_1fr]">
           {platform && (
             <Field id="generation" label={`${platform.name} engine`} error={errors.generation} optional>
-              <select id="field-generation" name="generation" className={inputClass(errors.generation)} defaultValue="">
+              <select id="field-generation" name="generation" className={inputClass(errors.generation)} value={generation} onChange={(event) => setGeneration(event.target.value)}>
                 <option value="">Not sure</option>
                 {platform.generations.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>

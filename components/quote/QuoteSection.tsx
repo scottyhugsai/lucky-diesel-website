@@ -6,6 +6,8 @@ import { SocialIcons } from '@/components/ui/SocialIcons';
 import type { BlockValues } from '@/lib/site-content/fields';
 import { lines, str } from '@/lib/site-content/values';
 import { BUSINESS } from '@/lib/site';
+import { useStore } from '@/components/store/CartProvider';
+import { truckPrefill } from '@/lib/fitment/prefill';
 import { QuoteForm } from './QuoteForm';
 
 const CONTACTS = [
@@ -17,10 +19,18 @@ const CONTACTS = [
 /** Reads ?truck= and ?service= so platform and service links preselect the form. */
 export function QuoteSectionFromUrl({ values }: { values: BlockValues }) {
   const params = useSearchParams();
+  // A truck named in the URL is an explicit choice and wins. Otherwise fall
+  // back to the one the visitor already picked in the fitment picker, so the
+  // form does not ask a question they have answered — in a different
+  // vocabulary from the one they answered it in.
+  const { savedTruck, truckReady } = useStore();
+  const saved = truckReady ? truckPrefill(savedTruck) : { platform: '', generation: '' };
+  const fromUrl = params.get('truck') ?? '';
   return (
     <QuoteSection
       values={values}
-      truck={params.get('truck') ?? ''}
+      truck={fromUrl || saved.platform}
+      generation={fromUrl ? '' : saved.generation}
       service={params.get('service') ?? ''}
       about={params.get('about') ?? ''}
     />
@@ -30,12 +40,14 @@ export function QuoteSectionFromUrl({ values }: { values: BlockValues }) {
 interface QuoteSectionProps {
   values: BlockValues;
   truck?: string;
+  /** The engine behind `truck`, when it came from a full fitment pick. */
+  generation?: string;
   service?: string;
   /** Seeds the details box — used by "Get a price" on a part. */
   about?: string;
 }
 
-export function QuoteSection({ values, truck = '', service = '', about = '' }: QuoteSectionProps) {
+export function QuoteSection({ values, truck = '', generation = '', service = '', about = '' }: QuoteSectionProps) {
   const [headline, ...rest] = lines(values, 'heading');
   return (
     <section id="quote" aria-labelledby="quote-heading" className="grain relative isolate overflow-hidden border-t border-line py-20 sm:py-28">
@@ -69,7 +81,7 @@ export function QuoteSection({ values, truck = '', service = '', about = '' }: Q
 
         <div className="relative lg:col-span-7">
           <div className="rounded-sm border border-line bg-carbon-2/90 p-5 shadow-[0_40px_80px_-40px_rgb(0_0_0/0.8)] backdrop-blur sm:p-8">
-            <QuoteForm key={`${truck}|${service}|${about}`} initialPlatform={truck} initialService={service} initialDetails={about} />
+            <QuoteForm key={`${truck}|${generation}|${service}|${about}`} initialPlatform={truck} initialGeneration={generation} initialService={service} initialDetails={about} />
           </div>
         </div>
       </div>
