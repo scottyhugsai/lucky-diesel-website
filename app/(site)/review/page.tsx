@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { QuietPage } from '@/components/site/QuietPage';
 import { BUSINESS } from '@/lib/site';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -12,16 +13,16 @@ export default async function ReviewPage() {
   if (data?.google_review_url) redirect(data.google_review_url);
 
   return (
-    <section className="mx-auto max-w-2xl px-4 pb-24 pt-32 sm:px-6 sm:pt-40">
-      <p className="kicker">Thanks for trusting us</p>
-      <h1 className="display mt-4 text-[length:var(--text-display)]">How did we do?</h1>
-      <p className="mt-6 text-lg text-chalk/75">
-        Our Google review page is on the way. In the meantime, tell us how your truck is running. Good or bad, it goes straight to the owner.
-      </p>
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <a href={BUSINESS.smsHref} className="btn-go display flex h-14 items-center justify-center rounded-sm px-7 text-xl not-italic">Text us</a>
-        <a href={`mailto:${BUSINESS.email}?subject=How%20my%20truck%20is%20running`} className="flex h-14 items-center justify-center rounded-sm border border-chalk/25 px-7 font-semibold hover:border-clover hover:text-clover">Email the owner</a>
-      </div>
-    </section>
+    <QuietPage
+      eyebrow="Thanks for trusting us"
+      title="How did we do?"
+      line="Good or bad, it goes straight to the owner."
+      status="The Google review link is not connected yet, so this page sends it to us directly instead."
+      onward={[
+        { href: BUSINESS.smsHref, label: 'Text us', line: 'The fastest way to say it.', external: true },
+        { href: `mailto:${BUSINESS.email}?subject=How%20my%20truck%20is%20running`, label: 'Email the owner', line: 'If it needs more than a text.', external: true },
+        { href: BUSINESS.phoneHref, label: `Call ${BUSINESS.phoneDisplay}`, line: 'If something went wrong, say it out loud.', external: true },
+      ]}
+    />
   );
 }
