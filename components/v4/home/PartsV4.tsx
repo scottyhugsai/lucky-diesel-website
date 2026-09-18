@@ -35,7 +35,10 @@ export async function PartsV4({ values, step }: { values: BlockValues; step: str
   if (!products.length) return null;
 
   return (
-    <section id="parts" aria-labelledby="parts-v4-heading" className={`v4-rise ${SECTION} border-t border-line`}>
+    <section id="parts" aria-labelledby="parts-v4-heading" className={`v4-rise ${SECTION} relative isolate overflow-hidden border-t border-line bg-carbon`}>
+      {/* Decorative: a generated engineering grid, dim enough to run under
+          anything on the section. Not a drawing of any part. */}
+      <div aria-hidden="true" className="v4-art v4-art-grid" />
       <div className={WRAP}>
         <SectionHead
           id="parts-v4-heading"

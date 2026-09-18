@@ -8,7 +8,10 @@ const STEPS = [
 
 export function ProcessV4({ step }: { step: string }) {
   return (
-    <section aria-labelledby="process-v4-heading" className={`v4-rise ${SECTION} border-t border-line`}>
+    <section aria-labelledby="process-v4-heading" className={`v4-rise ${SECTION} relative isolate overflow-hidden border-t border-line bg-carbon`}>
+      {/* Decorative: a generated scanline band, set as a horizon under the
+          three steps and never under copy. Not a readout of anything. */}
+      <div aria-hidden="true" className="v4-art v4-art-scan" />
       <div className={WRAP}>
         <SectionHead id="process-v4-heading" index={`${step} — How it works`} title="Three steps" />
         {/* Steps land one after another, left to right, and the numeral on each

@@ -782,28 +782,139 @@ input[type='radio'] {
 [data-design='v4'] .v4-marquee-copy { display: none; }
 [data-design='v4'] .v4-marquee ul > li:first-child .v4-sep { display: none; }
 
-/* The turbo silhouette behind the hero: the mark used as a mask over a green-to-
-   steel wash, so it reads as a shape in the dark rather than as a logo. */
-[data-design='v4'] .v4-hero-mark {
+/* ── v4 art ────────────────────────────────────────────────────────────────
+ * Every file under public/images named backdrop-*, texture-* or overlay-* is a
+ * generated abstract surface (docs/IMAGERY.md). None is a photograph of the
+ * shop, and nothing here may present one as if it were: they are material and
+ * atmosphere behind the interface, never the subject.
+ *
+ * They are CSS backgrounds so the browser fetches them at low priority and the
+ * headline stays the largest paint. Each is painted in a `screen` blend over
+ * the section's own carbon, so the black every asset is graded to at its edges
+ * drops out completely — a layer can be any size and stop anywhere without a
+ * seam. Every layer is aria-hidden in the markup. The blend needs a backdrop
+ * inside the section's own stacking context, which is why every section that
+ * carries art is `relative isolate bg-carbon`.
+ *
+ * Opacities are set from measurement, not taste: steel (#8b9490) needs a
+ * ground no brighter than L 0.023 to keep 4.5:1, and that is the ceiling under
+ * every line of small copy on the page.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-design='v4'] .v4-art {
+  position: absolute;
   z-index: -1;
-  right: -18%;
-  top: -4%;
-  width: min(84vw, 32rem);
-  aspect-ratio: 698 / 505;
-  mask: url('/images/logo-mark.png') center / contain no-repeat;
-  -webkit-mask: url('/images/logo-mark.png') center / contain no-repeat;
-  background: linear-gradient(155deg, rgb(31 191 63 / 0.55), rgb(139 148 144 / 0.3) 48%, rgb(139 148 144 / 0.08));
-  opacity: 0.75;
-  transform: perspective(1200px) rotateY(-14deg) rotateX(6deg);
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
 }
+
+/* Hero, under 1024px: the vertical light shaft, set down the right of the type
+   so the kicker never crosses it and the steel subhead only meets its tail.
+   Opacity is set from the worst case rather than from taste. At about 390px the
+   subhead runs its full measure and crosses the brightest part of the shaft's
+   tail; sampling every pixel of the shaft under that line and compositing it
+   the way the browser does gives 4.46:1 at 0.35, which fails AA. 0.26 gives
+   4.98:1 there, and 5.38:1 at 320px. From 640px the type column is narrow
+   enough to sit clear of the shaft, so it can come up. */
+[data-design='v4'] .v4-art-hero {
+  top: 6%;
+  left: 55%;
+  width: 60%;
+  aspect-ratio: 9 / 16;
+  background-image: url('/images/backdrop-phone-shaft.jpg');
+  opacity: 0.26;
+}
+@media (min-width: 640px) {
+  [data-design='v4'] .v4-art-hero { top: -4%; opacity: 0.6; }
+}
+/* Hero, from 1024px: turbine vanes, cropped into the vane field on the right
+   of the frame. The asset's lit core — the green blades at 45% across, 33%
+   down — is deliberately left OUTSIDE the crop. Shown on its own against near
+   black it reads as leaves, and on a brand whose mark is a four-leaf clover
+   that is precisely the wrong read; it was checked on screen at 1287px before
+   this crop was settled. What is left is the radiating vane structure, which
+   is the turbo gesture the old masked silhouette was reaching for. Nothing in
+   the crop exceeds L 0.05, so it stays clear of the steel subhead. */
 @media (min-width: 1024px) {
-  [data-design='v4'] .v4-hero-mark {
-    right: auto;
-    left: 31%;
-    top: 50%;
-    width: min(46vw, 42rem);
-    translate: 0 -50%;
+  [data-design='v4'] .v4-art-hero {
+    inset: 0;
+    width: auto;
+    aspect-ratio: auto;
+    background-image: url('/images/backdrop-vane-vortex.jpg');
+    background-size: 260% auto;
+    background-position: 88% 20%;
+    opacity: 0.85;
   }
+}
+
+/* Knurled steel in the top-right corner of a platform tile: material where
+   there is no type. The mask is a fixed-size ellipse from the corner rather
+   than one that scales with the tile, so on a phone, where the tile is full
+   width and the generation list runs in two columns, it still stops short of
+   the list. Each tile takes a different crop so the three do not read as one
+   stamp. */
+[data-design='v4'] .v4-knurl { isolation: isolate; }
+[data-design='v4'] .v4-knurl::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* The asset is shallow-focus: only its middle band is sharp, so the crops
+     all sit in that band and the size keeps a pyramid at about 40px. */
+  background: url('/images/texture-knurl-steel.jpg') 60% 60% / 110% auto no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  mask-image: radial-gradient(12rem 9rem at 100% 0%, #000 25%, transparent 72%);
+  -webkit-mask-image: radial-gradient(12rem 9rem at 100% 0%, #000 25%, transparent 72%);
+}
+[data-design='v4'] .v4-flip:nth-child(2) .v4-knurl::before { background-position: 20% 50%; }
+[data-design='v4'] .v4-flip:nth-child(3) .v4-knurl::before { background-position: 90% 75%; }
+
+/* The flow-field behind "What's it for?", from 1024px only: below that the
+   head is full-width copy over stacked opaque tiles and there is nowhere for
+   it to show. The crest of the field (62% across, 50% down its frame) is
+   landed at 78% across, 10% down the section — the empty right of the head
+   row — and the layer is masked out under the copy on the left. Below 1024px
+   nothing is fetched: the image is only declared inside the media query. */
+[data-design='v4'] .v4-art-flow { display: none; }
+@media (min-width: 1024px) {
+  [data-design='v4'] .v4-art-flow {
+    display: block;
+    top: calc(10% - 28vw);
+    left: 16%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-image: url('/images/backdrop-flowfield.jpg');
+    opacity: 0.8;
+    mask-image: linear-gradient(90deg, transparent 32%, #000 58%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 32%, #000 58%);
+  }
+}
+
+/* Engineering grid behind the parts. Its brightest hairline is L 0.03, so it
+   can run under anything on the section. */
+[data-design='v4'] .v4-art-grid {
+  inset: 0;
+  background-image: url('/images/overlay-grid.jpg');
+  background-size: cover;
+  background-position: 50% 0;
+  opacity: 0.3;
+}
+
+/* The scanline band as a horizon under the three steps. The band sits 78% down
+   its frame; the vw term is its distance from the frame's bottom edge
+   (0.22 × 0.5625 × 100vw), so the band centre lands 2.5rem above the section's
+   bottom edge at every width — under the box, above the fold to the next
+   section, and never under copy. */
+[data-design='v4'] .v4-art-scan {
+  left: 0;
+  bottom: calc(2.5rem - 12.4vw);
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-image: url('/images/overlay-scanline.jpg');
+  opacity: 0.9;
 }
 
 /* The count-up numeral keeps the real number in flow so the row never reflows;
@@ -908,18 +1019,12 @@ input[type='radio'] {
     }
     [data-design='v4'] .v4-count-real { visibility: hidden; }
 
-    /* The hero in three planes. The texture lags, the mark turns in 3D, and
-       the type leaves fastest, so the picker becomes the focus rather than
-       competing with the headline. */
+    /* The hero in planes. The art lags, and the type leaves fastest, so the
+       picker becomes the focus rather than competing with the headline. */
     [data-design='v4'] .v4-hero-bg {
       animation: v4-hero-bg linear both;
       animation-timeline: view();
       animation-range: exit 0% exit 100%;
-    }
-    [data-design='v4'] .v4-hero-mark {
-      animation: v4-hero-mark linear both;
-      animation-timeline: view();
-      animation-range: exit -10% exit 100%;
     }
     [data-design='v4'] .v4-hero-type {
       animation: v4-hero linear both;
@@ -1018,11 +1123,7 @@ input[type='radio'] {
 @keyframes v4-count { from { --n: 0; } to { --n: var(--gain); } }
 @keyframes v4-hero { to { opacity: 0.25; transform: translateY(-22px); } }
 @keyframes v4-hero-tool { to { transform: translateY(-8px); } }
-@keyframes v4-hero-bg { to { transform: translateY(9%) scale(1.06); } }
-@keyframes v4-hero-mark {
-  from { transform: perspective(1200px) rotateY(-14deg) rotateX(6deg); }
-  to { opacity: 0.2; transform: perspective(1200px) translateY(-26%) rotateY(26deg) rotateX(-10deg) scale(0.92); }
-}
+@keyframes v4-hero-bg { to { transform: translateY(5%) scale(1.04); } }
 @keyframes v4-line-in { from { transform: translateY(0.28em); } to { transform: none; } }
 @keyframes v4-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes v4-panel-enter { from { opacity: 0; transform: perspective(1400px) rotateX(9deg) translateY(28px); } to { opacity: 1; transform: none; } }

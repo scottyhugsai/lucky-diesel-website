@@ -13,9 +13,13 @@ import { WRAP } from '../ui';
  * idea of this design, and it is also what makes it viable for a shop with
  * seven photographs: the interface is the imagery.
  *
- * Depth comes from three layers that leave the viewport at different speeds
- * as the page scrolls: the carbon texture (slowest), a large turbo silhouette
- * turning in 3D behind everything, and the type (fastest). All of it is CSS.
+ * Depth comes from two layers that leave the viewport at different speeds as
+ * the page scrolls: the art (slowest) and the type (fastest). All of it is CSS.
+ *
+ * The art is a generated abstract surface, not a photograph: a vertical light
+ * shaft on phones, turbine vanes from 1024px up (docs/IMAGERY.md). Where each
+ * one sits, and how bright it may be under the copy, is worked out in the
+ * .v4-art-hero rules in globals.css.
  */
 export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitment: Fitment; stats: BuildStats }) {
   const headline = lines(values, 'headline');
@@ -31,26 +35,13 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
   ].filter((entry): entry is { value: string; unit: string; label: string } => entry !== null);
 
   return (
-    <section aria-labelledby="hero-heading" className="grain relative isolate overflow-hidden">
-      {/* Decorative only: an abstract carbon-and-light texture, not a photograph
-          of anything, so it makes no claim about a shop or a build. Set as a CSS
-          background so the browser fetches it at low priority and the headline
-          stays the largest paint. */}
-      <div
-        aria-hidden="true"
-        className="v4-hero-bg absolute -inset-[6%] -z-30 bg-cover bg-center opacity-55"
-        style={{ backgroundImage: 'url(/images/texture-carbon.jpg)' }}
-      />
-      {/* The turbo mark as a silhouette, drawn with mask-image rather than an
-          <img> so it is never a largest-paint candidate and can sit at low
-          opacity. Layered above the scrim (z-index in CSS) but below the type,
-          and it tilts in 3D as the hero scrolls away. */}
-      <div aria-hidden="true" className="v4-hero-mark pointer-events-none absolute" />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10"
-        style={{ background: 'linear-gradient(100deg, var(--carbon) 22%, rgb(11 13 12 / 0.72) 52%, rgb(11 13 12 / 0.55) 100%)' }}
-      />
+    <section aria-labelledby="hero-heading" className="grain relative isolate overflow-hidden bg-carbon">
+      {/* Decorative only: a generated abstract surface, not a photograph of
+          anything, so it makes no claim about a shop or a build. A CSS
+          background, so the browser fetches it at low priority and the headline
+          stays the largest paint; which file, and where, is decided in CSS so
+          a phone never downloads the desktop art or vice versa. */}
+      <div aria-hidden="true" className="v4-art v4-art-hero v4-hero-bg" />
 
       <div className={`${WRAP} grid items-center gap-8 py-10 sm:py-14 lg:grid-cols-12 lg:gap-12 lg:py-24`}>
         <div className="v4-hero-type lg:col-span-7">

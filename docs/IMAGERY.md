@@ -78,6 +78,48 @@ Intended to sit **over** a dark surface at low opacity, not as standalone backgr
 | `overlay-contour.jpg` | 1600x900 | 44 KB | Topographic contour lines, extremely low contrast | Very subtle surface interest behind long-form copy |
 | `overlay-scanline.jpg` | 1600x900 | 66 KB | Scanlines and grain with a green interference band low in the frame | Atmosphere at a section boundary; the band reads as a horizon line |
 
+## Where these are used (v4 "Fitment", as of 2026-09-18)
+
+Placed as CSS backgrounds in the `v4 art` block of `app/globals.css`, each behind an
+`aria-hidden` div. All are painted in `mix-blend-mode: screen` over the section's own
+carbon, which drops the black each asset is graded to at its edges — so a layer can be any
+size and stop anywhere without a seam.
+
+| Asset | Where | Notes |
+|---|---|---|
+| `backdrop-phone-shaft.jpg` | Hero, below 1024px | opacity 0.26; raised to 0.6 from 640px |
+| `backdrop-vane-vortex.jpg` | Hero, 1024px and up | cropped to the vane field — see the warning below |
+| `backdrop-flowfield.jpg` | "What's it for?", 1024px and up | masked out under the copy; not declared below 1024px, so a phone never fetches it |
+| `texture-knurl-steel.jpg` | Platform tile corners | radial mask keeps it off the type; a different crop per tile |
+| `overlay-grid.jpg` | Parts section | opacity 0.3, runs under everything |
+| `overlay-scanline.jpg` | Process section | the interference band set as a horizon below the steps, never under copy |
+
+Not used yet: `backdrop-haze-green.jpg`, `backdrop-phone-flow.jpg`, `texture-carbon-twill.jpg`,
+`texture-cast-iron.jpg`, `texture-machined-alloy.jpg`, `overlay-contour.jpg`. `backdrop-haze-green`
+was tried in the hero and rejected — over near-black it flattens to a faint tint with no material
+in it. The original `texture-carbon.jpg` is now referenced nowhere.
+
+### Warning: the lit core of `backdrop-vane-vortex.jpg`
+
+The vanes read as a turbo. **Its green-lit core does not.** Shown on its own against near-black —
+which is what happens when the dark vanes around it fall away — the four lit blades read as
+leaves, and on a brand whose mark is a four-leaf clover that is the worst available reading. It
+was on the page that way and had to be recropped.
+
+If you use this asset, keep the focal point (45% across, 33% down its frame) **outside** the
+visible crop and show the radiating vanes instead. The hero does this with
+`background-size: 260% auto; background-position: 88% 20%`.
+
+This is the same clover artifact noted under Discarded, surviving in a kept asset rather than a
+thrown-away one. Check any crop of these assets on screen before trusting it.
+
+### Contrast
+
+Opacity over these is set by measurement, not taste. Sample every pixel of the asset under the
+text, composite it the way the browser does (`screen`, then the layer's opacity, over `#0b0d0c`),
+and take the brightest result. Steel `#8b9490` at 18px needs 4.5:1. The mobile hero was 4.46:1 at
+0.35 opacity around 390px — a fail — and is 4.98:1 at 0.26.
+
 ## Discarded
 
 - **Machined-alloy tile, first attempt** — the prompt word "clover" (used for the green) made

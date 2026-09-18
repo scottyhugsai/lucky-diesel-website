@@ -9,7 +9,10 @@ import { SECTION, SectionHead, WRAP } from '../ui';
  */
 export function GoalsV4({ values, step }: { values: BlockValues; step: string }) {
   return (
-    <section id="services" aria-labelledby="goals-heading" className={`v4-rise ${SECTION} scroll-mt-16 border-t border-line`}>
+    <section id="services" aria-labelledby="goals-heading" className={`v4-rise ${SECTION} relative isolate scroll-mt-16 overflow-hidden border-t border-line bg-carbon`}>
+      {/* Decorative: a generated flow-field, placed in the empty right of the
+          head row from 1024px up. Not a photograph of anything. */}
+      <div aria-hidden="true" className="v4-art v4-art-flow" />
       <div className={WRAP}>
         <SectionHead
           id="goals-heading"

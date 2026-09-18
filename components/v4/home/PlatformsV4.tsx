@@ -11,11 +11,13 @@ export function PlatformsV4({ step }: { step: string }) {
         <SectionHead id="platforms-v4-heading" index={`${step} — Platforms`} title="What we work on" />
         {/* The list carries the perspective; each tile flips up out of the floor
             as it scrolls into view. The tile itself keeps the hover lift, which
-            is why the 3D motion sits on the wrapper and not on .v4-tier. */}
+            is why the 3D motion sits on the wrapper and not on .v4-tier. Each
+            tile also carries a knurled-steel corner (v4-knurl): a generated
+            material, drawn in CSS, kept out from under the type by a mask. */}
         <ul className="v4-deck mt-8 grid gap-3 md:grid-cols-3">
           {PLATFORMS.map((platform) => (
             <li key={platform.id} className="v4-flip">
-              <div className="v4-tier v4-sheen group relative h-full p-5">
+              <div className="v4-tier v4-sheen v4-knurl group relative h-full p-5">
                 <p className="kicker">{platform.make}</p>
                 <h3 className="v4-title mt-2 text-3xl">
                   <Link href={`/${platform.id}`} className="after:absolute after:inset-0 focus-visible:outline-none">{platform.name}</Link>
