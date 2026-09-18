@@ -16,25 +16,25 @@ export function SiteFooterV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
             <span className="v4-title text-base text-chalk">Lucky Diesel</span>
           </div>
           <p className="mt-3">{BUSINESS.city}, {BUSINESS.region}</p>
-          <a href={BUSINESS.phoneHref} className="v4-num mt-2 inline-block text-xl text-chalk hover:text-clover">{BUSINESS.phoneDisplay}</a>
-          <p className="mt-1"><a href={`mailto:${BUSINESS.email}`} className="hover:text-chalk">{BUSINESS.email}</a></p>
+          <a href={BUSINESS.phoneHref} className="v4-num mt-1 inline-flex min-h-11 items-center text-xl text-chalk hover:text-clover">{BUSINESS.phoneDisplay}</a>
+          <p><a href={`mailto:${BUSINESS.email}`} className="inline-flex min-h-11 items-center hover:text-chalk">{BUSINESS.email}</a></p>
           <div className="mt-5"><SocialIcons /></div>
         </div>
 
         <nav aria-label="Site">
           <h2 className="kicker">Site</h2>
-          <ul className="mt-3">
+          <ul className="mt-2 grid grid-cols-2 gap-x-6 sm:block">
             {[...nav.primary, ...nav.more].map((link) => (
-              <li key={link.href}><Link href={link.href} className="inline-block min-h-8 leading-8 hover:text-chalk">{link.label}</Link></li>
+              <li key={link.href}><Link href={link.href} className="flex min-h-11 items-center hover:text-chalk">{link.label}</Link></li>
             ))}
           </ul>
         </nav>
 
         <nav aria-label="Trucks">
           <h2 className="kicker">Trucks</h2>
-          <ul className="mt-3">
+          <ul className="mt-2">
             {PLATFORMS.map((platform) => (
-              <li key={platform.id}><Link href={`/${platform.id}`} className="inline-block min-h-8 leading-8 hover:text-chalk">{platform.name}</Link></li>
+              <li key={platform.id}><Link href={`/${platform.id}`} className="flex min-h-11 items-center hover:text-chalk">{platform.name}</Link></li>
             ))}
           </ul>
         </nav>

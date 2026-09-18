@@ -8,7 +8,7 @@ export const BTN_PRIMARY =
   'btn-go inline-flex min-h-12 items-center justify-center gap-2 px-6 text-[0.9375rem] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
 
 export const BTN_GHOST =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-sm border border-line px-6 text-[0.9375rem] font-semibold text-chalk transition-colors duration-150 hover:border-chalk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
+  'btn-ghost inline-flex min-h-12 items-center justify-center gap-2 rounded-[2px] border border-line px-6 text-[0.9375rem] font-semibold text-chalk transition-colors duration-150 hover:border-chalk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clover';
 
 /** Small uppercase label with a rule running off to the right. */
 export function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -35,7 +35,7 @@ export function SectionHead({ id, index, title, line, href, linkLabel = 'See all
       <div className="max-w-xl">
         {index && <p className="kicker">{index}</p>}
         <h2 id={id} className="v4-title mt-2.5 text-[length:var(--text-display)]">{title}</h2>
-        {line && <p className="mt-3 text-[1.0625rem] leading-snug text-steel">{line}</p>}
+        {line && <p className="mt-3 text-base leading-snug text-steel sm:text-lg">{line}</p>}
       </div>
       {href && (
         <Link href={href} className="group inline-flex min-h-11 items-center gap-1.5 text-[0.9375rem] font-semibold text-chalk hover:text-clover">

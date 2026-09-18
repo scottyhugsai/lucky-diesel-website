@@ -63,10 +63,10 @@ export function UseCaseTiers({ fitment, current }: { fitment?: Fitment; current?
 
 export function EmissionsNote() {
   return (
-    <p className="mt-4 text-sm text-steel">
-      Every tier keeps the emissions system intact.{' '}
-      <Link href="/emissions-policy" className="font-semibold text-chalk underline underline-offset-4 hover:text-clover">
-        Read where we stand <ArrowRight className="inline size-3.5" aria-hidden="true" />
+    <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-steel">
+      <span>Every tier keeps the emissions system intact.</span>
+      <Link href="/emissions-policy" className="inline-flex min-h-11 items-center gap-1 font-semibold text-chalk underline underline-offset-4 hover:text-clover">
+        Read where we stand <ArrowRight className="size-3.5" aria-hidden="true" />
       </Link>
     </p>
   );

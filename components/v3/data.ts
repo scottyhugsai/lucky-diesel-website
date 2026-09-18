@@ -1,4 +1,8 @@
 import 'server-only';
+import { aggregateBuilds, type BuildStats, type DynoBuild } from './build-stats';
+
+export { aggregateBuilds };
+export type { BuildStats, DynoBuild };
 import { unstable_cache } from 'next/cache';
 import { getAvailableSlots } from '@/lib/domain/appointments';
 import { SHOP_TIME_ZONE } from '@/lib/format';
@@ -45,31 +49,7 @@ export const getNextOpenSlot = unstable_cache(
   { revalidate: SLOT_CACHE_SECONDS },
 );
 
-export interface DynoBuild {
-  slug: string;
-  title: string;
-  vehicleLabel: string;
-  platform: string;
-  heroImage: string;
-  beforeHp: number | null;
-  afterHp: number | null;
-  beforeTorque: number | null;
-  afterTorque: number | null;
-  hpGain: number | null;
-  torqueGain: number | null;
-  isSample: boolean;
-}
 
-export interface BuildStats {
-  builds: DynoBuild[];
-  /** Ranked by HP gained, highest first. */
-  leaderboard: DynoBuild[];
-  trucks: number;
-  avgHpGain: number | null;
-  topTorque: number | null;
-  /** True when every counted build is a shop example, so the UI can say so. */
-  allSamples: boolean;
-}
 
 /** Published builds with their dyno deltas. One query, shared by hero, proof strip and leaderboard. */
 export async function getBuildStats(): Promise<BuildStats> {
@@ -95,16 +75,6 @@ export async function getBuildStats(): Promise<BuildStats> {
     isSample: row.is_sample,
   }));
 
-  const withHp = builds.filter((b): b is DynoBuild & { hpGain: number } => b.hpGain !== null);
-  const leaderboard = [...withHp].sort((a, b) => b.hpGain - a.hpGain);
-  const torques = builds.map((b) => b.afterTorque).filter((t): t is number => t !== null);
-
-  return {
-    builds,
-    leaderboard,
-    trucks: builds.length,
-    avgHpGain: withHp.length ? Math.round(withHp.reduce((sum, b) => sum + b.hpGain, 0) / withHp.length) : null,
-    topTorque: torques.length ? Math.max(...torques) : null,
-    allSamples: builds.length > 0 && builds.every((b) => b.isSample),
-  };
+  return aggregateBuilds(builds);
 }
+

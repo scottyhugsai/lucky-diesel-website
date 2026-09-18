@@ -30,7 +30,7 @@ export function SiteHeaderV4({ nav = resolveNav(null) }: { nav?: SiteNav }) {
     <>
       <header className="sticky top-0 z-50 border-b border-line bg-carbon/90 backdrop-blur">
         <div className={`${WRAP} flex h-14 items-center justify-between gap-6`}>
-          <Link href="/" onClick={close} aria-label="Lucky Diesel home" className="flex items-center gap-2.5">
+          <Link href="/" onClick={close} aria-label="Lucky Diesel home" className="inline-flex min-h-11 items-center gap-2.5">
             <Image src="/images/logo-mark.png" alt="" width={698} height={505} priority className="h-6 w-auto" />
             <span className="v4-title text-[0.9375rem] tracking-[-0.02em]">Lucky Diesel</span>
           </Link>

@@ -87,7 +87,7 @@ export function FitmentPicker({ fitment, action = '#fitment' }: { fitment: Fitme
   return (
     <section aria-labelledby="fitment-heading" id="fitment" className="v4-panel scroll-mt-20 p-5 sm:p-6">
       <h2 id="fitment-heading" className="v4-title text-2xl">Pick your truck</h2>
-      <p className="mt-1.5 text-sm text-steel">Four taps. We will show you what actually fits it.</p>
+      <p className="mt-1.5 text-sm text-steel">Four taps. We show you what fits.</p>
 
       <AutoSubmit selector="#fitment" />
       <div className="mt-5 grid gap-2.5">
@@ -102,7 +102,7 @@ export function FitmentPicker({ fitment, action = '#fitment' }: { fitment: Fitme
           Show what fits <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       ) : (
-        <p className="mt-5 flex min-h-12 items-center justify-center rounded-sm border border-dashed border-line px-4 text-center text-sm text-steel">
+        <p className="mt-5 flex min-h-12 items-center justify-center rounded-[2px] border border-dashed border-line px-4 text-center text-sm text-steel">
           {fitment.year
             ? `${[fitment.year, fitment.make ? MAKE_LABELS[fitment.make] : null].filter(Boolean).join(' ')} — keep going`
             : 'Start with the year'}

@@ -63,7 +63,7 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
   return (
     <div className={`${WRAP} py-10 sm:py-14`}>
       <nav aria-label="Breadcrumb" className="text-sm text-steel">
-        <Link href="/" className="hover:text-clover">Home</Link> <span aria-hidden="true">/</span>{' '}
+        <Link href="/" className="inline-flex min-h-11 items-center hover:text-clover">Home</Link> <span aria-hidden="true">/</span>{' '}
         <span className="text-chalk/80">What fits</span>
       </nav>
 
@@ -79,7 +79,7 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
 
         <div id="answer" className="scroll-mt-20">
           {!result && (
-            <p className="rounded-sm border border-dashed border-line p-6 text-steel">
+            <p className="rounded-[3px] border border-dashed border-line p-6 text-steel">
               Pick a year, make, model and engine and we will show you what we can do with it.
             </p>
           )}
@@ -108,13 +108,13 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
                 <p className="mt-3 text-steel">
                   That is a <span className="font-semibold text-chalk">{platform?.name}</span>. We tune, build and repair them.
                 </p>
-                <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-line bg-line sm:grid-cols-3">
+                <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-line bg-line sm:grid-cols-3">
                   <div className="bg-carbon-2 p-4">
-                    <dd className="v4-num v4-title text-3xl text-clover">{fits}</dd>
+                    <dd className="v4-num v4-title text-2xl text-clover sm:text-3xl">{fits}</dd>
                     <dt className="kicker mt-1">parts listed</dt>
                   </div>
                   <div className="bg-carbon-2 p-4">
-                    <dd className="v4-num v4-title text-3xl">{result.generation.label}</dd>
+                    <dd className="v4-num v4-title text-2xl sm:text-3xl">{result.generation.label}</dd>
                     <dt className="kicker mt-1">generation</dt>
                   </div>
                   <div className="col-span-2 bg-carbon-2 p-4 sm:col-span-1">
@@ -133,7 +133,7 @@ export default async function FitmentPage({ searchParams }: FitmentPageProps) {
               </section>
 
               <section aria-labelledby="goal-heading" className="mt-8">
-                <h2 id="goal-heading" className="v4-title text-[length:var(--text-display)]">What is it for?</h2>
+                <h2 id="goal-heading" className="v4-title text-3xl sm:text-4xl">What is it for?</h2>
                 <p className="mt-2 max-w-xl text-steel">
                   Same truck, three different jobs. Each one says what it costs you and what it does not.
                 </p>

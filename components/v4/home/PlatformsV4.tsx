@@ -11,15 +11,15 @@ export function PlatformsV4({ step }: { step: string }) {
         <SectionHead id="platforms-v4-heading" index={`${step} — Platforms`} title="What we work on" />
         <ul className="mt-8 grid gap-3 md:grid-cols-3">
           {PLATFORMS.map((platform) => (
-            <li key={platform.id} className="v4-tier relative p-5">
+            <li key={platform.id} className="v4-tier group relative p-5">
               <p className="kicker">{platform.make}</p>
               <h3 className="v4-title mt-2 text-3xl">
                 <Link href={`/${platform.id}`} className="after:absolute after:inset-0 focus-visible:outline-none">{platform.name}</Link>
               </h3>
-              <ul className="v4-num mt-4 grid gap-1 text-[0.8125rem] text-steel">
+              <ul className="v4-num mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-[0.8125rem] text-steel md:grid-cols-1">
                 {platform.generations.map((generation) => <li key={generation}>{generation}</li>)}
               </ul>
-              <ArrowUpRight className="absolute right-4 top-4 size-4 text-steel" aria-hidden="true" />
+              <ArrowUpRight className="absolute right-4 top-4 size-4 text-steel transition-colors group-hover:text-clover" aria-hidden="true" />
             </li>
           ))}
         </ul>

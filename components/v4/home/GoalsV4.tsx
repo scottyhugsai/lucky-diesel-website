@@ -9,7 +9,7 @@ import { SECTION, SectionHead, WRAP } from '../ui';
  */
 export function GoalsV4({ values, step }: { values: BlockValues; step: string }) {
   return (
-    <section id="services" aria-labelledby="goals-heading" className={`v4-rise ${SECTION} scroll-mt-16`}>
+    <section id="services" aria-labelledby="goals-heading" className={`v4-rise ${SECTION} scroll-mt-16 border-t border-line`}>
       <div className={WRAP}>
         <SectionHead
           id="goals-heading"

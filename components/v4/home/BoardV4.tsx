@@ -28,10 +28,10 @@ export function BoardV4({ stats, step }: { stats: BuildStats; step: string }) {
               <Link href={`/builds/${build.slug}`} className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-5 transition-colors hover:bg-carbon-2/60 sm:gap-6">
                 <span className="v4-num w-7 pl-1 text-sm text-steel">{String(index + 1).padStart(2, '0')}</span>
                 <span className="min-w-0">
-                  <span className="v4-title block truncate text-xl transition-colors group-hover:text-clover sm:text-2xl">{build.title}</span>
-                  <span className="mt-0.5 block truncate text-[0.8125rem] text-steel">
-                    {build.vehicleLabel}
-                    {build.isSample && <span className="ml-2 rounded-sm border border-line px-1.5 py-0.5 text-[0.6875rem] uppercase tracking-wide">Example</span>}
+                  <span className="v4-title line-clamp-2 text-xl transition-colors group-hover:text-clover sm:text-2xl">{build.title}</span>
+                  <span className="mt-0.5 flex items-center gap-2 text-[0.8125rem] text-steel">
+                    <span className="min-w-0 truncate">{build.vehicleLabel}</span>
+                    {build.isSample && <span className="shrink-0 rounded-[2px] border border-line px-1.5 py-0.5 text-[0.6875rem] uppercase tracking-wide">Example</span>}
                   </span>
                 </span>
                 {build.hpGain !== null && (

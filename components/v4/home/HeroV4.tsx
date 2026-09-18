@@ -15,13 +15,19 @@ import { WRAP } from '../ui';
  */
 export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitment: Fitment; stats: BuildStats }) {
   const headline = lines(values, 'headline');
+  // stats.avgHpGain and topTorque are computed over every published build,
+  // sample rows included. A hero number has to come from real trucks only,
+  // so the proof is re-derived here from the non-sample builds.
+  const real = stats.builds.filter((build) => !build.isSample);
+  const gains = real.map((build) => build.hpGain).filter((gain): gain is number => gain !== null);
+  const torques = real.map((build) => build.afterTorque).filter((torque): torque is number => torque !== null);
   const proof = [
-    stats.avgHpGain ? { value: `+${stats.avgHpGain}`, unit: 'hp', label: 'avg gain' } : null,
-    stats.topTorque ? { value: `${stats.topTorque}`, unit: 'lb-ft', label: 'best torque' } : null,
+    gains.length ? { value: `+${Math.round(gains.reduce((sum, gain) => sum + gain, 0) / gains.length)}`, unit: 'hp', label: 'avg gain' } : null,
+    torques.length ? { value: `${Math.max(...torques)}`, unit: 'lb-ft', label: 'best torque' } : null,
   ].filter((entry): entry is { value: string; unit: string; label: string } => entry !== null);
 
   return (
-    <section aria-labelledby="hero-heading" className="grain relative isolate overflow-hidden border-b border-line">
+    <section aria-labelledby="hero-heading" className="grain relative isolate overflow-hidden">
       {/* Decorative only: an abstract carbon-and-light texture, not a photograph
           of anything, so it makes no claim about a shop or a build. Set as a CSS
           background so the browser fetches it at low priority and the headline
@@ -48,11 +54,11 @@ export function HeroV4({ values, fitment, stats }: { values: BlockValues; fitmen
           <p className="mt-6 max-w-md text-lg leading-snug text-steel">{str(values, 'subhead')}</p>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
-            <a href={BUSINESS.phoneHref} className="flex items-center gap-2 text-lg font-semibold transition-colors hover:text-clover">
+            <a href={BUSINESS.phoneHref} className="inline-flex min-h-11 items-center gap-2 text-lg font-semibold transition-colors hover:text-clover">
               <Phone className="size-4 text-clover" aria-hidden="true" />
               <span className="v4-num">{BUSINESS.phoneDisplay}</span>
             </a>
-            <Link href="/book" className="text-lg font-semibold text-steel underline-offset-4 transition-colors hover:text-chalk hover:underline">
+            <Link href="/book" className="inline-flex min-h-11 items-center text-lg font-semibold text-steel underline-offset-4 transition-colors hover:text-chalk hover:underline">
               or book online
             </Link>
           </div>

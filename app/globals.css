@@ -691,6 +691,8 @@ input[type='radio'] {
   background: #2bd94f;
   box-shadow: none;
 }
+[data-design='v4'] .btn-go:active { background: var(--clover-deep); transform: none; }
+[data-design='v4'] .btn-ghost:active { border-color: var(--clover); color: var(--clover); }
 
 [data-design='v4'] .grain::after { opacity: 0.045; }
 [data-design='v4'] .speed-stripes { display: none; }
@@ -732,6 +734,16 @@ input[type='radio'] {
   transition: border-color var(--duration-fast) ease, transform var(--duration-normal) var(--ease-out-expo);
 }
 [data-design='v4'] .v4-tier:hover { border-color: var(--clover); transform: translateY(-2px); }
+/* Card links are stretched over the whole tile with a pseudo-element and drop
+   their own outline, so the ring has to be drawn by the tile itself. */
+[data-design='v4'] .v4-tier:has(:focus-visible) {
+  outline: 2px solid var(--clover);
+  outline-offset: 3px;
+  border-color: var(--clover);
+}
+/* The global :focus-visible ring is unlayered, so it beats the utility that
+   tries to remove it; drop it here where the tile is already drawing the ring. */
+[data-design='v4'] .v4-tier:has(:focus-visible) a:focus-visible { outline: none; }
 [data-design='v4'] .v4-tier[aria-current='true'] {
   border-color: var(--clover);
   box-shadow: inset 3px 0 0 var(--clover);
