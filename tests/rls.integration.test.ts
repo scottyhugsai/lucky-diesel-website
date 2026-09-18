@@ -340,7 +340,15 @@ describe('site control panel', () => {
 
   // There is no update or delete policy on the audit log, so those statements
   // match no rows and report success. What matters is that the row is untouched.
-  // The probe row stays behind on purpose — that is what append-only means.
+  // The probe rows survive the test by design; afterAll sweeps them with the
+  // service role, which bypasses RLS, so they never reach the owner's history.
+  afterAll(async () => {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) return;
+    const admin = createClient<Database>(URL, serviceKey, { auth: { persistSession: false } });
+    await admin.from('site_audit_log').delete().like('entity_key', 'rls-probe%');
+  });
+
   test('the audit trail cannot be rewritten or erased, even by the owner', async () => {
     const probeKey = `rls-probe-${Date.now()}`;
     await owner.from('site_audit_log').insert({ action: 'save', entity: 'block', entity_key: probeKey, summary: 'probe' });
