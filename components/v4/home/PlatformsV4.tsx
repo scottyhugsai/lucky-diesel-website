@@ -4,11 +4,11 @@ import { PLATFORMS } from '@/lib/site';
 import { SECTION, SectionHead, WRAP } from '../ui';
 
 /** Three platforms, with the engine codes people actually search for. */
-export function PlatformsV4({ step }: { step: string }) {
+export function PlatformsV4() {
   return (
     <section id="trucks" aria-labelledby="platforms-v4-heading" className={`v4-rise ${SECTION} border-t border-line`}>
       <div className={WRAP}>
-        <SectionHead id="platforms-v4-heading" index={`${step} — Platforms`} title="What we work on" />
+        <SectionHead id="platforms-v4-heading" index="Platforms" title="What we work on" />
         {/* The list carries the perspective; each tile flips up out of the floor
             as it scrolls into view. The tile itself keeps the hover lift, which
             is why the 3D motion sits on the wrapper and not on .v4-tier. Each

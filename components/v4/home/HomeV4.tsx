@@ -11,26 +11,19 @@ import { PartsV4 } from './PartsV4';
 import { PlatformsV4 } from './PlatformsV4';
 import { ProcessV4 } from './ProcessV4';
 
-const NUMBERED = new Set(['platforms', 'services', 'parts', 'builds', 'process']);
-
 /** Design v4 "Fitment" home. Server-rendered throughout; the only client code
  *  is the header and the picker's auto-submit. */
 export async function HomeV4({ order, content, fitment }: { order: readonly string[]; content: SiteContent; fitment: Fitment }) {
   const stats = await getBuildStats();
   const quote = content.block('home.quote');
 
-  // The owner controls the section order, so the "01 —" labels are numbered
-  // from where each section actually lands rather than hardcoded.
-  const numbered = order.filter((id) => NUMBERED.has(id));
-  const step = (id: string) => String(numbered.indexOf(id) + 1).padStart(2, '0');
-
   const sections: Record<string, React.ReactNode> = {
     hero: <HeroV4 values={content.block('home.hero')} fitment={fitment} stats={stats} />,
-    platforms: <PlatformsV4 step={step('platforms')} />,
-    services: <GoalsV4 values={content.block('home.services')} step={step('services')} />,
-    parts: <PartsV4 values={content.block('home.parts')} step={step('parts')} />,
-    builds: <BoardV4 stats={stats} step={step('builds')} />,
-    process: <ProcessV4 step={step('process')} />,
+    platforms: <PlatformsV4 />,
+    services: <GoalsV4 values={content.block('home.services')} />,
+    parts: <PartsV4 values={content.block('home.parts')} />,
+    builds: <BoardV4 stats={stats} />,
+    process: <ProcessV4 />,
     reviews: <ReviewStrip />,
     quote: (
       <Suspense fallback={<QuoteSection values={quote} />}>

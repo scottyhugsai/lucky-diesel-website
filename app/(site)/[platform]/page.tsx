@@ -85,13 +85,17 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
               <Reveal as="li" key={generation} delayMs={index * 50}>
                 <div className="group flex h-full flex-col justify-between gap-6 rounded-sm border border-line bg-carbon-2 p-6 transition-colors hover:border-clover">
                   <p className="display text-4xl not-italic tabular-nums">{generation}</p>
+                  {/* Six generations, six cards: none of them is *the* action on
+                      this page, and six filled green buttons in one screen made
+                      the accent mean nothing. The page's one primary sits in the
+                      hero; in here the two links only have to outrank each other. */}
                   <div className="flex flex-wrap gap-2 text-sm font-semibold">
-                    <Link href={`/?truck=${platform.id}#quote`} className="rounded-sm bg-clover px-3 py-2 text-carbon">
+                    <Link href={`/?truck=${platform.id}#quote`} className="rounded-sm border border-chalk/45 px-3 py-2 text-chalk transition-colors hover:border-clover hover:text-clover">
                       Request service
                     </Link>
                     <Link
                       href={`/store/products?platform=${platform.id}&gen=${platform.generationCollections[index]}`}
-                      className="inline-flex items-center gap-1 rounded-sm border border-line px-3 py-2 hover:border-clover hover:text-clover"
+                      className="inline-flex items-center gap-1 rounded-sm px-3 py-2 text-steel transition-colors hover:text-clover"
                     >
                       Parts <ArrowRight className="size-3.5" aria-hidden="true" />
                     </Link>
@@ -112,8 +116,11 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
                 <Link href={`/?truck=${platform.id}&service=${service.id}#quote`} className="group flex h-full flex-col gap-2 p-6 transition-colors hover:bg-gunmetal">
                   <span className="display text-3xl not-italic">{service.name}</span>
                   <span className="text-chalk/65">{service.blurb}</span>
+                  {/* A price is data, not an action. Green is what you can press. */}
                   {service.partsFrom && (
-                    <span className="text-sm font-semibold text-clover tabular-nums">Parts from ${service.partsFrom.toLocaleString('en-US')}</span>
+                    <span className="text-sm text-steel tabular-nums">
+                      Parts from <span className="font-semibold text-chalk">${service.partsFrom.toLocaleString('en-US')}</span>
+                    </span>
                   )}
                   <span className="mt-auto flex items-center gap-1 pt-3 text-sm font-semibold text-chalk/70 group-hover:text-clover">
                     Request <ArrowRight className="size-4" aria-hidden="true" />
@@ -123,7 +130,9 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
             ))}
           </ul>
           <p className="mt-6 flex items-start gap-2 text-sm text-steel">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-clover" aria-hidden="true" />
+            {/* A pricing footnote, not an emissions warning: green would say press me
+                 and amber is reserved for the emissions line itself. */}
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-steel" aria-hidden="true" />
             <span>
               Parts prices are current store prices; labor is quoted per job. Read our{' '}
               <Link href="/emissions-policy" className="underline underline-offset-4 hover:text-clover">emissions &amp; tuning policy</Link>.

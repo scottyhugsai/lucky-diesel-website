@@ -29,7 +29,7 @@ function pick(products: readonly StoreProduct[]): StoreProduct[] {
   return picked;
 }
 
-export async function PartsV4({ values, step }: { values: BlockValues; step: string }) {
+export async function PartsV4({ values }: { values: BlockValues }) {
   const catalog = await getCatalog();
   const products = catalog.ok ? pick(safeToPromote(catalog.products)) : [];
   if (!products.length) return null;
@@ -42,7 +42,7 @@ export async function PartsV4({ values, step }: { values: BlockValues; step: str
       <div className={WRAP}>
         <SectionHead
           id="parts-v4-heading"
-          index={`${step} — Parts`}
+          index="Parts"
           title={str(values, 'heading').split('\n').filter(Boolean).join(' ')}
           line={str(values, 'intro')}
           href="/store"

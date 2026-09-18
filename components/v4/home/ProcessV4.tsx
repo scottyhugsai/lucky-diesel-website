@@ -6,14 +6,14 @@ const STEPS = [
   { title: 'Get it in writing', body: 'Parts, labour and a date. Then we build it.' },
 ] as const;
 
-export function ProcessV4({ step }: { step: string }) {
+export function ProcessV4() {
   return (
     <section aria-labelledby="process-v4-heading" className={`v4-rise ${SECTION} relative isolate overflow-hidden border-t border-line bg-carbon`}>
       {/* Decorative: a generated scanline band, set as a horizon under the
           three steps and never under copy. Not a readout of anything. */}
       <div aria-hidden="true" className="v4-art v4-art-scan" />
       <div className={WRAP}>
-        <SectionHead id="process-v4-heading" index={`${step} — How it works`} title="Three steps" />
+        <SectionHead id="process-v4-heading" index="How it works" title="Three steps" />
         {/* A sequence, drawn as one. Three boxed cells said "three things";
             the run of rule with stops on it says "this, then this, then this",
             which is what the section is actually for. Steps land one after
