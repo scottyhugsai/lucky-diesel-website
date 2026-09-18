@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { checkClaims } from '@/lib/marketing/core/compliance';
 import { wordCount } from '@/lib/site-content/fields';
 import { SERVICES } from '@/lib/site';
-import { USE_CASES, findUseCase } from './use-cases';
+import { USE_CASES, findUseCase, partsFloorCents } from './use-cases';
 
 describe('use-case tiers', () => {
   it('has a tier for each real reason someone books', () => {
@@ -50,5 +50,33 @@ describe('use-case tiers', () => {
     expect(findUseCase('tow')?.name).toBe('Tow Tuned');
     expect(findUseCase('nope')).toBeNull();
     expect(findUseCase(null)).toBeNull();
+  });
+});
+
+describe('where a tier starts', () => {
+  const priced = (id: string) => SERVICES.find((service) => service.id === id)?.partsFrom ?? null;
+
+  // A tier's parts floor is set by its heaviest required component, not its
+  // lightest. "Built for Boost" lists turbo, fuel and tuning; taking the
+  // cheapest of the three advertised the calibration price for a turbo build.
+  it('is set by the dearest part the tier cannot be done without', () => {
+    expect(partsFloorCents(findUseCase('boost')!)).toBe((priced('turbo') as number) * 100);
+    expect(partsFloorCents(findUseCase('tow')!)).toBe((priced('tuning') as number) * 100);
+  });
+
+  it('never quotes a floor below any part the tier needs', () => {
+    for (const useCase of USE_CASES) {
+      const floor = partsFloorCents(useCase);
+      if (floor === null) continue;
+      for (const service of useCase.services) {
+        const price = priced(service);
+        if (price !== null) expect(floor, `${useCase.id}/${service}`).toBeGreaterThanOrEqual(price * 100);
+      }
+    }
+  });
+
+  it('returns null rather than inventing a price when no service lists one', () => {
+    expect(partsFloorCents(findUseCase('sorted')!)).toBeNull();
+    expect(partsFloorCents({ ...USE_CASES[0], services: [] })).toBeNull();
   });
 });

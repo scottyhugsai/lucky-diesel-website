@@ -62,3 +62,22 @@ export const USE_CASES: readonly UseCase[] = [
 export function findUseCase(id: string | null | undefined): UseCase | null {
   return USE_CASES.find((useCase) => useCase.id === id) ?? null;
 }
+
+/**
+ * Where a tier's parts start, in cents.
+ *
+ * The floor is the dearest part the tier cannot be done without, not the
+ * cheapest thing in it. "Built for Boost" lists turbo, fuel and tuning; taking
+ * the minimum published "Parts from $444" — the calibration price — under a
+ * heading promising a turbo that starts at $1,695. Nobody leaves that tier
+ * having spent $444, so nobody should be quoted it.
+ *
+ * Null when no service in the tier lists a parts price at all: labour is always
+ * quoted, and a made-up starting figure would be inventing a business fact.
+ */
+export function partsFloorCents(useCase: Pick<UseCase, 'services'>): number | null {
+  const prices = useCase.services
+    .map((id) => SERVICES.find((service) => service.id === id)?.partsFrom)
+    .filter((value): value is number => typeof value === 'number');
+  return prices.length ? Math.max(...prices) * 100 : null;
+}

@@ -1,6 +1,8 @@
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import type { BlockValues } from '@/lib/site-content/fields';
 import { str } from '@/lib/site-content/values';
-import { EmissionsNote, UseCaseTiers } from '../UseCaseTiers';
+import { UseCaseLadder } from './UseCaseLadder';
 import { SECTION, SectionHead, WRAP } from '../ui';
 
 /**
@@ -20,8 +22,11 @@ export function GoalsV4({ values, step }: { values: BlockValues; step: string })
           title={str(values, 'heading').split('\n').filter(Boolean).join(' ')}
           line={str(values, 'intro')}
         />
-        <div className="mt-8"><UseCaseTiers /></div>
-        <EmissionsNote />
+        <UseCaseLadder />
+        {/* Each row already states it, so this is the link, not the claim again. */}
+        <Link href="/emissions-policy" className="mt-6 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-chalk underline underline-offset-4 hover:text-clover">
+          Where we stand on emissions <ArrowRight className="size-3.5" aria-hidden="true" />
+        </Link>
       </div>
     </section>
   );

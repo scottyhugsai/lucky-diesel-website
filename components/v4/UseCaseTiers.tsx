@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { money } from '@/lib/format';
-import { USE_CASES } from '@/lib/fitment/use-cases';
+import { USE_CASES, partsFloorCents } from '@/lib/fitment/use-cases';
 import { type Fitment, fitmentParams } from '@/lib/fitment/select';
-import { SERVICES } from '@/lib/site';
 
 /**
  * "What's it for?" — the second half of the fitment answer.
@@ -21,10 +20,7 @@ export function UseCaseTiers({ fitment, current }: { fitment?: Fitment; current?
   return (
     <ul className="v4-deck grid gap-3 lg:grid-cols-3">
       {USE_CASES.map((useCase) => {
-        const parts = useCase.services
-          .map((id) => SERVICES.find((service) => service.id === id)?.partsFrom)
-          .filter((value): value is number => typeof value === 'number');
-        const from = parts.length ? Math.min(...parts) : null;
+        const from = partsFloorCents(useCase);
         const params = new URLSearchParams(carried);
         params.set('goal', useCase.id);
 
@@ -50,7 +46,7 @@ export function UseCaseTiers({ fitment, current }: { fitment?: Fitment; current?
 
               <div className="mt-auto pt-5">
                 <p className="v4-num text-sm text-steel">
-                  {from !== null ? <>Parts from <span className="text-chalk">{money(from * 100, { whole: true })}</span> · labour quoted</> : 'Quoted per truck'}
+                  {from !== null ? <>Parts from <span className="text-chalk">{money(from, { whole: true })}</span> · labour quoted</> : 'Quoted per truck'}
                 </p>
                 <p className="v4-emissions mt-3 flex items-start gap-2 pt-3 text-[0.8125rem] leading-snug">
                   <ShieldCheck className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
