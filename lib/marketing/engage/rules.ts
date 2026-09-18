@@ -306,3 +306,21 @@ export function duePartialFollowUps<T extends PartialCandidate>(partials: readon
     return !recentLeads.some((l) => (l.email.toLowerCase() === p.email.toLowerCase() || l.phone === p.phone) && Date.parse(l.createdAt) >= Date.parse(p.updatedAt) - PARTIAL_FOLLOW_UP_AFTER_MS);
   });
 }
+
+/**
+ * Whether the site may publish counts of its own shop activity — the
+ * "7 trucks finished in our shop this week" line.
+ *
+ * Those counts come from `work_orders` and `dyno_runs`, and neither table
+ * carries an `is_sample` column, unlike the twelve tables that do. `db:seed`
+ * writes work orders completed as recently as two hours ago, so on a seeded
+ * database that sentence is a factual claim about the shop's volume assembled
+ * entirely from demo rows. It is the same failure as the hero stats that were
+ * once averaged over sample builds, which is a mistake worth only making once.
+ *
+ * A query cannot tell a seeded row from a real one here, so the gate has to be
+ * the environment: while the demo is on, the site says nothing about volume.
+ */
+export function mayPublishShopVolume(demoMode: boolean): boolean {
+  return !demoMode;
+}

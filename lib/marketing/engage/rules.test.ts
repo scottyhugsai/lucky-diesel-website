@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   abBucket, abStats, announcementId, cleanChatBody, cleanVin, countdownLabel, duePartialFollowUps, encodeConsent, formatRange, isLive,
   isShopOpen, needsConsentPrompt, numberForSource, parseAnnouncement, parseConsent, parseHeardAbout, parsePriceRanges, parseVariants,
-  pickPopup, priceRangeFor, socialProofMessage, toE164Us, upsertRange, waitlistTopic, type PopupRule,
+  mayPublishShopVolume, pickPopup, priceRangeFor, socialProofMessage, toE164Us, upsertRange, waitlistTopic, type PopupRule,
 } from './rules';
 
 const now = new Date('2026-09-17T15:00:00Z');
@@ -159,5 +159,18 @@ describe('abandoned form follow-up', () => {
     expect(duePartialFollowUps([{ ...base, followedUpAt: '2026-09-17T14:00:00Z' }], [], now)).toHaveLength(0);
     expect(duePartialFollowUps([base], [{ email: 'A@B.CO', phone: 'x', createdAt: '2026-09-17T13:05:00Z' }], now)).toHaveLength(0);
     expect(duePartialFollowUps([base], [{ email: 'a@b.co', phone: 'x', createdAt: '2026-08-01T00:00:00Z' }], now)).toHaveLength(1);
+  });
+});
+
+describe('mayPublishShopVolume', () => {
+  // work_orders and dyno_runs carry no is_sample column, and db:seed writes
+  // work orders completed two hours ago, so on a seeded database the sentence
+  // "7 trucks finished in our shop this week" is entirely demo rows.
+  test('says nothing about shop volume while the demo is on', () => {
+    expect(mayPublishShopVolume(true)).toBe(false);
+  });
+
+  test('allows the count on a real deployment', () => {
+    expect(mayPublishShopVolume(false)).toBe(true);
   });
 });

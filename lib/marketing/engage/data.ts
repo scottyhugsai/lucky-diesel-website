@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Db } from '@/lib/marketing/core/settings';
 import {
-  abBucket, isLive, parseAnnouncement, parsePriceRanges, parseVariants, socialProofMessage,
+  abBucket, isLive, mayPublishShopVolume, parseAnnouncement, parsePriceRanges, parseVariants, socialProofMessage,
   type AbVariant, type Announcement, type PopupRule, type PriceRange,
 } from './rules';
 
@@ -55,7 +55,9 @@ async function load(db: Db = createAdminClient(), now = new Date()): Promise<Pub
       const variants = parseVariants(t.variants);
       return variants.length ? [{ id: t.id, slot: t.slot, variants }] : [];
     }),
-    socialProof: settings?.social_proof ? await countSocialProof(db, now) : null,
+    socialProof: settings?.social_proof && mayPublishShopVolume(process.env.DEMO_MODE === 'true')
+      ? await countSocialProof(db, now)
+      : null,
     financingUrl: settings?.financing_url ?? null,
     priceRanges: parsePriceRanges(settings?.price_ranges),
     trackingNumbers: numbers ?? [],
