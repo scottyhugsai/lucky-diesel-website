@@ -1,4 +1,5 @@
 import { CircleCheck, CircleDashed } from 'lucide-react';
+import { OwnerRecipients } from '@/components/admin/ops/OwnerRecipients';
 import { SettingsForm } from '@/components/admin/ops/SettingsForm';
 import { Card, EmptyState, PageHeader } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
@@ -25,20 +26,30 @@ function Status({ ok, label, detail }: { ok: boolean; label: string; detail: str
 export default async function SettingsPage() {
   await requireRole('admin');
   const supabase = await createClient();
-  const { data: settings } = await supabase.from('shop_settings').select('*').eq('id', 1).maybeSingle();
+  const [{ data: settings }, { data: recipients }] = await Promise.all([
+    supabase.from('shop_settings').select('*').eq('id', 1).maybeSingle(),
+    supabase.from('owner_recipients').select('*').order('sort').order('created_at'),
+  ]);
 
   // Presence checks only. Secret values never leave the server.
   const smsLive = process.env.MESSAGING_SMS_MODE === 'live';
   const twilio = present('TWILIO_ACCOUNT_SID') && present('TWILIO_AUTH_TOKEN') && present('TWILIO_MESSAGING_SERVICE_SID');
   const resend = present('RESEND_API_KEY');
   const demoInbox = present('DEMO_EMAIL_TO');
+  const deliveryMode = { demoInbox: process.env.DEMO_EMAIL_TO?.trim() || null, emailConfigured: resend, smsLive };
+  const fallbackLabel = settings?.owner_email || settings?.owner_phone || 'not set';
   const stripe = present('STRIPE_SECRET_KEY');
 
   return (
     <>
       <PageHeader kicker="Settings" title="Shop settings" description="Rates, alerts, reviews and hours. Changes apply immediately." />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        {settings ? <SettingsForm settings={settings} /> : <EmptyState title="Settings missing">The shop settings row hasn’t been created. Run the database migration.</EmptyState>}
+        <div className="grid gap-6">
+          {settings ? <SettingsForm settings={settings} /> : <EmptyState title="Settings missing">The shop settings row hasn’t been created. Run the database migration.</EmptyState>}
+          <div id="alert-recipients">
+            <OwnerRecipients recipients={recipients ?? []} mode={deliveryMode} fallbackLabel={fallbackLabel} />
+          </div>
+        </div>
         <Card title="Integrations" className="self-start">
           <ul className="grid gap-4">
             <Status ok={resend} label="Email · Resend" detail={resend ? (demoInbox ? 'API key set. Demo mode: every email goes to the presenter inbox.' : 'API key set. Emails go to real recipients.') : 'RESEND_API_KEY missing. Emails fail and are logged.'} />

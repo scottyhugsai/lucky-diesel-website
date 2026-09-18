@@ -2,7 +2,7 @@ import 'server-only';
 import { getAvailableSlots } from '@/lib/domain/appointments';
 import { getCatalog } from '@/lib/store/catalog';
 import { siteUrl } from '@/lib/site-url';
-import { ownerContact, sendContentMessage } from './alerts';
+import { sendContentMessageToOwners } from './alerts';
 import { generateAdCreative, offerFromLanding } from './creative-service';
 import { adminDb, buildToRef, dynoRunToRef, recordGeneration, type Db } from './db';
 import { planWeek, type PlanItem, type WeeklyPlan } from './planner';
@@ -78,7 +78,7 @@ export async function runWeeklyPlanner(options: { execute: boolean; requestedBy:
     for (const item of plan.items) results.push({ title: item.title, outcome: await executeItem(item, options.requestedBy, db) });
     const created = results.filter((r) => !r.outcome.startsWith('skipped') && !r.outcome.startsWith('covered'));
     if (created.length) {
-      await sendContentMessage(db, 'content_drafts_ready', await ownerContact(db), { count: created.length, summary: created.map((r) => r.title).join('; '), admin_link: `${siteUrl()}/admin` });
+      await sendContentMessageToOwners(db, 'content_drafts_ready', { count: created.length, summary: created.map((r) => r.title).join('; '), admin_link: `${siteUrl()}/admin` });
     }
   }
   await recordGeneration(db, { kind: 'plan', input: { execute: options.execute }, output: { plan, results }, meta: { generator: 'demo', model: 'demo/planner', inputTokens: null, outputTokens: null, costUsd: 0, fallbackReason: null }, requestedBy: options.requestedBy });

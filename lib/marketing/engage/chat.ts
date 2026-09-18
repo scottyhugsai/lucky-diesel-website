@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHash, randomBytes } from 'node:crypto';
-import { ownerRecipient } from '@/lib/automations/context';
+import { ownerRecipients } from '@/lib/automations/owner-contacts';
 import { findOrCreateCustomer } from '@/lib/domain/leads';
 import type { Db } from '@/lib/marketing/core/settings';
 import { sendMessage } from '@/lib/messaging/send';
@@ -46,13 +46,14 @@ export function parseStart(body: Record<string, unknown>): { ok: true; value: St
 }
 
 async function alertOwner(db: Db, thread: { id: string; visitor_name: string }, body: string): Promise<void> {
-  const owner = await ownerRecipient(db);
-  if (!owner.email) return;
-  await sendMessage({
-    channel: 'email', to: owner.email, automationKey: 'chat_owner_alert', purpose: 'transactional',
-    subject: `Web chat: ${thread.visitor_name}`,
-    body: `${thread.visitor_name} wrote:\n\n${body}\n\nReply: ${siteUrl()}/admin/marketing/pages/chat?thread=${thread.id}`,
-  }).catch(() => undefined);
+  for (const owner of await ownerRecipients(db)) {
+    if (!owner.email) continue;
+    await sendMessage({
+      channel: 'email', to: owner.email, automationKey: 'chat_owner_alert', purpose: 'transactional',
+      subject: `Web chat: ${thread.visitor_name}`,
+      body: `${thread.visitor_name} wrote:\n\n${body}\n\nReply: ${siteUrl()}/admin/marketing/pages/chat?thread=${thread.id}`,
+    }).catch(() => undefined);
+  }
 }
 
 function autoReply(isOpen: boolean, visitorCount: number, firstName: string): string | null {

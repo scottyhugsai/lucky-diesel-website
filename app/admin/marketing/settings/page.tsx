@@ -1,4 +1,5 @@
 import { Download, FileText } from 'lucide-react';
+import Link from 'next/link';
 import { BrandVoiceForm, SeasonalToggles, SendingRulesForm } from '@/components/admin/marketing/core-ui/SettingsForms';
 import { RevokeAllForm } from '@/components/admin/marketing/core-ui/ContactPanels';
 import { SuppressionManager } from '@/components/admin/marketing/core-ui/SuppressionManager';
@@ -18,6 +19,7 @@ import { createClient } from '@/lib/supabase/server';
 export const metadata = { title: 'Marketing settings | Marketing' };
 
 const SECTIONS = [
+  { id: 'alerts', label: 'Who gets alerts' },
   { id: 'sending', label: 'Sending rules' },
   { id: 'seasonal', label: 'Seasonal' },
   { id: 'voice', label: 'Brand voice' },
@@ -69,6 +71,16 @@ export default async function MarketingSettingsPage() {
       </nav>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+        <section id="alerts" className="scroll-mt-32">
+          <Card title="Who gets alerts">
+            <p className="text-sm leading-relaxed text-chalk/65">
+              Owner alerts — new leads, approvals, the daily summary, negative reviews and marketing alerts — go to every
+              recipient on the shop settings list, each with their own email and text switches.
+            </p>
+            <Link href="/admin/settings#alert-recipients" className={`${buttonClass('secondary', 'sm')} mt-3`}>Manage alert recipients</Link>
+          </Card>
+        </section>
+
         <section id="sending" className="scroll-mt-32"><Card title="Sending rules"><SendingRulesForm settings={settings} /></Card></section>
         <section id="seasonal" className="scroll-mt-32"><Card title="Seasonal plays"><SeasonalToggles settings={settings} /></Card></section>
         <section id="voice" className="scroll-mt-32"><Card title="Brand voice"><BrandVoiceForm voice={voice} /></Card></section>

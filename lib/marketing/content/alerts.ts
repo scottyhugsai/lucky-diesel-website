@@ -1,5 +1,7 @@
 import 'server-only';
 import { AUTOMATIONS } from '@/lib/automations/catalog';
+import { ownerRecipients } from '@/lib/automations/owner-contacts';
+import type { AlertRecipient } from '@/lib/automations/owner-select';
 import type { Enums } from '@/lib/db/database.types';
 import { sendMessage } from '@/lib/messaging/send';
 import { renderTemplate, type TemplateVars } from '@/lib/messaging/template';
@@ -13,16 +15,17 @@ import type { Db } from './db';
  * owner edits; the catalog definition is the fallback.
  */
 
-export interface ContentRecipient {
-  email: string | null;
-  phone: string | null;
-  customerId: string | null;
-  isCustomer: boolean;
+export type ContentRecipient = AlertRecipient;
+
+/** Everyone who gets owner alerts. */
+export async function ownerContacts(db: Db): Promise<ContentRecipient[]> {
+  return ownerRecipients(db);
 }
 
+/** The first owner recipient, for callers that address exactly one person. */
 export async function ownerContact(db: Db): Promise<ContentRecipient> {
-  const { data } = await db.from('shop_settings').select('owner_email, owner_phone').eq('id', 1).maybeSingle();
-  return { email: data?.owner_email ?? BUSINESS.email, phone: data?.owner_phone ?? BUSINESS.phoneDisplay, customerId: null, isCustomer: false };
+  const [first] = await ownerContacts(db);
+  return first!;
 }
 
 export interface SendOutcome {
@@ -60,4 +63,19 @@ export async function sendContentMessage(db: Db, key: string, recipient: Content
     else outcome.skipped.push(`${channel}: ${result.status}${result.error ? ` (${result.error})` : ''}`);
   }
   return outcome;
+}
+
+/** Same message to every owner recipient. One failure never stops the others. */
+export async function sendContentMessageToOwners(db: Db, key: string, vars: TemplateVars, owners?: ContentRecipient[]): Promise<SendOutcome> {
+  const total: SendOutcome = { sent: 0, skipped: [] };
+  for (const owner of owners ?? (await ownerContacts(db))) {
+    const who = owner.label ? `${owner.label} ` : '';
+    const one = await sendContentMessage(db, key, owner, vars).catch((caught: unknown) => ({
+      sent: 0,
+      skipped: [caught instanceof Error ? caught.message : String(caught)],
+    }));
+    total.sent += one.sent;
+    total.skipped.push(...one.skipped.map((reason) => `${who}${reason}`));
+  }
+  return total;
 }

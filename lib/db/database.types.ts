@@ -4790,6 +4790,44 @@ export interface Database {
 
         ];
       };
+      owner_recipients: {
+        Row: {
+          id: string;
+          label: string;
+          email: string | null;
+          phone: string | null;
+          notify_email: boolean;
+          notify_sms: boolean;
+          active: boolean;
+          sort: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          email?: string | null;
+          phone?: string | null;
+          notify_email?: boolean;
+          notify_sms?: boolean;
+          active?: boolean;
+          sort?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          email?: string | null;
+          phone?: string | null;
+          notify_email?: boolean;
+          notify_sms?: boolean;
+          active?: boolean;
+          sort?: number;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
       part_requests: {
         Row: {
           id: string;

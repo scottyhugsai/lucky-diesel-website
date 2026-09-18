@@ -5,7 +5,8 @@ import { renderTemplate } from '@/lib/messaging/template';
 import { stableBucket } from '@/lib/marketing/core/campaign-plan';
 import { enrollDripsForEvent } from '@/lib/marketing/core/trigger-enroll';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { buildRunContext, ownerRecipient, type Recipient } from './context';
+import { buildRunContext, type Recipient } from './context';
+import { ownerRecipients } from './owner-contacts';
 import { applyQuietHours, computeScheduledFor, dedupeKey } from './schedule';
 
 export type SubjectType = 'lead' | 'appointment' | 'work_order' | 'invoice' | 'customer' | 'shop';
@@ -112,9 +113,10 @@ export async function cancelScheduled(subjectType: SubjectType, subjectId: strin
   if (error) console.error(`[automations] cancel failed: ${error.message}`);
 }
 
-function recipientsFor(audience: string, customer: Recipient, tech: Recipient | null, owner: Recipient): Recipient[] {
-  if (audience === 'owner') return [owner];
-  if (audience === 'tech') return tech && (tech.phone || tech.email) ? [tech, owner] : [owner];
+/** Owner alerts fan out to every active recipient; tech alerts copy them all too. */
+function recipientsFor(audience: string, customer: Recipient, tech: Recipient | null, owners: Recipient[]): Recipient[] {
+  if (audience === 'owner') return owners;
+  if (audience === 'tech') return tech && (tech.phone || tech.email) ? [tech, ...owners] : owners;
   return [customer];
 }
 
@@ -122,7 +124,7 @@ async function executeRun(
   db: ReturnType<typeof createAdminClient>,
   run: Tables<'automation_runs'>,
   automation: Tables<'automations'>,
-  owner: Recipient,
+  owners: Recipient[],
 ): Promise<{ status: 'sent' | 'skipped' | 'failed'; detail: string }> {
   if (!automation.enabled) return { status: 'skipped', detail: 'automation turned off' };
 
@@ -134,18 +136,20 @@ async function executeRun(
   let anySent = false;
   let anyFailed = false;
 
-  for (const recipient of recipientsFor(automation.audience, context.customer, context.tech, owner)) {
+  for (const recipient of recipientsFor(automation.audience, context.customer, context.tech, owners)) {
+    const who = recipient.label ? `${recipient.label} ` : '';
     for (const channel of automation.channels) {
       const to = channel === 'sms' ? recipient.phone : recipient.email;
       if (!to) {
-        outcomes.push(`${channel}: no address`);
+        outcomes.push(`${who}${channel}: no address`);
         continue;
       }
       const body = renderTemplate((channel === 'sms' ? automation.sms_template : automation.email_body_template) ?? '', context.vars);
       if (!body) {
-        outcomes.push(`${channel}: empty template`);
+        outcomes.push(`${who}${channel}: empty template`);
         continue;
       }
+      // One recipient's failure must never stop the rest: sendMessage logs and reports it.
       const result = await sendMessage({
         channel,
         to,
@@ -155,8 +159,8 @@ async function executeRun(
         workOrderId: context.workOrderId,
         automationKey: automation.key,
         requiresSmsConsent: recipient.isCustomer,
-      });
-      outcomes.push(`${channel}: ${result.status}${result.error ? ` (${result.error})` : ''}`);
+      }).catch((caught: unknown) => ({ status: 'failed' as const, messageId: null, error: caught instanceof Error ? caught.message : String(caught) }));
+      outcomes.push(`${who}${channel}: ${result.status}${result.error ? ` (${result.error})` : ''}`);
       if (result.status === 'sent' || result.status === 'simulated') anySent = true;
       if (result.status === 'failed') anyFailed = true;
     }
@@ -188,9 +192,9 @@ export async function dispatchDue({ now = new Date(), limit = 50 } = {}): Promis
   }
   if (!due?.length) return summary;
 
-  const [{ data: automations }, owner] = await Promise.all([
+  const [{ data: automations }, owners] = await Promise.all([
     db.from('automations').select('*').in('key', [...new Set(due.map((r) => r.automation_key))]),
-    ownerRecipient(db),
+    ownerRecipients(db),
   ]);
   const byKey = new Map((automations ?? []).map((a) => [a.key, a]));
 
@@ -207,7 +211,7 @@ export async function dispatchDue({ now = new Date(), limit = 50 } = {}): Promis
 
     const automation = byKey.get(run.automation_key);
     const outcome = automation
-      ? await executeRun(db, run, automation, owner).catch((caught: unknown) => ({
+      ? await executeRun(db, run, automation, owners).catch((caught: unknown) => ({
           status: 'failed' as const,
           detail: caught instanceof Error ? caught.message : String(caught),
         }))

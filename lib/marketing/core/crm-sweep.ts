@@ -1,5 +1,5 @@
 import 'server-only';
-import { ownerContact, sendContentMessage, type ContentRecipient } from '@/lib/marketing/content/alerts';
+import { ownerContacts, sendContentMessage, sendContentMessageToOwners, type ContentRecipient } from '@/lib/marketing/content/alerts';
 import { dateOnly, firstName, vehicleLabel } from '@/lib/format';
 import { siteUrl } from '@/lib/site-url';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -49,19 +49,19 @@ function leadLink(id: string): string {
   return `${siteUrl()}${CONTACTS}/pipeline/${id}`;
 }
 
-async function slaAlerts(db: Db, now: Date, owner: ContentRecipient): Promise<number> {
+async function slaAlerts(db: Db, now: Date, owners: ContentRecipient[]): Promise<number> {
   const settings = await getCrmSettings(db);
   const { data: leads } = await db.from('leads').select('id, full_name, phone, service_label, platform_label, status, created_at, contacted_at')
     .eq('status', 'new').is('contacted_at', null).gte('created_at', new Date(now.getTime() - SLA_LOOKBACK_MS).toISOString()).limit(200);
   const backup: ContentRecipient = settings.backupPhone || settings.backupEmail
     ? { phone: settings.backupPhone, email: settings.backupEmail, customerId: null, isCustomer: false }
-    : owner;
+    : owners[0]!;
   let sent = 0;
   for (const lead of leads ?? []) {
     const level = slaLevel({ status: lead.status, createdAt: new Date(lead.created_at), contactedAt: null }, now, settings);
     const vars = { customer_name: lead.full_name, customer_phone: lead.phone, service: lead.service_label ?? 'service', vehicle: lead.platform_label ?? 'truck', minutes: minutesWaiting(new Date(lead.created_at), now), admin_link: leadLink(lead.id) };
     if (level >= 1 && (await claimAlert(db, 'sla_owner', lead.id))) {
-      sent += (await sendContentMessage(db, 'crm_sla_alert', owner, vars)).sent;
+      sent += (await sendContentMessageToOwners(db, 'crm_sla_alert', vars, owners)).sent;
     }
     if (level >= 2 && (await claimAlert(db, 'sla_backup', lead.id))) {
       sent += (await sendContentMessage(db, 'crm_sla_backup_alert', backup, vars)).sent;
@@ -70,7 +70,7 @@ async function slaAlerts(db: Db, now: Date, owner: ContentRecipient): Promise<nu
   return sent;
 }
 
-async function unansweredAlerts(db: Db, now: Date, owner: ContentRecipient, hours: number): Promise<number> {
+async function unansweredAlerts(db: Db, now: Date, owners: ContentRecipient[], hours: number): Promise<number> {
   const since = new Date(now.getTime() - 7 * DAY_MS).toISOString();
   const [{ data: rows }, staff, { data: states }] = await Promise.all([
     db.from('messages').select('id, channel, direction, to_address, body, subject, status, automation_key, customer_id, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(1500),
@@ -86,12 +86,12 @@ async function unansweredAlerts(db: Db, now: Date, owner: ContentRecipient, hour
     if (!lastInbound || !(await claimAlert(db, 'unanswered', `${key}:${lastInbound.id}`))) continue;
     const name = (lastInbound.customerId && (await db.from('customers').select('full_name').eq('id', lastInbound.customerId).maybeSingle()).data?.full_name) || key.slice(key.indexOf(':') + 1);
     const vars = { customer_name: name, preview: lastInbound.body.replace(/\s+/g, ' ').slice(0, 80), hours, admin_link: `${siteUrl()}${CONTACTS}/inbox?t=${encodeURIComponent(key)}` };
-    sent += (await sendContentMessage(db, 'crm_unanswered_alert', owner, vars)).sent;
+    sent += (await sendContentMessageToOwners(db, 'crm_unanswered_alert', vars, owners)).sent;
   }
   return sent;
 }
 
-async function leadAlerts(db: Db, now: Date, owner: ContentRecipient): Promise<{ followUps: number; hot: number; stale: number }> {
+async function leadAlerts(db: Db, now: Date, owners: ContentRecipient[]): Promise<{ followUps: number; hot: number; stale: number }> {
   const settings = await getCrmSettings(db);
   const { data: leads } = await db.from('leads').select('id, full_name, phone, service_label, platform_label, status, lead_score, created_at, last_activity_at, snoozed_until')
     .in('status', ['new', 'contacted', 'booked']).gte('created_at', new Date(now.getTime() - 120 * DAY_MS).toISOString()).limit(1000);
@@ -101,10 +101,10 @@ async function leadAlerts(db: Db, now: Date, owner: ContentRecipient): Promise<{
     const vars = { customer_name: lead.full_name, customer_phone: lead.phone, service: lead.service_label ?? 'service', vehicle: lead.platform_label ?? 'truck', score: lead.lead_score, admin_link: leadLink(lead.id) };
     const snoozed = lead.snoozed_until ? new Date(lead.snoozed_until) : null;
     if (snoozed && snoozed.getTime() <= now.getTime() && now.getTime() - snoozed.getTime() < DAY_MS && (await claimAlert(db, 'follow_up_due', `${lead.id}:${lead.snoozed_until}`))) {
-      result.followUps += (await sendContentMessage(db, 'crm_follow_up_due', owner, vars)).sent;
+      result.followUps += (await sendContentMessageToOwners(db, 'crm_follow_up_due', vars, owners)).sent;
     }
     if (lead.status !== 'booked' && lead.lead_score >= settings.hotScore && now.getTime() - Date.parse(lead.created_at) < 14 * DAY_MS && (await claimAlert(db, 'hot_lead', lead.id))) {
-      result.hot += (await sendContentMessage(db, 'crm_hot_lead_alert', owner, vars)).sent;
+      result.hot += (await sendContentMessageToOwners(db, 'crm_hot_lead_alert', vars, owners)).sent;
     }
     if (isStale({ status: lead.status, lastActivityAt: new Date(lead.last_activity_at), snoozedUntil: snoozed }, now, settings.staleHours) && (await claimAlert(db, 'stale', `${lead.id}:${lead.last_activity_at}`))) {
       staleNames.push(lead.full_name);
@@ -112,7 +112,7 @@ async function leadAlerts(db: Db, now: Date, owner: ContentRecipient): Promise<{
   }
   if (staleNames.length) {
     const vars = { count: staleNames.length, names: staleNames.slice(0, 15).join(', '), hours: settings.staleHours, admin_link: `${siteUrl()}${CONTACTS}/tasks` };
-    result.stale = (await sendContentMessage(db, 'crm_stale_deals_digest', owner, vars)).sent;
+    result.stale = (await sendContentMessageToOwners(db, 'crm_stale_deals_digest', vars, owners)).sent;
   }
   return result;
 }
@@ -167,11 +167,11 @@ async function syncStages(db: Db): Promise<number> {
 }
 
 export async function runCrmSweep(db: Db = createAdminClient(), now = new Date()): Promise<CrmSweepReport> {
-  const [owner, settings] = await Promise.all([ownerContact(db), getCrmSettings(db)]);
+  const [owners, settings] = await Promise.all([ownerContacts(db), getCrmSettings(db)]);
   const stageMoves = await syncStages(db);
-  const sla = await slaAlerts(db, now, owner);
-  const unanswered = await unansweredAlerts(db, now, owner, settings.unansweredHours);
-  const leads = await leadAlerts(db, now, owner);
+  const sla = await slaAlerts(db, now, owners);
+  const unanswered = await unansweredAlerts(db, now, owners, settings.unansweredHours);
+  const leads = await leadAlerts(db, now, owners);
   const quotes = await quoteNudges(db, now, settings.quoteNudgeDays);
   const nurture = await lostNurture(db, now);
   return { sla, stageMoves, unanswered, ...leads, quoteNudges: quotes, nurture };

@@ -48,7 +48,7 @@ async function must(promise, label) {
 async function reset() {
   await sql`truncate table audit_log, automation_runs, messages, payments, invoices, build_items, dyno_runs, tune_records,
     part_requests, work_order_notes, time_entries, acknowledgements, approvals, media, line_items, inspection_items,
-    inspections, appointments, work_order_events, work_orders, leads, vehicles, customers, gallery_items, builds, automations, shop_settings
+    inspections, appointments, work_order_events, work_orders, leads, vehicles, customers, gallery_items, builds, automations, shop_settings, owner_recipients
     restart identity cascade`;
   await sql`alter sequence work_order_number_seq restart with 1041`;
   await sql`alter sequence invoice_number_seq restart with 2201`;
@@ -137,6 +137,12 @@ async function main() {
     owner_email: process.env.DEMO_EMAIL_TO || 'service@luckydiesel.com', owner_phone: '(843) 555-0100',
     google_review_url: null, bay_count: 3, open_hour: 8, close_hour: 17, open_days: [1, 2, 3, 4, 5], slot_minutes: 60,
   }), 'settings');
+
+  // Two owner-alert recipients, so the demo shows alerts fanning out to both.
+  await must(db.from('owner_recipients').insert([
+    { label: 'Lucky Diesel — owner', email: process.env.DEMO_EMAIL_TO || 'service@luckydiesel.com', phone: '(843) 555-0100', notify_email: true, notify_sms: true, active: true, sort: 0 },
+    { label: 'Scotty — developer (example)', email: 'scotty@example.com', phone: '(843) 555-0188', notify_email: true, notify_sms: true, active: true, sort: 1 },
+  ]), 'owner recipients');
 
   console.log('users…');
   const ownerId = await createUser({ email: 'owner@luckydiesel.demo', fullName: 'Shop Owner', role: 'admin', phone: '(843) 555-0100', title: 'Owner', color: '#1fbf3f' });

@@ -1,5 +1,5 @@
 import 'server-only';
-import { ownerRecipient } from '@/lib/automations/context';
+import { ownerRecipients } from '@/lib/automations/owner-contacts';
 import { sendMessage } from '@/lib/messaging/send';
 import { renderTemplate } from '@/lib/messaging/template';
 import { BUSINESS } from '@/lib/site';
@@ -59,9 +59,10 @@ export async function handleVoiceStatus(input: VoiceStatusInput, db: Db = create
   const textedBack = result.status === 'sent' || result.status === 'simulated';
   await db.from('marketing_call_events').update({ texted_back_at: textedBack ? new Date().toISOString() : null, message_id: result.messageId }).eq('call_sid', input.callSid);
 
-  const owner = await ownerRecipient(db);
-  if (owner.phone) {
-    await sendMessage({ channel: 'sms', to: owner.phone, body: `Missed call from ${from}${customerId ? ' (existing customer)' : ''}. ${textedBack ? 'We texted them back.' : `Text-back not sent: ${result.error ?? result.status}.`}`, automationKey: 'missed_call_owner_alert' });
+  const alert = `Missed call from ${from}${customerId ? ' (existing customer)' : ''}. ${textedBack ? 'We texted them back.' : `Text-back not sent: ${result.error ?? result.status}.`}`;
+  for (const owner of await ownerRecipients(db)) {
+    if (!owner.phone) continue;
+    await sendMessage({ channel: 'sms', to: owner.phone, body: alert, automationKey: 'missed_call_owner_alert' }).catch(() => undefined);
   }
   return { missed: true, textedBack, detail: textedBack ? result.status : result.error ?? result.status };
 }

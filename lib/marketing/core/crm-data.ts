@@ -70,9 +70,10 @@ export async function allStages(db: Db): Promise<StageRow[]> {
 
 /** Owner and team phones/emails, so staff alerts never show up as customer conversations. */
 export async function staffAddresses(db: Db): Promise<Set<string>> {
-  const [{ data: shop }, { data: team }] = await Promise.all([
+  const [{ data: shop }, { data: team }, { data: alertRecipients }] = await Promise.all([
     db.from('shop_settings').select('owner_email, owner_phone').eq('id', 1).maybeSingle(),
     db.from('profiles').select('email, phone').in('role', ['admin', 'employee']),
+    db.from('owner_recipients').select('email, phone'),
   ]);
   const set = new Set<string>();
   const add = (channel: 'sms' | 'email', value: string | null | undefined) => {
@@ -80,6 +81,10 @@ export async function staffAddresses(db: Db): Promise<Set<string>> {
   };
   add('email', shop?.owner_email);
   add('sms', shop?.owner_phone);
+  for (const recipient of alertRecipients ?? []) {
+    add('email', recipient.email);
+    add('sms', recipient.phone);
+  }
   for (const person of team ?? []) {
     add('email', person.email);
     add('sms', person.phone);

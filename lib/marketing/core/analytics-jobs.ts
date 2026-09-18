@@ -1,5 +1,5 @@
 import 'server-only';
-import { ownerContact, sendContentMessage } from '@/lib/marketing/content/alerts';
+import { sendContentMessageToOwners } from '@/lib/marketing/content/alerts';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { siteUrl } from '@/lib/site-url';
 import { getDailyStats, getMarketingFunnel } from './analytics';
@@ -38,7 +38,7 @@ export async function checkAnomalies(db: Db = createAdminClient(), now = new Dat
     if (error) throw new Error(`anomaly insert failed: ${error.message}`);
     const id = data?.[0]?.id;
     if (!id) continue;
-    const outcome = await sendContentMessage(db, ANOMALY_KEY, await ownerContact(db), { alert: anomaly.message, admin_link: `${siteUrl()}/admin/marketing/reports#alerts` });
+    const outcome = await sendContentMessageToOwners(db, ANOMALY_KEY, { alert: anomaly.message, admin_link: `${siteUrl()}/admin/marketing/reports#alerts` });
     if (outcome.sent > 0) {
       alerted += 1;
       await db.from('marketing_anomalies').update({ alerted: true }).eq('id', id);
@@ -82,7 +82,7 @@ export async function generateWeeklyDigest(db: Db = createAdminClient(), now = n
   const id = inserted?.[0]?.id;
   if (!id) return { status: 'exists', weekStart };
 
-  const outcome = await sendContentMessage(db, DIGEST_KEY, await ownerContact(db), {
+  const outcome = await sendContentMessageToOwners(db, DIGEST_KEY, {
     headline: digest.headline, digest_text: digest.text, admin_link: `${siteUrl()}/admin/marketing/reports#digest`,
   });
   await db.from('marketing_digests').update({ sent_count: outcome.sent, send_detail: outcome.skipped.join('; ').slice(0, 500) || null }).eq('id', id);

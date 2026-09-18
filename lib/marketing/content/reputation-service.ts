@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { firstName as firstNameOf } from '@/lib/format';
 import { siteUrl } from '@/lib/site-url';
 import { writeCopy } from './ai';
-import { ownerContact, sendContentMessage } from './alerts';
+import { sendContentMessage, sendContentMessageToOwners } from './alerts';
 import { canPublish } from './approvals';
 import { latestApproval, loadSubject, submitForApproval } from './approvals-service';
 import { resolveConnection } from './channels/registry';
@@ -63,7 +63,7 @@ export async function ingestReview(input: ReviewInput, db: Db = adminDb()): Prom
     if (!existing && input.source !== 'internal') await draftReplyForReview(review.id, null, db);
     let alerted = false;
     if (isNegative(review.rating) && !existing?.owner_alerted_at) {
-      const outcome = await sendContentMessage(db, 'content_review_negative_alert', await ownerContact(db), {
+      const outcome = await sendContentMessageToOwners(db, 'content_review_negative_alert', {
         rating: review.rating, author: review.author_name, source: review.source, review_text: (review.body ?? '').slice(0, 280), admin_link: `${siteUrl()}/admin`,
       });
       alerted = outcome.sent > 0;
@@ -182,7 +182,7 @@ export async function recordNpsResponse(token: string, score: number, comment: s
   await db.from('nps_responses').update({ score, comment: clean, responded_at: new Date().toISOString() }).eq('id', row.id);
   const follow = npsFollowUp(score);
   if (follow.alertOwner && !row.owner_alerted_at) {
-    await sendContentMessage(db, 'content_nps_low_score_alert', await ownerContact(db), {
+    await sendContentMessageToOwners(db, 'content_nps_low_score_alert', {
       customer_name: row.customers?.full_name ?? 'A customer', score, comment: clean ?? 'no comment', customer_phone: row.customers?.phone ?? 'not on file',
     });
     await db.from('nps_responses').update({ owner_alerted_at: new Date().toISOString() }).eq('id', row.id);

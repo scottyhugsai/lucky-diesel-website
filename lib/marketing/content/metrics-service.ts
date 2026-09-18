@@ -1,7 +1,7 @@
 import 'server-only';
 import { siteUrl } from '@/lib/site-url';
 import { evaluateAdAlerts, type MetricDay } from './ad-alerts';
-import { ownerContact, sendContentMessage } from './alerts';
+import { sendContentMessageToOwners } from './alerts';
 import { pacing, shouldPauseForCpl } from './budget';
 import { demoAdAdapter } from './channels/demo';
 import { adAdapterFor } from './channels/registry';
@@ -102,7 +102,7 @@ async function recordAlert(db: Db, alert: { campaignId: string; name: string; ki
   if (error || !data?.length) return false;
   if (alert.simulated && alert.kind !== 'paused') return true;
   const key = alert.kind === 'paused' ? 'content_campaign_paused' : 'content_ad_alert';
-  const outcome = await sendContentMessage(db, key, await ownerContact(db), { campaign: alert.name, reason: alert.message, alert: alert.message, admin_link: `${siteUrl()}/admin/marketing/ads/performance` });
+  const outcome = await sendContentMessageToOwners(db, key, { campaign: alert.name, reason: alert.message, alert: alert.message, admin_link: `${siteUrl()}/admin/marketing/ads/performance` });
   await db.from('ad_alerts').update({ sent: outcome.sent > 0 }).eq('id', data[0]!.id);
   return true;
 }

@@ -1,5 +1,5 @@
 import 'server-only';
-import { ownerRecipient } from '@/lib/automations/context';
+import { ownerRecipients } from '@/lib/automations/owner-contacts';
 import { firstName, money } from '@/lib/format';
 import { previousMonth, monthRange } from '@/lib/marketing/fleet/fleet-math';
 import { fleetRecipient, loadFleetDetail, reportFor, reportText } from '@/lib/marketing/fleet/fleet-service';
@@ -86,10 +86,10 @@ export async function sendHighValueCartSummary(db: Db, now: Date): Promise<Catal
     const who = byId.get(cart.id)?.customers;
     return `• ${money(cart.valueCents)} — ${who ? `${who.full_name}${who.phone ? ` ${who.phone}` : ''}` : 'anonymous visitor'}`;
   });
-  const owner = await ownerRecipient(db);
+  const owners = await ownerRecipients(db);
   return sendCatalogMessage(db, {
     key: 'store_high_value_carts', subjectType: 'shop', subjectId: null, dedupeKey: `high_value_carts:${now.toISOString().slice(0, 10)}`,
-    recipient: { ...owner, phone: null },
+    recipient: owners.map((owner) => ({ ...owner, phone: null })),
     vars: { cart_count: carts.length, cart_total: money(carts.reduce((t, c) => t + c.valueCents, 0), { whole: true }), cart_lines: lines.join('\n'), admin_link: `${siteUrl()}/admin/marketing/contacts` },
   });
 }

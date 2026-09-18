@@ -1,6 +1,6 @@
 import 'server-only';
 import { checkSenderAuth } from '@/lib/marketing/core/email-auth';
-import { ownerContact, sendContentMessage } from './alerts';
+import { sendContentMessageToOwners } from './alerts';
 import { adminDb, toJson, type Db } from './db';
 import { complaintAlerts, connectionAlerts, cronAlerts, dnsAlerts, dnsCacheStale, worstSeverity, type DnsCheck, type HealthAlert } from './health';
 
@@ -113,7 +113,7 @@ async function notifyOwner(db: Db, alerts: readonly HealthAlert[], now: Date): P
   const { data: recent } = await db.from('ops_alerts').select('last_alerted_at').in('key', bad.map((a) => a.key)).not('last_alerted_at', 'is', null).order('last_alerted_at', { ascending: false }).limit(1).maybeSingle();
   if (recent?.last_alerted_at && now.getTime() - new Date(recent.last_alerted_at).getTime() < ALERT_COOLDOWN_MS) return false;
   const headline = bad.length === 1 ? bad[0].title : `${bad.length} marketing integrations need attention`;
-  await sendContentMessage(db, 'content_anomaly_alert', await ownerContact(db), { alert: `${headline}. ${bad.map((a) => `• ${a.title}`).join(' ')}`.slice(0, 600) });
+  await sendContentMessageToOwners(db, 'content_anomaly_alert', { alert: `${headline}. ${bad.map((a) => `• ${a.title}`).join(' ')}`.slice(0, 600) });
   await db.from('ops_alerts').update({ last_alerted_at: now.toISOString() }).in('key', bad.map((a) => a.key));
   return true;
 }

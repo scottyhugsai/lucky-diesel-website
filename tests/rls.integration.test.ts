@@ -86,6 +86,13 @@ describe('client (Cody)', () => {
     expect(error).not.toBeNull();
   });
 
+  test('cannot see or write the owner alert recipient list', async () => {
+    const { data } = await client.from('owner_recipients').select('id');
+    expect(data ?? []).toHaveLength(0);
+    const { error } = await client.from('owner_recipients').insert({ label: 'Client', email: 'client@evil.test' });
+    expect(error).not.toBeNull();
+  });
+
   test('cannot promote themselves to admin', async () => {
     const { data: me } = await client.auth.getUser();
     const { data } = await client.from('profiles').update({ role: 'admin' }).eq('id', me.user!.id).select();
@@ -97,6 +104,17 @@ describe('employee (Jake)', () => {
   test('reads operational data across customers', async () => {
     const { data } = await tech.from('work_orders').select('id');
     expect(data!.length).toBeGreaterThan(5);
+  });
+
+  test('can read alert recipients but cannot add, change or delete one', async () => {
+    const { data: rows } = await tech.from('owner_recipients').select('id, label');
+    expect(rows?.length).toBeGreaterThan(0);
+    const { error: insertError } = await tech.from('owner_recipients').insert({ label: 'Sneaky tech', email: 'tech@evil.test' });
+    expect(insertError).not.toBeNull();
+    const { data: updated } = await tech.from('owner_recipients').update({ email: 'tech@evil.test' }).eq('id', rows![0]!.id).select();
+    expect(updated ?? []).toHaveLength(0);
+    const { data: deleted } = await tech.from('owner_recipients').delete().eq('id', rows![0]!.id).select();
+    expect(deleted ?? []).toHaveLength(0);
   });
 
   test('can update job status but cannot change shop settings or automations', async () => {

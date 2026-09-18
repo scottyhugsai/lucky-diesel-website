@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AutoRefresh } from '@/components/admin/ops/AutoRefresh';
 import { LeadCard, RESPOND_WITHIN_MIN, type LeadAutomationSummary } from '@/components/admin/ops/LeadCard';
 import { EmptyState, PageHeader } from '@/components/app/ui';
 import { requireRole } from '@/lib/auth';
@@ -54,6 +55,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
+      {/* New leads land on screen without a manual refresh (pauses when the tab is hidden). */}
+      <AutoRefresh intervalMs={7000} />
       <PageHeader
         kicker="Leads inbox"
         title="Service requests"

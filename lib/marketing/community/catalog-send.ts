@@ -7,7 +7,7 @@ import type { createAdminClient } from '@/lib/supabase/admin';
 
 type Db = ReturnType<typeof createAdminClient>;
 
-export interface CatalogRecipient { email: string | null; phone: string | null; customerId: string | null; isCustomer: boolean }
+export interface CatalogRecipient { label?: string; email: string | null; phone: string | null; customerId: string | null; isCustomer: boolean }
 
 export interface CatalogSendInput {
   key: string;
@@ -16,7 +16,8 @@ export interface CatalogSendInput {
   subjectId: string | null;
   /** Unique per logical message, e.g. `event_reminder:<reg>:7d`. */
   dedupeKey: string;
-  recipient: CatalogRecipient;
+  /** One recipient, or several (owner alerts fan out to every active recipient). */
+  recipient: CatalogRecipient | CatalogRecipient[];
   vars: TemplateVars;
 }
 
@@ -48,21 +49,26 @@ export async function sendCatalogMessage(db: Db, input: CatalogSendInput): Promi
   const outcomes: string[] = [];
   let anySent = false;
   let anyFailed = false;
-  for (const channel of automation.channels) {
-    const to = channel === 'sms' ? input.recipient.phone : input.recipient.email;
-    const template = channel === 'sms' ? automation.sms_template : automation.email_body_template;
-    if (!to || !template) {
-      outcomes.push(`${channel}: ${to ? 'empty template' : 'no address'}`);
-      continue;
+  const recipients = Array.isArray(input.recipient) ? input.recipient : [input.recipient];
+  for (const recipient of recipients) {
+    const who = recipients.length > 1 && recipient.label ? `${recipient.label} ` : '';
+    for (const channel of automation.channels) {
+      const to = channel === 'sms' ? recipient.phone : recipient.email;
+      const template = channel === 'sms' ? automation.sms_template : automation.email_body_template;
+      if (!to || !template) {
+        outcomes.push(`${who}${channel}: ${to ? 'empty template' : 'no address'}`);
+        continue;
+      }
+      // A failing recipient must not stop the rest.
+      const result = await sendMessage({
+        channel, to, body: renderTemplate(template, vars), customerId: recipient.customerId, automationKey: automation.key,
+        subject: channel === 'email' ? renderTemplate(automation.email_subject_template ?? automation.name, vars) : undefined,
+        requiresSmsConsent: recipient.isCustomer,
+      }).catch((caught: unknown) => ({ status: 'failed' as const, messageId: null, error: caught instanceof Error ? caught.message : String(caught) }));
+      outcomes.push(`${who}${channel}: ${result.status}${result.error ? ` (${result.error})` : ''}`);
+      if (result.status === 'sent' || result.status === 'simulated') anySent = true;
+      if (result.status === 'failed') anyFailed = true;
     }
-    const result = await sendMessage({
-      channel, to, body: renderTemplate(template, vars), customerId: input.recipient.customerId, automationKey: automation.key,
-      subject: channel === 'email' ? renderTemplate(automation.email_subject_template ?? automation.name, vars) : undefined,
-      requiresSmsConsent: input.recipient.isCustomer,
-    });
-    outcomes.push(`${channel}: ${result.status}${result.error ? ` (${result.error})` : ''}`);
-    if (result.status === 'sent' || result.status === 'simulated') anySent = true;
-    if (result.status === 'failed') anyFailed = true;
   }
   const status = anySent ? 'sent' : anyFailed ? 'failed' : 'skipped';
   await db.from('automation_runs').update({ status, detail: outcomes.join(' · ') || 'no recipients' }).eq('id', runId);

@@ -6,16 +6,11 @@ import { siteUrl } from '@/lib/site-url';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { TemplateVars } from '@/lib/messaging/template';
 import { computeTotals } from '@/lib/work-orders/totals';
+import type { AlertRecipient } from './owner-select';
 
 type Db = ReturnType<typeof createAdminClient>;
 
-export interface Recipient {
-  email: string | null;
-  phone: string | null;
-  customerId: string | null;
-  /** Customer texts need consent; staff alerts don't. */
-  isCustomer: boolean;
-}
+export type Recipient = AlertRecipient;
 
 export interface RunContext {
   vars: TemplateVars;
@@ -35,14 +30,9 @@ function passThroughVars(context: Record<string, unknown>): TemplateVars {
   return Object.fromEntries(PASS_THROUGH_VARS.flatMap((key) => (typeof context[key] === 'string' ? [[key, context[key] as string]] : [])));
 }
 
-async function settings(db: Db): Promise<Tables<'shop_settings'> | null> {
+export async function shopSettings(db: Db): Promise<Tables<'shop_settings'> | null> {
   const { data } = await db.from('shop_settings').select('*').eq('id', 1).maybeSingle();
   return data;
-}
-
-export async function ownerRecipient(db: Db): Promise<Recipient> {
-  const shop = await settings(db);
-  return { email: shop?.owner_email ?? BUSINESS.email, phone: shop?.owner_phone ?? BUSINESS.phoneDisplay, customerId: null, isCustomer: false };
 }
 
 function baseVars(): TemplateVars {
@@ -111,7 +101,7 @@ async function appointmentContext(db: Db, id: string, automationKey: string): Pr
 async function workOrderContext(db: Db, id: string, automationKey: string): Promise<RunContext | null> {
   const [{ data: wo }, shop] = await Promise.all([
     db.from('work_orders').select('*, customers(*), vehicles(*), line_items(*), approvals(id)').eq('id', id).maybeSingle(),
-    settings(db),
+    shopSettings(db),
   ]);
   if (!wo) return null;
   const taxRate = Number(shop?.tax_rate ?? 0);
@@ -160,7 +150,7 @@ async function workOrderContext(db: Db, id: string, automationKey: string): Prom
 async function invoiceContext(db: Db, id: string): Promise<RunContext | null> {
   const [{ data: invoice }, shop] = await Promise.all([
     db.from('invoices').select('*, customers(*), work_orders(id, number, vehicles(*))').eq('id', id).maybeSingle(),
-    settings(db),
+    shopSettings(db),
   ]);
   if (!invoice) return null;
   return {
