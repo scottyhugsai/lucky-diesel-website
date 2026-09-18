@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Activity, ClipboardCheck, Cog, Fan, Fuel, Gauge, Hammer, PackageCheck, Wind, type LucideIcon } from 'lucide-react';
 import { money } from '@/lib/format';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { str } from '@/lib/site-content/values';
 import { SERVICES } from '@/lib/site';
 import { MONO, SECTION, SectionHead, WRAP } from '../ui';
 
@@ -9,11 +11,11 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 /** Nine services, one icon and at most five words each. Each tile preselects the quote form. */
-export function ServicesV3() {
+export function ServicesV3({ values }: { values: BlockValues }) {
   return (
     <section id="services" aria-labelledby="services-heading" className={`${SECTION} scroll-mt-14`}>
       <div className={WRAP}>
-        <SectionHead id="services-heading" index="02 / SERVICES" title="What we do" line="Parts pricing is live. Labor is quoted per truck." />
+        <SectionHead id="services-heading" index={str(values, 'kicker')} title={str(values, 'heading')} line={str(values, 'intro')} />
         <ul className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
           {SERVICES.map((service) => {
             const Icon = ICONS[service.id] ?? Cog;

@@ -7,17 +7,21 @@ import { CalendarClock, ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CartButton } from '@/components/store/CartButton';
 import { MONO } from './ui';
-import { MORE_LINKS, TABS, activeTab } from './nav';
+import { resolveNav, type SiteNav } from '@/lib/site-nav';
+import { activeTab, desktopMoreFor } from './nav';
 import type { NextSlot } from './data';
 
 interface TopBarV3Props {
   nextSlot: NextSlot | null;
+  nav?: SiteNav;
 }
 
 /** 56px instrument bar. Desktop gets the five destinations inline; phones get logo + cart (tabs live at the bottom). */
-export function TopBarV3({ nextSlot }: TopBarV3Props) {
+export function TopBarV3({ nextSlot, nav = resolveNav(null) }: TopBarV3Props) {
+  const destinations = nav.primary;
+  const moreLinks = desktopMoreFor(nav);
   const pathname = usePathname();
-  const active = activeTab(pathname);
+  const active = activeTab(pathname, destinations);
   // Keyed to the pathname so any navigation closes the menu without an effect.
   const [openFor, setOpenFor] = useState<string | null>(null);
   const isMoreOpen = openFor === pathname;
@@ -49,7 +53,7 @@ export function TopBarV3({ nextSlot }: TopBarV3Props) {
 
         <nav aria-label="Main" className="hidden flex-1 justify-center lg:flex">
           <ul className="flex items-center gap-1 text-sm">
-            {TABS.map((tab) => (
+            {destinations.map((tab) => (
               <li key={tab.href}>
                 <Link
                   href={tab.href}
@@ -75,7 +79,7 @@ export function TopBarV3({ nextSlot }: TopBarV3Props) {
                 hidden={!isMoreOpen}
                 className="v3-menu absolute left-1/2 top-full mt-2 w-52 -translate-x-1/2 rounded-[8px] border border-line p-1.5"
               >
-                {MORE_LINKS.map((link) => (
+                {moreLinks.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="block rounded-[6px] px-3 py-2 text-sm text-chalk/85 hover:bg-chalk/8 hover:text-chalk">
                       {link.label}

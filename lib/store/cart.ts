@@ -12,9 +12,20 @@ export interface CartLine {
 
 export const MAX_QUANTITY = 20;
 
+/**
+ * Shopify variant ids are always positive integers. Sample catalogue entries
+ * carry negative ids precisely so they can never form a valid cart permalink —
+ * a made-up positive id could collide with a real variant and drop someone
+ * else's product into a real checkout.
+ */
+export function isRealVariantId(variantId: number): boolean {
+  return Number.isInteger(variantId) && variantId > 0;
+}
+
 const clamp = (quantity: number) => Math.max(0, Math.min(MAX_QUANTITY, Math.floor(quantity)));
 
 export function addToCart(lines: readonly CartLine[], line: CartLine): CartLine[] {
+  if (!isRealVariantId(line.variantId)) return [...lines];
   const existing = lines.find((l) => l.variantId === line.variantId);
   if (!existing) return [...lines, { ...line, quantity: clamp(line.quantity) || 1 }];
   return lines.map((l) => (l.variantId === line.variantId ? { ...l, quantity: clamp(l.quantity + line.quantity) } : l));
@@ -40,7 +51,10 @@ export function cartCount(lines: readonly CartLine[]): number {
 
 /** Shopify cart permalink: /cart/<variant>:<qty>,… lands the shopper in checkout with those items. */
 export function checkoutUrl(storeOrigin: string, lines: readonly CartLine[]): string | null {
-  const items = lines.filter((l) => l.quantity > 0).map((l) => `${l.variantId}:${l.quantity}`);
+  const wanted = lines.filter((l) => l.quantity > 0);
+  // One unbuyable line voids the whole link: a silent partial checkout is worse.
+  if (wanted.some((l) => !isRealVariantId(l.variantId))) return null;
+  const items = wanted.map((l) => `${l.variantId}:${l.quantity}`);
   if (!items.length) return null;
   return `${storeOrigin.replace(/\/$/, '')}/cart/${items.join(',')}`;
 }
@@ -51,7 +65,8 @@ export function parseStoredCart(value: unknown): CartLine[] {
   return value.flatMap((item): CartLine[] => {
     if (typeof item !== 'object' || item === null) return [];
     const l = item as Record<string, unknown>;
-    if (typeof l.variantId !== 'number' || typeof l.title !== 'string' || typeof l.handle !== 'string') return [];
+    if (typeof l.variantId !== 'number' || !isRealVariantId(l.variantId)) return [];
+    if (typeof l.title !== 'string' || typeof l.handle !== 'string') return [];
     if (typeof l.priceCents !== 'number' || typeof l.quantity !== 'number') return [];
     const quantity = clamp(l.quantity);
     if (!quantity) return [];

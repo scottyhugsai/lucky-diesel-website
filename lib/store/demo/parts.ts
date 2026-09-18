@@ -1,0 +1,173 @@
+import type { CategoryId } from '../normalize';
+
+/**
+ * How many products a family turns into: one per fitment group, one per
+ * platform, or a single listing covering everything it is offered for.
+ */
+export type FamilySplit = 'group' | 'platform' | 'single';
+
+export interface PartFamily {
+  id: string;
+  name: string;
+  category: CategoryId;
+  /** One sentence, 30 words or fewer — it becomes the product summary. */
+  description: string;
+  /** What the part is, for the product bullets. */
+  what: string;
+  /** What ships with it, for the product bullets. */
+  included: string;
+  /** Anything worth stating outright, such as emissions status. */
+  note?: string;
+  split: FamilySplit;
+  groups: readonly string[];
+  tags: readonly string[];
+}
+
+const EMISSIONS_NOTE = 'Factory emissions equipment stays fitted and functional.';
+
+export const PART_FAMILIES: readonly PartFamily[] = [
+  { id: 'turbocharger-replacement', name: 'Replacement Turbocharger', category: 'turbo', split: 'group', tags: ['turbo', 'turbocharger', 'replacement'],
+    description: 'Direct-fit turbocharger for a worn or failed factory unit. Same mounting, same control strategy, no calibration change needed.',
+    what: 'A new turbocharger built to the factory frame size and flow.', included: 'Turbocharger, mounting gaskets and hardware.',
+    groups: ['dmax-lb7', 'dmax-lly', 'dmax-lbz', 'dmax-lmm', 'dmax-lml', 'dmax-l5p', 'psd-73', 'psd-60', 'psd-64', 'psd-67-2011'] },
+  { id: 'turbocharger-upgrade', name: 'Street Turbocharger Upgrade', category: 'turbo', split: 'group', tags: ['turbo', 'turbocharger', 'upgrade', 'towing'], note: EMISSIONS_NOTE,
+    description: 'A larger compressor wheel in a stock-frame housing for lower drive pressure and cooler exhaust gas temperatures when towing.',
+    what: 'A drop-in turbocharger with a bigger compressor and the factory control valve.', included: 'Turbocharger, gaskets, hardware and oil feed fittings.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c'] },
+  { id: 'intercooler-upgrade', name: 'Upgraded Intercooler', category: 'turbo', split: 'group', tags: ['intercooler', 'charge-air', 'cooling', 'towing'],
+    description: 'A thicker bar-and-plate charge-air cooler that drops intake temperatures on long pulls without changing the plumbing.',
+    what: 'A direct-fit intercooler core sized to the factory mounting points.', included: 'Intercooler core and mounting hardware.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c'] },
+  { id: 'intercooler-boot-kit', name: 'Intercooler Boot and Clamp Kit', category: 'turbo', split: 'group', tags: ['intercooler', 'boots', 'clamps', 'boost-leak'],
+    description: 'Silicone boots and T-bolt clamps to replace the split factory couplers that cause boost leaks and limp mode.',
+    what: 'Reinforced silicone couplers for both sides of the charge-air cooler.', included: 'Boots, T-bolt clamps and installation instructions.',
+    groups: ['dmax-lly', 'dmax-lbz', 'dmax-lmm', 'psd-64', 'cum-67a'] },
+
+  { id: 'performance-injectors', name: 'Performance Injectors', category: 'fuel', split: 'group', tags: ['injectors', 'fuel', 'performance'], note: EMISSIONS_NOTE,
+    description: 'A matched set of injectors flowed above stock for a built engine, balanced against each other and tested before shipping.',
+    what: 'A full set of remanufactured injectors with oversize nozzles.', included: 'One injector per cylinder, seals and a flow report.',
+    groups: ['dmax-lb7', 'dmax-lly', 'dmax-lbz', 'dmax-lmm', 'dmax-lml', 'cum-cr59', 'cum-67b'] },
+  { id: 'cp3-pump', name: 'CP3 Injection Pump', category: 'fuel', split: 'group', tags: ['cp3', 'injection-pump', 'fuel'],
+    description: 'Remanufactured or stroked CP3 high-pressure pump for trucks that need rail pressure restored or raised.',
+    what: 'A high-pressure fuel pump built to stock or increased displacement.', included: 'Pump, gear key and mounting gasket.',
+    groups: ['dmax-lb7', 'dmax-lly', 'dmax-lbz', 'dmax-lmm', 'cum-cr59'] },
+  { id: 'cp3-conversion-kit', name: 'CP3 Conversion Kit', category: 'fuel', split: 'group', tags: ['cp3', 'cp4', 'conversion', 'fuel'],
+    description: 'Replaces the factory CP4 high-pressure pump with a CP3 and the plumbing to suit, a common insurance job on high-mileage trucks.',
+    what: 'A CP3 pump, adapter and fuel lines sized for the engine.', included: 'Pump, adapter plate, lines, fittings and hardware.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'cum-67c'] },
+  { id: 'lift-pump', name: 'Lift Pump and Fuel Supply Kit', category: 'fuel', split: 'group', tags: ['lift-pump', 'fuel-supply', 'fuel'],
+    description: 'Feeds the injection pump steady, filtered fuel from the tank, with a gauge port so supply pressure can be watched.',
+    what: 'An electric lift pump, filter head and supply line kit.', included: 'Pump, filters, lines, fittings, wiring harness and bracket.',
+    groups: ['dmax-lml', 'dmax-l5p', 'cum-cr59', 'cum-67b', 'cum-67c', 'psd-67-2011'] },
+  { id: 'fuel-filter-kit', name: 'Fuel Filter Service Kit', category: 'fuel', split: 'platform', tags: ['fuel-filter', 'service', 'maintenance'],
+    description: 'The filters and seals a scheduled fuel service needs, packed per engine so nothing is missing halfway through the job.',
+    what: 'Primary and secondary fuel filters with fresh seals.', included: 'Filters, O-rings and drain valve seal.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c'] },
+  { id: 'injector-cups', name: 'Injector Cups and Seal Kit', category: 'fuel', split: 'group', tags: ['injector-cups', 'sleeves', 'repair'],
+    description: 'Replacement injector cups and seals for the leak that puts fuel in the coolant on these engines.',
+    what: 'Machined injector cups with the seals and thread sealer to fit them.', included: 'Cups, seals, O-rings and sealer.',
+    groups: ['psd-60', 'psd-64'] },
+
+  { id: 'engine-calibration', name: 'Engine Calibration', category: 'tuning', split: 'group', tags: ['tuning', 'calibration', 'ecm'], note: EMISSIONS_NOTE,
+    description: 'A calibration written for this engine and gearbox, aimed at drivability and towing manners rather than a headline number.',
+    what: 'A file loaded to the factory ECM through a handheld device.', included: 'Calibration file, device licence and a road-test appointment.',
+    groups: ['dmax-lml', 'dmax-l5p-early', 'dmax-l5p', 'cum-67b', 'cum-67c', 'psd-67-2011', 'psd-67-2020'] },
+  { id: 'transmission-calibration', name: 'Transmission Calibration', category: 'tuning', split: 'group', tags: ['tuning', 'transmission', 'shift'], note: EMISSIONS_NOTE,
+    description: 'Shift pressure and timing set for the way the truck is used, so the gearbox stops slipping under the extra torque.',
+    what: 'A transmission control file matched to the engine calibration.', included: 'Calibration file and a road-test appointment.',
+    groups: ['dmax-lml', 'dmax-l5p', 'cum-67c', 'psd-67-2020', 'psd-67-2023'] },
+
+  { id: 'cat-back-exhaust', name: 'Cat-Back Exhaust', category: 'exhaust', split: 'group', tags: ['exhaust', 'cat-back', 'stainless'], note: 'Cat-back: every factory emissions component stays on the truck.',
+    description: 'Stainless steel exhaust from behind the catalytic converter to the tip, using the factory hangers and clearing the spare tyre.',
+    what: 'A mandrel-bent cat-back system with muffler and tip.', included: 'Piping, muffler, tip, clamps and hangers.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2020', 'psd-67-2023', 'cum-67b', 'cum-67c', 'gas-sd-73', 'gas-gmhd-l8t', 'gas-ram1500-57', 'gas-f150-coyote'] },
+  { id: 'axle-back-exhaust', name: 'Axle-Back Exhaust', category: 'exhaust', split: 'group', tags: ['exhaust', 'axle-back', 'stainless'], note: 'Axle-back: nothing ahead of the rear axle is touched.',
+    description: 'Muffler and tailpipe only, from the rear axle back. The quietest way to change how a gas truck sounds.',
+    what: 'A bolt-on muffler and tailpipe section.', included: 'Muffler, tailpipe, tip and clamps.',
+    groups: ['gas-f150-coyote', 'gas-f150-eb35', 'gas-gm1500-53', 'gas-ram1500-57'] },
+
+  { id: 'cold-air-intake', name: 'Cold-Air Intake', category: 'accessories', split: 'group', tags: ['intake', 'air-filter', 'airflow'],
+    description: 'A sealed airbox and larger filter that feeds the turbo cooler air without opening the intake tract to engine bay heat.',
+    what: 'An intake tube, sealed box and reusable filter.', included: 'Tube, airbox, filter, couplers and clamps.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c', 'gas-f150-eb35', 'gas-gm1500-53'] },
+  { id: 'air-filter', name: 'Replacement Air Filter', category: 'accessories', split: 'platform', tags: ['air-filter', 'service', 'maintenance'],
+    description: 'A service filter for the factory airbox, either paper or washable, sized to the truck rather than sold as one-size-fits-all.',
+    what: 'A drop-in engine air filter.', included: 'One filter.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c', 'gas-sd-73', 'gas-gmhd-l8t', 'gas-ram1500-57', 'gas-f150-coyote'] },
+  { id: 'egr-cooler-replacement', name: 'OE-Replacement EGR Cooler', category: 'accessories', split: 'group', tags: ['egr-cooler', 'replacement', 'repair'], note: 'A repair part. The EGR system stays in place and keeps working.',
+    description: 'A new EGR cooler to replace one that has cracked or plugged, restoring the factory system to how it left the plant.',
+    what: 'An EGR cooler built to the original specification.', included: 'Cooler, gaskets and hardware.',
+    groups: ['psd-60', 'psd-64', 'dmax-lml', 'cum-67b'] },
+  { id: 'glow-plugs', name: 'Glow Plugs and Harness', category: 'accessories', split: 'group', tags: ['glow-plugs', 'cold-start', 'repair'],
+    description: 'A full set of glow plugs with the harness, for the hard cold start and the rough first minute that follows it.',
+    what: 'One glow plug per cylinder plus the connecting harness.', included: 'Glow plugs, harness and terminal hardware.',
+    groups: ['dmax-lb7', 'dmax-lly', 'dmax-lmm', 'psd-60', 'psd-64'] },
+  { id: 'head-studs', name: 'Head Stud Kit', category: 'accessories', split: 'platform', tags: ['head-studs', 'engine', 'gasket'],
+    description: 'Hardened head studs to hold the gasket under boost, supplied with nuts, washers and the torque sequence.',
+    what: 'A full stud kit for one engine.', included: 'Studs, nuts, washers, thread lubricant and instructions.',
+    groups: ['dmax-lb7', 'dmax-lly', 'dmax-lbz', 'dmax-lml', 'psd-60', 'psd-64', 'cum-cr59', 'cum-67b'] },
+  { id: 'oil-cooler', name: 'Engine Oil Cooler', category: 'accessories', split: 'group', tags: ['oil-cooler', 'cooling', 'repair'],
+    description: 'Replaces the oil cooler that silts up and pushes oil temperature past where the engine is happy.',
+    what: 'A direct-fit oil cooler assembly.', included: 'Cooler, gaskets and seals.',
+    groups: ['psd-60', 'psd-64', 'dmax-lml'] },
+  { id: 'water-pump', name: 'Water Pump', category: 'accessories', split: 'platform', tags: ['water-pump', 'cooling', 'repair'],
+    description: 'A replacement water pump with a new gasket, for the weep or bearing noise that turns into an overheat.',
+    what: 'A direct-fit water pump assembly.', included: 'Pump, gasket and hardware.',
+    groups: ['dmax-lml', 'psd-67-2011', 'cum-67b'] },
+  { id: 'radiator', name: 'Radiator', category: 'accessories', split: 'platform', tags: ['radiator', 'cooling', 'towing'],
+    description: 'A heavy-duty radiator sized for a truck that tows in Lowcountry heat, using the factory mounts and hose routing.',
+    what: 'A direct-fit radiator core.', included: 'Radiator, mounting isolators and hardware.',
+    groups: ['dmax-lml', 'psd-67-2011', 'cum-67b'] },
+  { id: 'transmission-cooler', name: 'Transmission Cooler', category: 'accessories', split: 'platform', tags: ['transmission-cooler', 'cooling', 'towing'],
+    description: 'An auxiliary cooler and lines that hold transmission temperature down on grades and in stop-start towing.',
+    what: 'A stacked-plate cooler with mounting kit and lines.', included: 'Cooler, lines, fittings and brackets.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c'] },
+  { id: 'torque-converter', name: 'Torque Converter', category: 'accessories', split: 'group', tags: ['torque-converter', 'transmission', 'towing'],
+    description: 'A multi-disc converter with a higher clutch capacity, for a truck making more torque than the factory unit will hold.',
+    what: 'A rebuilt converter with added clutch surface.', included: 'Converter and fresh front seal.',
+    groups: ['dmax-lmm', 'dmax-lml', 'dmax-l5p', 'psd-67-2011', 'cum-67b'] },
+  { id: 'valve-body', name: 'Transmission Valve Body', category: 'accessories', split: 'group', tags: ['valve-body', 'transmission', 'shift'],
+    description: 'A recalibrated valve body that firms the shifts and raises line pressure, sold ready to fit.',
+    what: 'A rebuilt valve body with revised separator plate and springs.', included: 'Valve body, gaskets and filter.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'cum-67c'] },
+  { id: 'leveling-kit', name: 'Leveling Kit', category: 'accessories', split: 'group', tags: ['leveling-kit', 'suspension', 'stance'],
+    description: 'Raises the front to sit level with the rear and clear a taller tyre, without touching the rest of the suspension.',
+    what: 'Front strut spacers or coil spacers with the hardware to fit them.', included: 'Spacers, hardware and instructions.',
+    groups: ['gas-f150-coyote', 'gas-gm1500-53', 'gas-ram1500-57', 'psd-67-2020', 'dmax-l5p', 'cum-67c'] },
+  { id: 'suspension-lift', name: 'Suspension Lift Kit', category: 'accessories', split: 'group', tags: ['lift-kit', 'suspension', 'shocks'],
+    description: 'A bolt-on lift with the brackets, shocks and geometry corrections the extra height needs. Alignment required afterwards.',
+    what: 'A complete lift kit with replacement shocks.', included: 'Brackets, springs or spacers, shocks, hardware and instructions.',
+    groups: ['psd-67-2020', 'dmax-l5p', 'cum-67c', 'gas-f150-coyote', 'gas-gm1500-53'] },
+  { id: 'steering-stabilizer', name: 'Steering Stabiliser', category: 'accessories', split: 'group', tags: ['steering-stabiliser', 'steering', 'front-axle'],
+    description: 'A dual or single stabiliser to settle the steering on a solid front axle running heavy tyres.',
+    what: 'A damper kit for the track bar or tie rod.', included: 'Damper or dampers, brackets and hardware.',
+    groups: ['psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c'] },
+  { id: 'track-bar', name: 'Heavy-Duty Track Bar', category: 'accessories', split: 'group', tags: ['track-bar', 'steering', 'front-axle'],
+    description: 'A forged track bar with a stronger joint, for the wandering and death wobble a worn factory bar causes.',
+    what: 'A replacement front track bar with adjustable length.', included: 'Track bar, bushings and mounting hardware.',
+    groups: ['psd-67-2011', 'cum-67b', 'cum-67c'] },
+  { id: 'brake-kit', name: 'Brake Pad and Rotor Kit', category: 'accessories', split: 'group', tags: ['brakes', 'rotors', 'towing'],
+    description: 'Matched pads and rotors rated for towing, front and rear, so a loaded truck stops the way it should.',
+    what: 'Friction and rotors for one axle or the whole truck.', included: 'Pads, rotors and hardware clips.',
+    groups: ['dmax-l5p', 'psd-67-2020', 'cum-67c', 'gas-gmhd-l8t'] },
+  { id: 'ball-joints', name: 'Ball Joint Set', category: 'accessories', split: 'group', tags: ['ball-joints', 'steering', 'front-end'],
+    description: 'Greasable ball joints for the front end play that shows up as tyre wear and vague steering.',
+    what: 'Upper and lower joints for both sides.', included: 'Four joints, grease fittings and snap rings.',
+    groups: ['psd-67-2011', 'dmax-lml', 'cum-67b'] },
+  { id: 'u-joints', name: 'Driveshaft U-Joint Set', category: 'accessories', split: 'platform', tags: ['u-joints', 'driveshaft', 'driveline'],
+    description: 'Heavy-duty universal joints for the driveline clunk and vibration that come with miles and extra torque.',
+    what: 'Greasable U-joints sized to the factory driveshaft.', included: 'Joints, clips and grease fittings.',
+    groups: ['psd-67-2011', 'psd-67-2020', 'dmax-lml', 'dmax-l5p', 'cum-67b', 'cum-67c'] },
+  { id: 'gauge-mount', name: 'Gauge and Monitor Mount', category: 'accessories', split: 'group', tags: ['gauge-mount', 'pillar-pod', 'monitor'],
+    description: 'A moulded pillar or dash mount that puts boost, temperature and monitor readouts in line of sight.',
+    what: 'A vehicle-specific mount for two gauges or a monitor.', included: 'Mount, retaining hardware and instructions.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2020', 'cum-67c'] },
+  { id: 'block-heater', name: 'Block Heater Kit', category: 'accessories', split: 'platform', tags: ['block-heater', 'cold-start', 'winter'],
+    description: 'A replacement block heater element and cord for the cold mornings when the factory one has stopped working.',
+    what: 'A heater element with the cord that suits the engine.', included: 'Element, cord, O-ring and retainer.',
+    groups: ['dmax-lml', 'dmax-l5p', 'psd-67-2011', 'psd-67-2020', 'cum-67b', 'cum-67c'] },
+  { id: 'agm-batteries', name: 'Dual AGM Battery Set', category: 'accessories', split: 'single', tags: ['batteries', 'agm', 'electrical', 'cold-start'],
+    description: 'A matched pair of AGM batteries with the cranking amps a diesel wants, sized for the factory trays.',
+    what: 'Two group-size-matched AGM batteries.', included: 'Two batteries and terminal hardware.',
+    groups: ['dmax-l5p', 'psd-67-2023', 'cum-67c', 'gas-sd-73'] },
+];

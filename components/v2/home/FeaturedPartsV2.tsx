@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Reveal } from '@/components/ui/Reveal';
 import { money } from '@/lib/format';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { str } from '@/lib/site-content/values';
 import { BUSINESS } from '@/lib/site';
 import { getCatalog } from '@/lib/store/catalog';
 import type { StoreProduct } from '@/lib/store/normalize';
@@ -27,7 +29,7 @@ function pickFeatured(products: readonly StoreProduct[]): StoreProduct[] {
   return picked;
 }
 
-export async function FeaturedPartsV2() {
+export async function FeaturedPartsV2({ values }: { values: BlockValues }) {
   const catalog = await getCatalog();
   const products = catalog.ok ? pickFeatured(catalog.products) : [];
 
@@ -36,8 +38,8 @@ export async function FeaturedPartsV2() {
       <div className="mx-auto max-w-[1024px] px-4 sm:px-6">
         <Reveal className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 id="parts-heading" className="v2-title text-[clamp(2.25rem,1.4rem+3.4vw,4rem)]">Featured parts.</h2>
-            <p className="mt-3 text-[19px] text-chalk/70 sm:text-[22px]">Real inventory. Ships from the store.</p>
+            <h2 id="parts-heading" className="v2-title text-[clamp(2.25rem,1.4rem+3.4vw,4rem)]">{str(values, 'heading')}</h2>
+            <p className="mt-3 text-[19px] text-chalk/70 sm:text-[22px]">{str(values, 'intro')}</p>
           </div>
           <TextLink href="/store">All products</TextLink>
         </Reveal>

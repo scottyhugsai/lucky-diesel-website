@@ -6,11 +6,10 @@ import { Menu, MessageSquare, Phone, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CartButton } from '@/components/store/CartButton';
 import { BUSINESS } from '@/lib/site';
-import { PRIMARY_NAV } from '@/lib/site-nav';
+import { resolveNav, type SiteNav } from '@/lib/site-nav';
 
-const NAV = PRIMARY_NAV;
-
-export function SiteHeader() {
+export function SiteHeader({ nav = resolveNav(null) }: { nav?: SiteNav }) {
+  const NAV = nav.primary;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -106,12 +105,16 @@ export function SiteHeader() {
                   </Link>
                 </li>
               ))}
-              <li className="rise" style={{ '--rise-delay': '300ms' } as React.CSSProperties}>
-                <Link href="/login" onClick={closeMenu} className="display block py-2 text-5xl text-clover">
-                  Log in
-                </Link>
-              </li>
             </ul>
+            {nav.more.length > 0 && (
+              <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-5 text-base font-semibold text-chalk/70">
+                {nav.more.map((item) => (
+                  <li key={item.href}>
+                    <Link href={item.href} onClick={closeMenu} className="py-1 active:text-clover">{item.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </nav>
           <div className="mt-10 grid grid-cols-2 gap-3">
             <a href={BUSINESS.phoneHref} className="btn-go flex items-center justify-center gap-2 rounded-sm py-4 font-semibold">

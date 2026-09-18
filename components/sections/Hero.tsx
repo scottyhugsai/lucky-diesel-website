@@ -1,11 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Phone } from 'lucide-react';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { lines, str } from '@/lib/site-content/values';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
 
-const HEADLINE = ['Built to', 'lay a', 'heater.'] as const;
-
-export function Hero() {
+export function Hero({ values }: { values: BlockValues }) {
+  const HEADLINE = lines(values, 'headline');
+  const image = str(values, 'image') || '/images/shop-card.jpg';
   return (
     <section aria-labelledby="hero-heading" className="grain relative isolate overflow-hidden pb-16 pt-28 sm:pt-32 lg:min-h-[100svh] lg:pb-24">
       <div
@@ -17,7 +19,7 @@ export function Hero() {
 
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-6">
         <div className="lg:col-span-7">
-          <p className="kicker rise">Diesel performance · {BUSINESS.city}, {BUSINESS.region}</p>
+          <p className="kicker rise">{str(values, 'eyebrow')}</p>
 
           <h1 id="hero-heading" className="display mt-5 text-[length:var(--text-mega)]">
             {HEADLINE.map((line, index) => (
@@ -32,13 +34,12 @@ export function Hero() {
           </h1>
 
           <p className="rise mt-7 max-w-md text-lg leading-relaxed text-chalk/75 sm:text-xl" style={{ '--rise-delay': '480ms' } as React.CSSProperties}>
-            Duramax, Powerstroke and Cummins tuning, parts and repair in {BUSINESS.city}. Tell us what you drive, and
-            we’ll tell you what it takes.
+            {str(values, 'subhead')}
           </p>
 
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={{ '--rise-delay': '580ms' } as React.CSSProperties}>
-            <Link href="/#quote" className="btn-go display group flex items-center justify-center gap-3 rounded-sm px-8 py-4 text-2xl not-italic">
-              Request service
+            <Link href={str(values, 'primaryHref') || '/#quote'} className="btn-go display group flex items-center justify-center gap-3 rounded-sm px-8 py-4 text-2xl not-italic">
+              {str(values, 'primaryLabel')}
               <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </Link>
             <a
@@ -72,8 +73,8 @@ export function Hero() {
           <div aria-hidden="true" className="speed-stripes absolute -bottom-5 -left-5 h-2/3 w-2/3 opacity-90 [clip-path:polygon(12%_0,100%_0,88%_100%,0_100%)]" />
           <figure className="relative [clip-path:polygon(12%_0,100%_0,88%_100%,0_100%)]">
             <Image
-              src="/images/shop-card.jpg"
-              alt="A Lucky Diesel business card propped on a diesel engine"
+              src={image}
+              alt={str(values, 'imageAlt')}
               width={1600}
               height={900}
               priority
@@ -87,7 +88,7 @@ export function Hero() {
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-clover opacity-60 motion-reduce:animate-none" />
               <span className="relative inline-flex size-2.5 rounded-full bg-clover" />
             </span>
-            <span className="text-sm font-semibold">EZ-Lynk tuning &amp; DDP parts</span>
+            <span className="text-sm font-semibold">{str(values, 'badge')}</span>
           </div>
         </div>
       </div>

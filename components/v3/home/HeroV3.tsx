@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarClock } from 'lucide-react';
-import { BUSINESS } from '@/lib/site';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { str } from '@/lib/site-content/values';
 import type { BuildStats, NextSlot } from '../data';
 import { BTN_GHOST, BTN_PRIMARY, CHIP, MONO, WRAP } from '../ui';
 import { PlatformSwitch } from './PlatformSwitch';
@@ -9,18 +10,19 @@ import { PlatformSwitch } from './PlatformSwitch';
 interface HeroV3Props {
   stats: BuildStats;
   nextSlot: NextSlot | null;
+  values: BlockValues;
 }
 
 /** Engine bay darkened to a surface; one dyno readout; platform pick in one tap. */
-export function HeroV3({ stats, nextSlot }: HeroV3Props) {
+export function HeroV3({ stats, nextSlot, values }: HeroV3Props) {
   const top = stats.leaderboard[0] ?? null;
   const bookHref = nextSlot ? `/book?date=${nextSlot.date}` : '/book';
 
   return (
     <section aria-labelledby="hero-heading" className="relative isolate overflow-hidden pt-14">
       <Image
-        src="/images/build-l5p-purple.jpg"
-        alt=""
+        src={str(values, 'image') || '/images/build-l5p-purple.jpg'}
+        alt={str(values, 'imageAlt')}
         fill
         priority
         sizes="100vw"
@@ -30,13 +32,11 @@ export function HeroV3({ stats, nextSlot }: HeroV3Props) {
 
       <div className={`${WRAP} grid gap-10 pb-12 pt-10 sm:pt-16 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end lg:gap-16 lg:pb-20 lg:pt-24`}>
         <div>
-          <p className={`${MONO} text-xs uppercase tracking-[0.18em] text-clover`}>{BUSINESS.city}, {BUSINESS.region} · Diesel performance</p>
+          <p className={`${MONO} text-xs uppercase tracking-[0.18em] text-clover`}>{str(values, 'eyebrow')}</p>
           <h1 id="hero-heading" className="v3-title mt-4 text-[clamp(2.5rem,1.4rem+5.2vw,4.75rem)]">
-            Tuned. Built. Dyno-proven.
+            {str(values, 'headline').split('\n').filter(Boolean).join(' ')}
           </h1>
-          <p className="mt-4 max-w-md text-[1.0625rem] leading-snug text-chalk/75 sm:text-lg">
-            Duramax, Powerstroke and Cummins tuning, parts and repair. Pick your truck to start.
-          </p>
+          <p className="mt-4 max-w-md text-[1.0625rem] leading-snug text-chalk/75 sm:text-lg">{str(values, 'subhead')}</p>
 
           <PlatformSwitch className="mt-7 max-w-xl" />
 

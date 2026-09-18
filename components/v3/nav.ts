@@ -1,26 +1,47 @@
-/** Telemetry navigation. Five tabs; everything else lives in the More sheet. */
-export const TABS = [
-  { href: '/', label: 'Home', icon: 'home' },
-  { href: '/book', label: 'Book', icon: 'book' },
-  { href: '/store', label: 'Store', icon: 'store' },
-  { href: '/build-planner', label: 'Plan', icon: 'plan' },
-] as const;
+import { resolveNav, type NavLink, type SiteNav } from '@/lib/site-nav';
 
-export const MORE_LINKS = [
-  { href: '/builds', label: 'Builds' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/#services', label: 'Services' },
+export type TabIcon = 'home' | 'book' | 'store' | 'plan' | 'builds' | 'gallery' | 'services' | 'other';
+
+export interface Tab extends NavLink {
+  icon: TabIcon;
+}
+
+const ICON_BY_HREF: Record<string, TabIcon> = {
+  '/': 'home',
+  '/book': 'book',
+  '/store': 'store',
+  '/build-planner': 'plan',
+  '/builds': 'builds',
+  '/gallery': 'gallery',
+  '/#services': 'services',
+};
+
+/** Telemetry navigation: Home plus the owner's first three, then More. */
+export function tabsFor(nav: SiteNav = resolveNav(null)): Tab[] {
+  const rest = nav.primary.slice(0, 3).map((link) => ({ ...link, icon: ICON_BY_HREF[link.href] ?? 'other' }));
+  return [{ href: '/', label: 'Home', icon: 'home' }, ...rest];
+}
+
+const EXTRA_MORE: readonly NavLink[] = [
   { href: '/duramax', label: 'Trucks' },
   { href: '/review', label: 'Reviews' },
-  { href: '/emissions-policy', label: 'Emissions policy' },
-  { href: '/privacy', label: 'Privacy' },
-  { href: '/login', label: 'Log in' },
-] as const;
+];
 
-/** Which tab a pathname belongs to. `null` means it lives under More. */
-export function activeTab(pathname: string): string | null {
+/** Everything the phone tab bar could not fit. */
+export function moreFor(nav: SiteNav = resolveNav(null)): NavLink[] {
+  const shown = new Set(tabsFor(nav).map((tab) => tab.href));
+  return [...nav.primary.filter((link) => !shown.has(link.href)), ...EXTRA_MORE, ...nav.more];
+}
+
+/** Desktop shows every primary destination inline, so its More menu holds only the rest. */
+export function desktopMoreFor(nav: SiteNav = resolveNav(null)): NavLink[] {
+  return [...EXTRA_MORE, ...nav.more];
+}
+
+/** Which destination a pathname belongs to. `null` means it lives under More. */
+export function activeTab(pathname: string, links: readonly NavLink[] = tabsFor()): string | null {
   if (pathname === '/') return '/';
-  const hit = TABS.find((tab) => tab.href !== '/' && pathname.startsWith(tab.href));
+  const hit = links.find((link) => link.href !== '/' && link.href.startsWith('/') && !link.href.includes('#') && pathname.startsWith(link.href));
   return hit?.href ?? null;
 }
 

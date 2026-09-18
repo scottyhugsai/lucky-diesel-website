@@ -3,8 +3,8 @@ import type { StoreProduct } from '@/lib/store/normalize';
 import { featuredProducts, generationInfo, parseStoreParams, priceLabel, productsHref, relatedProducts, sortProducts, truckLabel } from './listing';
 
 const product = (over: Partial<StoreProduct>): StoreProduct => ({
-  id: 1, handle: 'x', title: 'X', vendor: 'DDP', category: 'turbo', platforms: ['duramax'], generationCollections: [],
-  offRoadOnly: false, tags: [], priceMinCents: 1000, priceMaxCents: 1000, available: true, options: [], variants: [],
+  id: 1, handle: 'x', source: 'shopify', purchasable: true, title: 'X', vendor: 'DDP', category: 'turbo', platforms: ['duramax'], generationCollections: [],
+  fitmentLabels: [], offRoadOnly: false, tags: [], priceMinCents: 1000, priceMaxCents: 1000, available: true, options: [], variants: [],
   images: [{ src: 'a.jpg', width: 1, height: 1, alt: '' }], summary: '', intro: [], bullets: [], ...over,
 });
 

@@ -1,20 +1,24 @@
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 import { Reveal } from '@/components/ui/Reveal';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { lines, str } from '@/lib/site-content/values';
 import Link from 'next/link';
 import { PART_LINES, TUNING_BRANDS } from '@/lib/site';
 
-export function Parts() {
+export function Parts({ values }: { values: BlockValues }) {
   const [lead, ...rest] = PART_LINES;
+  const [headline, ...headingRest] = lines(values, 'heading');
 
   return (
     <section id="parts" aria-labelledby="parts-heading" className="border-t border-line bg-carbon-2 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="kicker">Parts &amp; tuning</p>
+            <p className="kicker">{str(values, 'kicker')}</p>
             <h2 id="parts-heading" className="display mt-3 text-[length:var(--text-display)]">
-              The good stuff, in stock.
+              {headline}
+              {headingRest.map((line) => <span key={line} className="block text-steel">{line}</span>)}
             </h2>
           </div>
           <Link

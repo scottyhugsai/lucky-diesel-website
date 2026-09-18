@@ -6,10 +6,10 @@ import { Menu, MessageSquare, Phone, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { CartButton } from '@/components/store/CartButton';
 import { BUSINESS } from '@/lib/site';
-import { PRIMARY_NAV } from '@/lib/site-nav';
+import { resolveNav, type SiteNav } from '@/lib/site-nav';
 
 /** Thin translucent Apple-style bar. 48px tall; the page sits underneath it. */
-export function SiteHeaderV2() {
+export function SiteHeaderV2({ nav = resolveNav(null) }: { nav?: SiteNav }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function SiteHeaderV2() {
 
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-8 text-[12px] font-normal text-chalk/80">
-            {PRIMARY_NAV.map((item) => (
+            {nav.primary.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="transition-colors hover:text-chalk">
                   {item.label}
@@ -80,18 +80,20 @@ export function SiteHeaderV2() {
       >
         <nav aria-label="Mobile">
           <ul className="divide-y divide-chalk/10">
-            {PRIMARY_NAV.map((item, index) => (
+            {nav.primary.map((item, index) => (
               <li key={item.href} className="rise" style={{ '--rise-delay': `${index * 45}ms` } as React.CSSProperties}>
                 <Link href={item.href} onClick={closeMenu} className="block py-3.5 text-[28px] font-semibold tracking-tight text-chalk active:text-clover">
                   {item.label}
                 </Link>
               </li>
             ))}
-            <li className="rise" style={{ '--rise-delay': '280ms' } as React.CSSProperties}>
-              <Link href="/login" onClick={closeMenu} className="block py-3.5 text-[28px] font-semibold tracking-tight text-chalk/60 active:text-clover">
-                Log in
-              </Link>
-            </li>
+            {nav.more.map((item, index) => (
+              <li key={item.href} className="rise" style={{ '--rise-delay': `${(nav.primary.length + index) * 45}ms` } as React.CSSProperties}>
+                <Link href={item.href} onClick={closeMenu} className="block py-3 text-[17px] font-medium tracking-tight text-chalk/60 active:text-clover">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
         <div className="rise mt-8 grid grid-cols-2 gap-3" style={{ '--rise-delay': '340ms' } as React.CSSProperties}>

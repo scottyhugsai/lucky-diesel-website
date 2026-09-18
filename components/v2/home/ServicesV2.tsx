@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Reveal } from '@/components/ui/Reveal';
 import { money } from '@/lib/format';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { str } from '@/lib/site-content/values';
 import { SERVICES } from '@/lib/site';
 import { Band, SectionHeading } from '../ui';
 
@@ -17,12 +19,12 @@ const SHORT_LINE: Record<string, string> = {
   install: 'Your parts, put on right.',
 };
 
-export function ServicesV2() {
+export function ServicesV2({ values }: { values: BlockValues }) {
   return (
     <Band id="services" tone="carbon" labelledBy="services-heading">
       <div className="mx-auto max-w-[1024px] px-4 sm:px-6">
         <Reveal>
-          <SectionHeading id="services-heading" title="Why Lucky." line="Nine ways we keep diesels working hard." />
+          <SectionHeading id="services-heading" title={str(values, 'heading')} line={str(values, 'intro')} />
         </Reveal>
         <ul className="mt-12 grid gap-3 sm:mt-16 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {SERVICES.map((service, index) => (

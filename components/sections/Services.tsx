@@ -1,22 +1,23 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Reveal } from '@/components/ui/Reveal';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { lines, str } from '@/lib/site-content/values';
 import { SERVICES } from '@/lib/site';
 
-export function Services() {
+export function Services({ values }: { values: BlockValues }) {
+  const [headline, ...rest] = lines(values, 'heading');
   return (
     <section id="services" aria-labelledby="services-heading" className="relative bg-carbon-2 py-20 sm:py-28">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12">
         <Reveal className="lg:col-span-4">
           <div className="lg:sticky lg:top-28">
-            <p className="kicker">What we do</p>
+            <p className="kicker">{str(values, 'kicker')}</p>
             <h2 id="services-heading" className="display mt-3 text-[length:var(--text-display)]">
-              More power.
-              <span className="block text-steel">Less guessing.</span>
+              {headline}
+              {rest.map((line) => <span key={line} className="block text-steel">{line}</span>)}
             </h2>
-            <p className="mt-6 max-w-sm text-chalk/65">
-              One shop for the tune, the parts and the install. Tap a service to start a request.
-            </p>
+            <p className="mt-6 max-w-sm text-chalk/65">{str(values, 'intro')}</p>
             <Link href="/#quote" className="btn-go display mt-8 inline-flex items-center gap-3 rounded-sm px-6 py-3 text-xl not-italic">
               Request service <ArrowRight className="size-5" aria-hidden="true" />
             </Link>

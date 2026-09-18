@@ -2,17 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarClock, Home, LayoutGrid, Route, ShoppingBag } from 'lucide-react';
+import { CalendarClock, Gauge, Home, Images, LayoutGrid, Link2, Route, ShoppingBag, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import { MoreSheet } from './MoreSheet';
-import { TABS, activeTab } from './nav';
+import type { SiteNav } from '@/lib/site-nav';
+import { activeTab, moreFor, tabsFor } from './nav';
 
-const ICONS = { home: Home, book: CalendarClock, store: ShoppingBag, plan: Route } as const;
+const ICONS = { home: Home, book: CalendarClock, store: ShoppingBag, plan: Route, builds: Gauge, gallery: Images, services: Wrench, other: Link2 } as const;
 
 /** Phone tab bar: four destinations plus More. Sits in the safe area; the page pads itself clear of it. */
-export function TabBarV3() {
+export function TabBarV3({ nav }: { nav?: SiteNav }) {
+  const tabs = tabsFor(nav);
   const pathname = usePathname();
-  const active = activeTab(pathname);
+  const active = activeTab(pathname, tabs);
   // Keyed to the pathname so any navigation closes the sheet without an effect.
   const [openFor, setOpenFor] = useState<string | null>(null);
   const isMoreOpen = openFor === pathname;
@@ -23,7 +25,7 @@ export function TabBarV3() {
     <>
       <nav aria-label="Primary" className="v3-bar v3-tabbar fixed inset-x-0 bottom-0 z-50 border-t border-line lg:hidden">
         <ul className="grid grid-cols-5">
-          {TABS.map((tab) => {
+          {tabs.map((tab) => {
             const Icon = ICONS[tab.icon];
             const isActive = active === tab.href && !isMoreOpen;
             return (
@@ -53,7 +55,7 @@ export function TabBarV3() {
           </li>
         </ul>
       </nav>
-      <MoreSheet isOpen={isMoreOpen} onClose={() => setOpenFor(null)} />
+      <MoreSheet isOpen={isMoreOpen} onClose={() => setOpenFor(null)} links={moreFor(nav)} />
     </>
   );
 }

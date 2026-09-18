@@ -54,12 +54,23 @@ export interface DescriptionBullet {
 export interface StoreProduct {
   id: number;
   handle: string;
+  /**
+   * `shopify` products come from the owner's live store and can be bought.
+   * `demo` products are sample catalogue entries — they carry negative ids, are
+   * labelled in the UI, and must never reach a Shopify checkout permalink.
+   */
+  source: 'shopify' | 'demo';
+  /** False for sample entries: the page offers a quote instead of a cart. */
+  purchasable: boolean;
   title: string;
   vendor: string;
   category: CategoryId;
   platforms: PlatformId[];
   /** Shopify generation collection handles this product is listed in (e.g. duramax-2017-present-l5p). */
   generationCollections: string[];
+  /** Human fitment lines, e.g. "2017–2022 Ford F-250/F-350 6.7L Power Stroke".
+   *  Empty for Shopify products, which state fitment in their own description. */
+  fitmentLabels: readonly string[];
   offRoadOnly: boolean;
   tags: string[];
   priceMinCents: number;
@@ -179,6 +190,9 @@ export function normalizeProduct(product: ShopifyProduct, collectionsByHandle: M
   return {
     id: product.id,
     handle: product.handle,
+    source: 'shopify',
+    purchasable: true,
+    fitmentLabels: [],
     title: product.title.replace(/\s{2,}/g, ' ').trim(),
     vendor: product.vendor,
     category: categorize(product),

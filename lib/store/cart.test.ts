@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { addToCart, cartCount, cartSubtotalCents, checkoutUrl, removeFromCart, setQuantity, type CartLine } from './cart';
+import { addToCart, cartCount, cartSubtotalCents, checkoutUrl, parseStoredCart, removeFromCart, setQuantity, type CartLine } from './cart';
 
 const turbo: CartLine = { variantId: 111, handle: 'turbo', title: 'DDP 66mm Turbo', variantTitle: null, priceCents: 279500, image: null, quantity: 1 };
 const tee: CartLine = { variantId: 222, handle: 'tee', title: 'Lucky Tee', variantTitle: 'L', priceCents: 2500, image: null, quantity: 2 };
@@ -30,5 +30,29 @@ describe('cart', () => {
 
   test('refuses an empty cart', () => {
     expect(checkoutUrl('https://luckydiesel.com', [])).toBeNull();
+  });
+});
+
+describe('sample parts can never reach a real checkout', () => {
+  const demoLine: CartLine = { variantId: -101, handle: 'sample-turbo', title: 'Sample turbo', variantTitle: null, priceCents: 0, image: null, quantity: 1 };
+  const realLine: CartLine = { variantId: 111, handle: 'turbo', title: 'Turbo', variantTitle: null, priceCents: 220000, image: null, quantity: 1 };
+
+  test('a cart holding a sample part produces no checkout link at all', () => {
+    expect(checkoutUrl('https://luckydiesel.com', [demoLine])).toBeNull();
+    // Not even alongside a real part: a partial checkout would be worse than none.
+    expect(checkoutUrl('https://luckydiesel.com', [realLine, demoLine])).toBeNull();
+  });
+
+  test('addToCart refuses a sample part', () => {
+    expect(addToCart([realLine], demoLine)).toEqual([realLine]);
+  });
+
+  test('a sample line restored from localStorage is dropped', () => {
+    expect(parseStoredCart([demoLine, realLine])).toEqual([realLine]);
+  });
+
+  test('zero and fractional ids are rejected too', () => {
+    expect(checkoutUrl('https://luckydiesel.com', [{ ...realLine, variantId: 0 }])).toBeNull();
+    expect(checkoutUrl('https://luckydiesel.com', [{ ...realLine, variantId: 1.5 }])).toBeNull();
   });
 });

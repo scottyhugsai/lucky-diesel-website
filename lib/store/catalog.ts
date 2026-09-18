@@ -81,7 +81,12 @@ export function filterProducts(products: readonly StoreProduct[], filter: Catalo
   const query = filter.query?.trim().toLowerCase();
   return products.filter((product) => {
     if (filter.category && product.category !== filter.category) return false;
-    if (filter.platform && product.platforms.length && !product.platforms.includes(filter.platform)) return false;
+    // No platforms means "fits anything" for a store product, but a sample entry
+    // always states its own fitment — so an empty list there means it fits none
+    // of the three diesel platforms (a gas truck part, typically).
+    if (filter.platform && !product.platforms.includes(filter.platform)) {
+      if (product.platforms.length || product.fitmentLabels.length) return false;
+    }
     // Shopping for a truck means parts: keep universal devices, drop apparel unless merch was asked for.
     if (filter.platform && product.category === 'merch' && filter.category !== 'merch') return false;
     if (filter.generationCollection && product.platforms.length) {

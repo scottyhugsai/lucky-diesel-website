@@ -4,19 +4,21 @@ import { featuredProducts } from '@/components/store/listing';
 import { money } from '@/lib/format';
 import { BUSINESS } from '@/lib/site';
 import { getCatalog } from '@/lib/store/catalog';
+import type { BlockValues } from '@/lib/site-content/fields';
+import { str } from '@/lib/site-content/values';
 import { BTN_GHOST, MONO, SECTION, SectionHead, WRAP } from '../ui';
 
 const LIMIT = 4;
 
 /** Four live parts from the Shopify catalog. If Shopify is unreachable, one honest card points at the store. */
-export async function FeaturedPartsV3() {
+export async function FeaturedPartsV3({ values }: { values: BlockValues }) {
   const { products, ok } = await getCatalog();
   const featured = ok ? featuredProducts(products, ['turbo', 'fuel', 'tuning'], LIMIT) : [];
 
   return (
     <section aria-labelledby="parts-heading" className={`${SECTION} border-t border-line`}>
       <div className={WRAP}>
-        <SectionHead id="parts-heading" index="04 / PARTS" title="Parts we run" line="Shipped fast, or installed here." href="/store" linkLabel="Store" />
+        <SectionHead id="parts-heading" index={str(values, 'kicker')} title={str(values, 'heading')} line={str(values, 'intro')} href="/store" linkLabel="Store" />
         {featured.length ? (
           <ul className="mt-8 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
             {featured.map((product) => {

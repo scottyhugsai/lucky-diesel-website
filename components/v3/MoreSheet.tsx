@@ -4,15 +4,17 @@ import Link from 'next/link';
 import { ChevronRight, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { RecentlyViewed } from './RecentlyViewed';
-import { MORE_LINKS } from './nav';
+import type { NavLink } from '@/lib/site-nav';
+import { moreFor } from './nav';
 
 interface MoreSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  links?: readonly NavLink[];
 }
 
 /** Bottom sheet behind the More tab. Everything that is not one of the four primary destinations. */
-export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
+export function MoreSheet({ isOpen, onClose, links = moreFor() }: MoreSheetProps) {
   useEffect(() => {
     if (!isOpen) return;
     const previous = document.body.style.overflow;
@@ -42,7 +44,7 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
         <RecentlyViewed onNavigate={onClose} />
         <nav aria-label="More">
           <ul className="mt-2 divide-y divide-line">
-            {MORE_LINKS.map((link) => (
+            {links.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} onClick={onClose} className="flex min-h-13 items-center justify-between text-[1.0625rem] font-medium text-chalk active:text-clover">
                   {link.label}

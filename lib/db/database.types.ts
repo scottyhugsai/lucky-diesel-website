@@ -5859,6 +5859,79 @@ export interface Database {
           },
         ];
       };
+      site_audit_log: {
+        Row: {
+          id: string;
+          actor_id: string | null;
+          actor_email: string | null;
+          action: string;
+          entity: string;
+          entity_key: string;
+          summary: string;
+          before: Json | null;
+          after: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_id?: string | null;
+          actor_email?: string | null;
+          action: string;
+          entity: string;
+          entity_key: string;
+          summary: string;
+          before?: Json | null;
+          after?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          actor_id?: string | null;
+          actor_email?: string | null;
+          action?: string;
+          entity?: string;
+          entity_key?: string;
+          summary?: string;
+          before?: Json | null;
+          after?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      site_blocks: {
+        Row: {
+          key: string;
+          design: string;
+          draft: Json;
+          published: Json | null;
+          published_at: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          key: string;
+          design?: string;
+          draft?: Json;
+          published?: Json | null;
+          published_at?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          key?: string;
+          design?: string;
+          draft?: Json;
+          published?: Json | null;
+          published_at?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+
+        ];
+      };
       site_consent_log: {
         Row: {
           id: number;
@@ -5912,6 +5985,47 @@ export interface Database {
           financing_url?: string | null;
           price_ranges?: Json;
           updated_at?: string;
+        };
+        Relationships: [
+
+        ];
+      };
+      site_media: {
+        Row: {
+          id: string;
+          title: string;
+          alt_text: string | null;
+          url: string;
+          storage_path: string;
+          width: number;
+          height: number;
+          bytes: number | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          alt_text?: string | null;
+          url: string;
+          storage_path: string;
+          width: number;
+          height: number;
+          bytes?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          alt_text?: string | null;
+          url?: string;
+          storage_path?: string;
+          width?: number;
+          height?: number;
+          bytes?: number | null;
+          created_at?: string;
+          created_by?: string | null;
         };
         Relationships: [
 
