@@ -823,10 +823,21 @@ input[type='radio'] {
   width: 60%;
   aspect-ratio: 9 / 16;
   background-image: url('/images/backdrop-phone-shaft.jpg');
-  opacity: 0.26;
+  /* 0.30 is the ceiling here, and it is a real one. Below 640px the copy column
+     is nearly the full width, so the subhead crosses 64-68% of this layer —
+     straight through the shaft's bright core at 42-58%. Masking does not buy
+     anything: a mask wide enough to clear the subhead erases the core as well.
+     Measured max opacity keeping both subhead and kicker at 4.5:1 is 0.30 at
+     320px and 0.34 at 390px, measured against the text's own ink rather than
+     its element box. 0.32 keeps a margin. From 640px the subhead is capped at
+     max-w-md while this layer keeps growing, the overlap falls away entirely,
+     and it can run at full strength. */
+  opacity: 0.32;
 }
 @media (min-width: 640px) {
-  [data-design='v4'] .v4-art-hero { top: -4%; opacity: 0.6; }
+  /* Measured clean to opacity 1.0 at 768 and 900px: by here the copy no longer
+     reaches the shaft at all. */
+  [data-design='v4'] .v4-art-hero { top: -4%; opacity: 0.9; }
 }
 /* Hero, from 1024px: turbine vanes, cropped into the vane field on the right
    of the frame. The asset's lit core — the green blades at 45% across, 33%
@@ -844,7 +855,13 @@ input[type='radio'] {
     background-image: url('/images/backdrop-vane-vortex.jpg');
     background-size: 260% auto;
     background-position: 88% 20%;
-    opacity: 0.85;
+    /* The crop is all near-black vane; a contrast lift opens the structure up
+       without touching the black it sits on, and the left-edge fade keeps the
+       headline and subhead on clean ground. */
+    filter: contrast(1.45) brightness(1.85);
+    mask-image: linear-gradient(90deg, transparent 4%, #000 34%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 4%, #000 34%);
+    opacity: 1;
   }
 }
 
@@ -865,7 +882,13 @@ input[type='radio'] {
      all sit in that band and the size keeps a pyramid at about 40px. */
   background: url('/images/texture-knurl-steel.jpg') 60% 60% / 110% auto no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.75;
+  /* Capped by the arrow, not by the texture. The tile's ArrowUpRight sits at
+     right-4 top-4 — inside this mask's brightest zone — and it is 16px steel,
+     so it needs 3:1 as a non-text affordance. At op 0.80 with this lift it
+     measures 3.06:1; at 0.85 it drops to 3.00 and keeps falling. This is as
+     loud as the corner can go while the arrow still reads. */
+  filter: contrast(1.1) brightness(1.05);
+  opacity: 0.8;
   mask-image: radial-gradient(12rem 9rem at 100% 0%, #000 25%, transparent 72%);
   -webkit-mask-image: radial-gradient(12rem 9rem at 100% 0%, #000 25%, transparent 72%);
 }
@@ -887,7 +910,8 @@ input[type='radio'] {
     width: 100%;
     aspect-ratio: 16 / 9;
     background-image: url('/images/backdrop-flowfield.jpg');
-    opacity: 0.8;
+    opacity: 1;
+    filter: contrast(1.15) brightness(1.15);
     mask-image: linear-gradient(90deg, transparent 32%, #000 58%);
     -webkit-mask-image: linear-gradient(90deg, transparent 32%, #000 58%);
   }
@@ -900,7 +924,7 @@ input[type='radio'] {
   background-image: url('/images/overlay-grid.jpg');
   background-size: cover;
   background-position: 50% 0;
-  opacity: 0.3;
+  opacity: 0.62;
 }
 
 /* The scanline band as a horizon under the three steps. The band sits 78% down
@@ -914,7 +938,8 @@ input[type='radio'] {
   width: 100%;
   aspect-ratio: 16 / 9;
   background-image: url('/images/overlay-scanline.jpg');
-  opacity: 0.9;
+  filter: contrast(1.2) brightness(1.25);
+  opacity: 1;
 }
 
 /* The count-up numeral keeps the real number in flow so the row never reflows;

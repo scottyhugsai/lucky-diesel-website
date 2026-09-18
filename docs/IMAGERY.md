@@ -113,12 +113,32 @@ visible crop and show the radiating vanes instead. The hero does this with
 This is the same clover artifact noted under Discarded, surviving in a kept asset rather than a
 thrown-away one. Check any crop of these assets on screen before trusting it.
 
-### Contrast
+### Contrast — how to set an opacity here
 
-Opacity over these is set by measurement, not taste. Sample every pixel of the asset under the
-text, composite it the way the browser does (`screen`, then the layer's opacity, over `#0b0d0c`),
-and take the brightest result. Steel `#8b9490` at 18px needs 4.5:1. The mobile hero was 4.46:1 at
-0.35 opacity around 390px — a fail — and is 4.98:1 at 0.26.
+Every opacity in the v4 art block is a measured ceiling, not a taste call. The method:
+
+1. Take the text's **ink**, via `Range.getClientRects()` — not its element box. A left-aligned
+   kicker's box spans the whole container while its text stops far short of the art; measuring the
+   box fails layers that are actually fine.
+2. Sample every pixel of the asset under that ink and composite it the way the browser does:
+   `filter` first, then the mask's alpha, then the layer opacity, then `screen` over `#0b0d0c`.
+3. Take the brightest result and compare it to the text colour. Steel `#8b9490` is L 0.2866;
+   at 18px it needs 4.5:1, so the ground must stay under about L 0.062.
+
+Current measurements: 320px 5.25 · 390px 4.75 · 768px 6.11 · 1024px 4.90 · 1280px 6.25.
+
+**Two hard ceilings, both found by measuring:**
+
+- **The phone hero cannot exceed ~0.34.** Below 640px the copy column is nearly the full width and
+  crosses 64-68% of that layer, straight through the shaft's bright core at 42-58%. Masking buys
+  nothing: a mask wide enough to clear the subhead erases the core with it (measured 2.79:1 when
+  tried at 0.9 with a 0->42% mask). It ships at 0.32.
+- **The knurl is capped by the tile's arrow, not by the texture.** `ArrowUpRight` sits at
+  `right-4 top-4`, inside the mask's brightest zone, and is 16px steel — a non-text affordance
+  needing 3:1. At opacity 1.0 with a contrast lift it measured **1.02:1, invisible**. It ships at
+  0.80 / 3.06:1; 0.85 already fails.
+
+If you raise any of these, re-measure. Do not raise one because it "looks fine".
 
 ## Discarded
 
