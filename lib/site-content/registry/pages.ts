@@ -20,7 +20,7 @@ export const PAGE_SEEDS: readonly PageSeed[] = [
   {
     id: 'book', title: 'Book', editableCopy: true,
     kicker: 'Book online',
-    heading: 'Pick a time.\nWe’ll handle the rest.',
+    heading: 'Pick a time.\nWe’ll handle it.',
     intro: 'Choose a day and time that works. You’ll get a confirmation right away and a reminder before your appointment.',
     seoTitle: `Book Diesel Service Online | Lucky Diesel ${BUSINESS.city}`,
     seoDescription: `Pick a day and time for tuning, diagnostics or repair on your Duramax, Powerstroke or Cummins. ${BUSINESS.city}, ${BUSINESS.region}.`,

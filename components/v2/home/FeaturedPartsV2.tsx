@@ -61,7 +61,7 @@ export async function FeaturedPartsV2({ values }: { values: BlockValues }) {
                       className="object-contain p-4 transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
                     />
                   </div>
-                  <h3 className="mt-5 line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight">{product.title}</h3>
+                  <h3 data-copy="data" className="mt-5 line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight">{product.title}</h3>
                   <p className="mt-1 text-[15px] text-carbon/60">From {money(product.priceMinCents, { whole: true })}</p>
                   <p className="mt-auto pt-4 text-[15px] font-medium text-carbon">
                     Buy <span aria-hidden="true" className="text-clover-deep">›</span>

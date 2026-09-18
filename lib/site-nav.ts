@@ -6,8 +6,12 @@ export interface NavLink {
   label: string;
 }
 
-/** Pages that are always reachable from the More menu, whatever the owner picks. */
+/** Always reachable, whatever the owner picks for the main menu. With the nav
+ *  capped at five, this is the only route to these pages — every footer renders
+ *  it, so nothing on the site is orphaned. */
 const ALWAYS_IN_MORE: readonly NavLink[] = [
+  { href: '/refer', label: 'Refer a friend' },
+  { href: '/review', label: 'Leave a review' },
   { href: '/emissions-policy', label: 'Emissions policy' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/login', label: 'Log in' },

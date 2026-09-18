@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { SocialIcons } from '@/components/ui/SocialIcons';
 import { BUSINESS } from '@/lib/site';
+import { resolveNav, type SiteNav } from '@/lib/site-nav';
 
 const SHOP_LINKS = [
   { href: '/store', label: 'Parts' },
@@ -9,7 +10,7 @@ const SHOP_LINKS = [
   { href: '/store/products?category=merch', label: 'Merch' },
 ] as const;
 
-export function SiteFooter() {
+export function SiteFooter({ nav = resolveNav(null) }: { nav?: SiteNav }) {
   return (
     <footer className="relative overflow-hidden border-t border-line bg-carbon-2 pb-28 pt-16 lg:pb-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -44,11 +45,12 @@ export function SiteFooter() {
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-sm text-steel">
           <p>© {new Date().getFullYear()} {BUSINESS.legalName} · {BUSINESS.city}, {BUSINESS.region}</p>
-          <ul className="flex gap-5">
-            <li><Link href="/fleet" className="hover:text-clover">Fleet service</Link></li>
-            <li><Link href="/emissions-policy" className="hover:text-clover">Emissions policy</Link></li>
-            <li><Link href="/privacy" className="hover:text-clover">Privacy</Link></li>
-            <li><Link href="/login" className="hover:text-clover">Customer &amp; staff login</Link></li>
+          {/* With the main menu capped at five, the footer is where everything
+              else on the site stays reachable. */}
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {nav.more.map((link) => (
+              <li key={link.href}><Link href={link.href} className="hover:text-clover">{link.label}</Link></li>
+            ))}
           </ul>
         </div>
       </div>

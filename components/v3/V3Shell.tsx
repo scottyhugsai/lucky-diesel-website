@@ -13,7 +13,7 @@ export async function V3Shell({ children, nav }: { children: React.ReactNode; na
     <div className="v3-root min-h-dvh bg-carbon">
       <TopBarV3 nextSlot={nextSlot} nav={nav} />
       <main>{children}</main>
-      <FooterV3 />
+      <FooterV3 nav={nav} />
       <StickyBuyBar />
       <CallTextPill />
       <TabBarV3 nav={nav} />

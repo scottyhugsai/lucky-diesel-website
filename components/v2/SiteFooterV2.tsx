@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SocialIcons } from '@/components/ui/SocialIcons';
 import { BUSINESS, PLATFORMS, SERVICES } from '@/lib/site';
+import { resolveNav, type SiteNav } from '@/lib/site-nav';
 
 interface FooterLink {
   href: string;
@@ -8,7 +9,7 @@ interface FooterLink {
   external?: boolean;
 }
 
-const COLUMNS: { title: string; links: FooterLink[] }[] = [
+const columnsFor = (nav: SiteNav): { title: string; links: FooterLink[] }[] => [
   {
     title: 'Shop',
     links: [
@@ -29,20 +30,14 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   },
   {
     title: 'Lucky Diesel',
-    links: [
-      { href: '/builds', label: 'Builds & dyno' },
-      { href: '/fleet', label: 'Fleet service' },
-      { href: '/gallery', label: 'Gallery' },
-      { href: '/book', label: 'Book online' },
-      { href: '/login', label: 'Customer & staff login' },
-      { href: '/emissions-policy', label: 'Emissions policy' },
-      { href: '/privacy', label: 'Privacy' },
-    ],
+    // Everything the five-item menu could not hold stays reachable here.
+    links: [...nav.primary, ...nav.more],
   },
 ];
 
 /** Apple-style small-type footer. Extra bottom padding clears the mobile action bar. */
-export function SiteFooterV2() {
+export function SiteFooterV2({ nav = resolveNav(null) }: { nav?: SiteNav }) {
+  const COLUMNS = columnsFor(nav);
   return (
     <footer className="border-t border-chalk/10 bg-carbon-2 pb-28 pt-8 text-[12px] leading-relaxed text-steel lg:pb-10">
       <div className="mx-auto max-w-[1024px] px-4 sm:px-6">

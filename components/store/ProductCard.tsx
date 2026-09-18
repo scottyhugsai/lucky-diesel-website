@@ -34,7 +34,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
       </div>
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-steel [[data-design=v2]_&]:normal-case [[data-design=v2]_&]:tracking-normal">{product.vendor}</p>
-        <h3 className="line-clamp-3 text-sm font-semibold leading-snug sm:text-base">
+        <h3 data-copy="data" className="line-clamp-3 text-sm font-semibold leading-snug sm:text-base">
           <Link href={`/store/products/${product.handle}`} className="after:absolute after:inset-0 focus-visible:outline-none">
             {product.title}
           </Link>

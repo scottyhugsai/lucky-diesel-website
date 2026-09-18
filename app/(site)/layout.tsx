@@ -41,7 +41,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           <>
             {isV2 ? <SiteHeaderV2 nav={nav} /> : <SiteHeader nav={nav} />}
             <main>{children}</main>
-            {isV2 ? <SiteFooterV2 /> : <SiteFooter />}
+            {isV2 ? <SiteFooterV2 nav={nav} /> : <SiteFooter nav={nav} />}
             <MobileActionBar />
           </>
         )}

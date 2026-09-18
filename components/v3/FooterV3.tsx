@@ -1,25 +1,16 @@
 import Link from 'next/link';
 import { SocialIcons } from '@/components/ui/SocialIcons';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
+import { resolveNav, type SiteNav } from '@/lib/site-nav';
 import { MONO, WRAP } from './ui';
 
-const LINKS = [
-  { href: '/store', label: 'Store' },
-  { href: '/build-planner', label: 'Build planner' },
-  { href: '/book', label: 'Book' },
-  { href: '/builds', label: 'Builds' },
-  { href: '/fleet', label: 'Fleet' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/login', label: 'Log in' },
-] as const;
-
-const POLICIES = [
-  { href: '/emissions-policy', label: 'Emissions policy' },
-  { href: '/privacy', label: 'Privacy' },
-] as const;
+const POLICY_HREFS = ['/emissions-policy', '/privacy'];
 
 /** NAP first, then links, policies and socials. Bottom padding clears the tab bar and pill on phones. */
-export function FooterV3() {
+export function FooterV3({ nav = resolveNav(null) }: { nav?: SiteNav }) {
+  // Everything the tab bar could not hold stays reachable down here.
+  const LINKS = [...nav.primary, ...nav.more.filter((link) => !POLICY_HREFS.includes(link.href))];
+  const POLICIES = nav.more.filter((link) => POLICY_HREFS.includes(link.href));
   return (
     <footer className="v3-footer border-t border-line bg-carbon-2 pt-10 text-sm text-steel">
       <div className={`${WRAP} grid gap-8 md:grid-cols-[1.4fr_1fr_1fr]`}>
