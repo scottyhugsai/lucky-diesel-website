@@ -4,6 +4,7 @@ import { featuredProducts } from '@/components/store/listing';
 import { money } from '@/lib/format';
 import { BUSINESS } from '@/lib/site';
 import { getCatalog } from '@/lib/store/catalog';
+import { safeToPromote } from '@/lib/store/promotable';
 import type { BlockValues } from '@/lib/site-content/fields';
 import { str } from '@/lib/site-content/values';
 import { BTN_GHOST, MONO, SECTION, SectionHead, WRAP } from '../ui';
@@ -13,7 +14,9 @@ const LIMIT = 4;
 /** Four live parts from the Shopify catalog. If Shopify is unreachable, one honest card points at the store. */
 export async function FeaturedPartsV3({ values }: { values: BlockValues }) {
   const { products, ok } = await getCatalog();
-  const featured = ok ? featuredProducts(products, ['turbo', 'fuel', 'tuning'], LIMIT) : [];
+  // A homepage row is a promotion: off-road-only parts and anything whose
+  // listing trips the claims checker stay out of it.
+  const featured = ok ? featuredProducts(safeToPromote(products), ['turbo', 'fuel', 'tuning'], LIMIT) : [];
 
   return (
     <section aria-labelledby="parts-heading" className={`${SECTION} border-t border-line`}>

@@ -22,20 +22,23 @@ export function tabsFor(nav: SiteNav = resolveNav(null)): Tab[] {
   return [{ href: '/', label: 'Home', icon: 'home' }, ...rest];
 }
 
-const EXTRA_MORE: readonly NavLink[] = [
-  { href: '/duramax', label: 'Trucks' },
-  { href: '/review', label: 'Reviews' },
-];
+const EXTRA_MORE: readonly NavLink[] = [{ href: '/duramax', label: 'Trucks' }];
+
+/** The same page can be reached from more than one list; keep the first label. */
+function byHref(links: readonly NavLink[]): NavLink[] {
+  const seen = new Set<string>();
+  return links.filter((link) => !seen.has(link.href) && seen.add(link.href));
+}
 
 /** Everything the phone tab bar could not fit. */
 export function moreFor(nav: SiteNav = resolveNav(null)): NavLink[] {
   const shown = new Set(tabsFor(nav).map((tab) => tab.href));
-  return [...nav.primary.filter((link) => !shown.has(link.href)), ...EXTRA_MORE, ...nav.more];
+  return byHref([...nav.primary.filter((link) => !shown.has(link.href)), ...EXTRA_MORE, ...nav.more]);
 }
 
 /** Desktop shows every primary destination inline, so its More menu holds only the rest. */
 export function desktopMoreFor(nav: SiteNav = resolveNav(null)): NavLink[] {
-  return [...EXTRA_MORE, ...nav.more];
+  return byHref([...EXTRA_MORE, ...nav.more]);
 }
 
 /** Which destination a pathname belongs to. `null` means it lives under More. */

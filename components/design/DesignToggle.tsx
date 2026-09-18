@@ -2,8 +2,8 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 
-type Design = 'v1' | 'v2' | 'v3';
-const OPTIONS: readonly Design[] = ['v1', 'v2', 'v3'];
+type Design = 'v1' | 'v2' | 'v3' | 'v4';
+const OPTIONS: readonly Design[] = ['v1', 'v2', 'v3', 'v4'];
 
 interface DesignToggleProps {
   design: Design;

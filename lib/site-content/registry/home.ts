@@ -81,6 +81,13 @@ export const HOME_BLOCKS: readonly BlockDef[] = [
         image: '/images/build-l5p-purple.jpg',
         imageAlt: '',
       },
+      v4: {
+        eyebrow: `Diesel performance — ${BUSINESS.city}, ${BUSINESS.region}`,
+        headline: 'Power you can measure.',
+        subhead: 'Tuning, turbos, fuel and repair for Duramax, Powerstroke and Cummins.',
+        primaryLabel: 'Book a slot',
+        primaryHref: '/book',
+      },
     },
   },
   {
@@ -104,6 +111,7 @@ export const HOME_BLOCKS: readonly BlockDef[] = [
     designDefaults: {
       v2: { kicker: '', heading: 'Why Lucky.', intro: 'Nine ways we keep diesels working hard.' },
       v3: { kicker: '02 / SERVICES', heading: 'What we do', intro: 'Parts pricing is live. Labor is quoted per truck.' },
+      v4: { kicker: '', heading: 'What we do', intro: 'Parts pricing is live. Labor is quoted per truck.' },
     },
   },
   {
@@ -119,6 +127,7 @@ export const HOME_BLOCKS: readonly BlockDef[] = [
     designDefaults: {
       v2: { kicker: '', heading: 'Featured parts.', intro: 'Real inventory. Ships from the store.' },
       v3: { kicker: '04 / PARTS', heading: 'Parts we run', intro: 'Shipped fast, or installed here.' },
+      v4: { kicker: '', heading: 'Parts we run', intro: 'Shipped fast, or installed here.' },
     },
   },
   {

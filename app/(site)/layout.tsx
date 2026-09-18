@@ -25,18 +25,36 @@ async function loadV3() {
   return { V3Shell, fontClass: V3_FONT_CLASS };
 }
 
+/** Same deal for Vector: only its visitors download Inter Tight. */
+async function loadV4() {
+  const [{ SiteHeaderV4 }, { SiteFooterV4 }, { V4_FONT_CLASS }] = await Promise.all([
+    import('@/components/v4/SiteHeaderV4'),
+    import('@/components/v4/SiteFooterV4'),
+    import('@/components/v4/fonts'),
+  ]);
+  return { SiteHeaderV4, SiteFooterV4, fontClass: V4_FONT_CLASS };
+}
+
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [design, content, closure] = await Promise.all([getDesign(), getSiteContent(), loadBannerClosure()]);
   const isV2 = design === 'v2';
   const v3 = design === 'v3' ? await loadV3() : null;
+  const v4 = design === 'v4' ? await loadV4() : null;
   const nav = resolveNav(content.block('nav.primary'));
 
   return (
     <CartProvider>
-      <div data-design={design} className={`min-h-dvh bg-carbon ${v3?.fontClass ?? ''}`}>
+      <div data-design={design} className={`min-h-dvh bg-carbon ${v3?.fontClass ?? ''} ${v4?.fontClass ?? ''}`}>
         {v3 ? (
           // v3 brings its own top bar, tab bar, call/text pill and footer in place of MobileActionBar.
           <v3.V3Shell nav={nav}>{children}</v3.V3Shell>
+        ) : v4 ? (
+          <>
+            <v4.SiteHeaderV4 nav={nav} />
+            <main>{children}</main>
+            <v4.SiteFooterV4 nav={nav} />
+            <MobileActionBar />
+          </>
         ) : (
           <>
             {isV2 ? <SiteHeaderV2 nav={nav} /> : <SiteHeader nav={nav} />}

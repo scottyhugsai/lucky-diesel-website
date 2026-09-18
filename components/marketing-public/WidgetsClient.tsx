@@ -1,5 +1,7 @@
 'use client';
 
+import type { Design } from '@/lib/design';
+
 import { MessageSquare } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
@@ -26,7 +28,7 @@ const NO_BUBBLE = [/^\/login/, /^\/book/, /^\/portal/, /^\/shop/];
 const NO_EXTRAS = [/^\/login/, /^\/portal/, /^\/shop/, /^\/design/];
 
 interface WidgetsClientProps {
-  design: 'v1' | 'v2' | 'v3';
+  design: Design;
   magnet: WidgetMagnet | null;
   offer: WidgetOffer | null;
   announcement: Announcement | null;

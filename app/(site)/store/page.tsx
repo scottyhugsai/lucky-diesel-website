@@ -9,6 +9,7 @@ import { featuredProducts, productsHref } from '@/components/store/listing';
 import { BTN_GHOST, BTN_PRIMARY, TILE, WRAP } from '@/components/store/styles';
 import { getStorefrontCatalog } from '@/lib/store/catalog';
 import { applyOverrides, featuredFirst } from '@/lib/store/overrides';
+import { safeToPromote } from '@/lib/store/promotable';
 import { CATEGORIES } from '@/lib/store/normalize';
 import { seoMetadata } from '@/lib/site-content/metadata';
 import { getSiteContent } from '@/lib/site-content/read';
@@ -30,7 +31,8 @@ export default async function StorePage() {
     const cover = members.find((p) => p.available && p.images.length) ?? members.find((p) => p.images.length);
     return { ...category, count: members.length, image: cover?.images[0] ?? null };
   }).filter((c) => c.count > 0);
-  const featured = featuredFirst(featuredProducts(visible, ['turbo', 'fuel', 'tuning'], 8), lookup);
+  // The featured row promotes specific SKUs, so it follows the promotion rule.
+  const featured = featuredFirst(featuredProducts(safeToPromote(visible), ['turbo', 'fuel', 'tuning'], 8), lookup);
 
   return (
     <>

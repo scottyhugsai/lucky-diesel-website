@@ -10,6 +10,7 @@ import { Process } from '@/components/sections/Process';
 import { Services } from '@/components/sections/Services';
 import { HomeV2 } from '@/components/v2/home/HomeV2';
 import { HomeV3 } from '@/components/v3/home/HomeV3';
+import { HomeV4 } from '@/components/v4/home/HomeV4';
 import { seoMetadata } from '@/lib/site-content/metadata';
 import { getSiteContent } from '@/lib/site-content/read';
 import { list } from '@/lib/site-content/values';
@@ -22,6 +23,7 @@ export default async function Home() {
   const content = await getSiteContent();
   const order = list(content.block('home.sections'), 'order');
 
+  if (content.design === 'v4') return <HomeV4 order={order} content={content} />;
   if (content.design === 'v3') return <HomeV3 order={order} content={content} />;
   if (content.design === 'v2') return <HomeV2 order={order} content={content} />;
 

@@ -7,7 +7,7 @@ import { PRIVACY_VERSION } from '@/lib/marketing/engage/privacy';
 import { getWidgetContent } from './widget-data';
 import { WidgetsClient } from './WidgetsClient';
 
-type Design = 'v1' | 'v2' | 'v3';
+import type { Design } from '@/lib/design';
 
 /**
  * Site-wide visitor widgets: chat bubble, exit/timed offers, announcement bar,

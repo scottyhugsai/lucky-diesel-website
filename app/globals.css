@@ -617,3 +617,132 @@ input[type='radio'] {
 @media (scripting: none) {
   [data-design='v3'] .reveal { opacity: 1; transform: none; }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * v4 "Vector" — the one light design.
+ *
+ * Every shared component already paints with the semantic tokens, so redefining
+ * them inside this scope flips the whole site to light without touching a
+ * single component. Precision over texture: hairlines, tabular numerals, one
+ * signal green, and a single piece of motion behind the hero.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-design='v4'] {
+  --font-v4: var(--font-v4-family);
+  --carbon: #f4f6f5;
+  --carbon-2: #ffffff;
+  --gunmetal: #e8ecea;
+  --steel: #5a6462;
+  --chalk: #0b0f0e;
+  --clover: #0a7d28;
+  --clover-deep: #085f1e;
+  --clover-glow: rgb(10 125 40 / 0.18);
+  --violet: #4a1fd6;
+  --line: rgb(11 15 14 / 0.14);
+  --danger: #b4231a;
+
+  --text-mega: clamp(3rem, 1.2rem + 6.4vw, 6.75rem);
+  --text-display: clamp(2rem, 1.3rem + 2.6vw, 3.5rem);
+
+  color-scheme: light;
+  background: var(--carbon);
+  color: var(--chalk);
+}
+
+/* The wrapper cannot style its own ancestors, so the page behind it is set here. */
+html:has([data-design='v4']) {
+  color-scheme: light;
+  background: #f4f6f5;
+}
+html:has([data-design='v4']) body {
+  background: #f4f6f5;
+  color: #0b0f0e;
+}
+
+[data-design='v4'] .v4-title,
+[data-design='v4'] .display {
+  font-family: var(--font-v4), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 620;
+  text-transform: none;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+[data-design='v4'] .kicker {
+  font-family: var(--font-v4), system-ui, sans-serif;
+  font-weight: 560;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+
+/* Numbers are the evidence on this design, so they are set like instruments. */
+[data-design='v4'] .v4-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  font-weight: 620;
+}
+
+/* No slab buttons and no sheen: a flat pill with a crisp focus ring. */
+[data-design='v4'] .btn-go {
+  background: var(--chalk);
+  color: #ffffff;
+  border-radius: 999px;
+  box-shadow: none;
+}
+[data-design='v4'] .btn-go::before { display: none; }
+[data-design='v4'] .btn-go:hover {
+  background: var(--clover);
+  box-shadow: none;
+}
+
+/* Texture belongs to v1. */
+[data-design='v4'] .grain::after,
+[data-design='v4'] .speed-stripes { display: none; }
+
+[data-design='v4'] .v4-rule { border-top: 1px solid var(--line); }
+
+[data-design='v4'] .v4-card {
+  background: var(--carbon-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transition: border-color var(--duration-fast) ease, transform var(--duration-normal) var(--ease-out-expo);
+}
+[data-design='v4'] .v4-card:hover {
+  border-color: var(--clover);
+  transform: translateY(-3px);
+}
+[data-design='v4'] .v4-card:focus-within {
+  border-color: var(--clover);
+  outline: 2px solid var(--clover);
+  outline-offset: 2px;
+}
+
+/* A row that reads as a list, not a stack of boxes. */
+[data-design='v4'] .v4-row {
+  border-bottom: 1px solid var(--line);
+  transition: background-color var(--duration-fast) ease, padding-left var(--duration-normal) var(--ease-out-expo);
+}
+[data-design='v4'] .v4-row:hover {
+  background: var(--gunmetal);
+  padding-left: 0.75rem;
+}
+
+[data-design='v4'] .v4-canvas {
+  /* Read by the shader so the field is painted in the design's own colours. */
+  --vf-ink: 11 15 14;
+  --vf-signal: 10 125 40;
+  mask-image: radial-gradient(130% 110% at 68% 42%, #000 58%, transparent 95%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design='v4'] .v4-card,
+  [data-design='v4'] .v4-card:hover,
+  [data-design='v4'] .v4-row,
+  [data-design='v4'] .v4-row:hover {
+    transition: none;
+    transform: none;
+    padding-left: 0;
+  }
+}

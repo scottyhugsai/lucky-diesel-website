@@ -6,6 +6,7 @@ import type { BlockValues } from '@/lib/site-content/fields';
 import { str } from '@/lib/site-content/values';
 import { BUSINESS } from '@/lib/site';
 import { getCatalog } from '@/lib/store/catalog';
+import { safeToPromote } from '@/lib/store/promotable';
 import type { StoreProduct } from '@/lib/store/normalize';
 import { Band, TextLink } from '../ui';
 
@@ -31,7 +32,9 @@ function pickFeatured(products: readonly StoreProduct[]): StoreProduct[] {
 
 export async function FeaturedPartsV2({ values }: { values: BlockValues }) {
   const catalog = await getCatalog();
-  const products = catalog.ok ? pickFeatured(catalog.products) : [];
+  // A homepage row is a promotion: off-road-only parts and anything whose
+  // listing trips the claims checker stay out of it.
+  const products = catalog.ok ? pickFeatured(safeToPromote(catalog.products)) : [];
 
   return (
     <Band id="parts" tone="carbon-2" labelledBy="parts-heading">
