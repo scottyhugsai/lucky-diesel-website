@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   abBucket, abStats, announcementId, cleanChatBody, cleanVin, countdownLabel, duePartialFollowUps, encodeConsent, formatRange, isLive,
   isShopOpen, needsConsentPrompt, numberForSource, parseAnnouncement, parseConsent, parseHeardAbout, parsePriceRanges, parseVariants,
-  mayPublishShopVolume, pickPopup, priceRangeFor, socialProofMessage, toE164Us, upsertRange, waitlistTopic, type PopupRule,
+  mayPublishShopVolume, newPartialSessionKey, PARTIAL_SESSION_KEY, pickPopup, priceRangeFor, remindConsentValue, shouldSavePartial, socialProofMessage, toE164Us, upsertRange, waitlistTopic, type PopupRule,
 } from './rules';
 
 const now = new Date('2026-09-17T15:00:00Z');
@@ -172,5 +172,65 @@ describe('mayPublishShopVolume', () => {
 
   test('allows the count on a real deployment', () => {
     expect(mayPublishShopVolume(false)).toBe(true);
+  });
+});
+
+describe('saving an unfinished quote form', () => {
+  const full = { name: 'Dale', phone: '(843) 555-0199', email: 'dale@example.com', remind: true };
+
+  // `partial_leads` is read by exactly one thing: the opt-in reminder. A row for
+  // someone who did not ask to be reminded is contact details kept for no
+  // purpose at all, which is worse than useless — it is a privacy liability the
+  // privacy policy does not cover.
+  test('only when the visitor asked to be reminded', () => {
+    expect(shouldSavePartial(full)).toBe(true);
+    expect(shouldSavePartial({ ...full, remind: false })).toBe(false);
+  });
+
+  test('only once there is something worth saving', () => {
+    expect(shouldSavePartial({ ...full, name: '' })).toBe(false);
+    expect(shouldSavePartial({ ...full, name: 'D' })).toBe(false);
+    expect(shouldSavePartial({ ...full, email: 'dale@' })).toBe(false);
+    expect(shouldSavePartial({ ...full, phone: '' })).toBe(false);
+    expect(shouldSavePartial({ ...full, phone: '555-0199' })).toBe(false);
+  });
+
+  test('accepts the phone shapes people actually type', () => {
+    for (const phone of ['8435550199', '843-555-0199', '+1 (843) 555-0199', '1 843 555 0199']) {
+      expect(shouldSavePartial({ ...full, phone }), phone).toBe(true);
+    }
+  });
+});
+
+describe('the partial session key', () => {
+  test('what the client generates is what the server accepts', () => {
+    for (let i = 0; i < 50; i += 1) expect(PARTIAL_SESSION_KEY.test(newPartialSessionKey())).toBe(true);
+  });
+
+  test('rejects keys that are too short, too long or not url-safe', () => {
+    expect(PARTIAL_SESSION_KEY.test('short')).toBe(false);
+    expect(PARTIAL_SESSION_KEY.test('a'.repeat(65))).toBe(false);
+    expect(PARTIAL_SESSION_KEY.test('has spaces in it here')).toBe(false);
+  });
+});
+
+describe('recording that someone asked for a reminder', () => {
+  // A tick in a box is an intention; `remind_consent` is a claim that consent
+  // was recorded. They came apart: the flag was written straight from the tick
+  // even when the consent ledger write failed — an undeliverable domain, for
+  // instance — leaving rows asserting consent with nothing behind them.
+  test('only true once the consent was actually captured', () => {
+    expect(remindConsentValue({ ticked: true, capturedNow: true, alreadyGranted: false })).toBe(true);
+    expect(remindConsentValue({ ticked: true, capturedNow: false, alreadyGranted: false })).toBe(false);
+  });
+
+  test('an earlier grant survives a later save that captures nothing', () => {
+    expect(remindConsentValue({ ticked: false, capturedNow: false, alreadyGranted: true })).toBe(true);
+    expect(remindConsentValue({ ticked: true, capturedNow: false, alreadyGranted: true })).toBe(true);
+  });
+
+  test('never true for someone who did not tick the box', () => {
+    expect(remindConsentValue({ ticked: false, capturedNow: false, alreadyGranted: false })).toBe(false);
+    expect(remindConsentValue({ ticked: false, capturedNow: true, alreadyGranted: false })).toBe(false);
   });
 });

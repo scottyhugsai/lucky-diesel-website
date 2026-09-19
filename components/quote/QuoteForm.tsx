@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Check, LoaderCircle, Mail, MessageSquare, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { parseLead, SMS_CONSENT_TEXT, type Lead, type LeadField } from '@/lib/lead';
-import { HEARD_ABOUT_OPTIONS, formatRange, priceRangeFor, type PriceRange } from '@/lib/marketing/engage/rules';
+import { HEARD_ABOUT_OPTIONS, REMIND_CONSENT_TEXT, formatRange, newPartialSessionKey, priceRangeFor, shouldSavePartial, type PriceRange } from '@/lib/marketing/engage/rules';
 import { BUSINESS, OTHER_PLATFORM, OTHER_SERVICE, PLATFORMS, SERVICES } from '@/lib/site';
 import { ReferFriendPrompt } from '@/components/marketing-public/ReferFriendPrompt';
 import { Field, inputClass } from './Field';
@@ -32,6 +32,17 @@ const PLATFORM_OPTIONS = [
   { id: OTHER_PLATFORM as string, label: 'Other' },
 ];
 
+const PARTIAL_KEY = 'ld_quote_session';
+
+/** The saved draft's key, if this browser has one. Never creates one. */
+function readPartialKey(): string | null {
+  try {
+    return localStorage.getItem(PARTIAL_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function fallbackBody(lead: Lead): string {
   return `Service request\nName: ${lead.name}\nPhone: ${lead.phone}\nTruck: ${lead.platformLabel}\nMileage: ${lead.mileage || '-'}\nService: ${lead.serviceLabel}\n\n${lead.details}`;
 }
@@ -53,6 +64,7 @@ export function QuoteForm({ initialPlatform, initialService, initialDetails = ''
   const [errors, setErrors] = useState<Partial<Record<LeadField, string>>>({});
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [smsConsent, setSmsConsent] = useState(false);
+  const [remind, setRemind] = useState(false);
   const [ranges, setRanges] = useState<PriceRange[]>([]);
   const [vinState, setVinState] = useState<{ kind: 'idle' | 'looking' } | { kind: 'error'; message: string } | { kind: 'done'; label: string }>({ kind: 'idle' });
 
@@ -64,6 +76,44 @@ export function QuoteForm({ initialPlatform, initialService, initialDetails = ''
       .catch(() => { /* no ranges: the form works the same */ });
     return () => controller.abort();
   }, []);
+
+  /**
+   * Autosaves the contact details of an unfinished form, but only for someone
+   * who ticked the reminder box — the saved row exists to send that one email
+   * and nothing else, so without the tick there is nothing to keep it for.
+   *
+   * Debounced, because this fires on every keystroke once the three fields are
+   * valid, and keyed by browser so a second visit updates one row rather than
+   * leaving a trail of them.
+   */
+  useEffect(() => {
+    if (!shouldSavePartial({ name: values.name, phone: values.phone, email: values.email, remind })) return;
+    const timer = setTimeout(() => {
+      let sessionKey = null;
+      try {
+        sessionKey = localStorage.getItem(PARTIAL_KEY);
+        if (!sessionKey) {
+          sessionKey = newPartialSessionKey();
+          localStorage.setItem(PARTIAL_KEY, sessionKey);
+        }
+      } catch {
+        // Private mode or blocked storage: skip the save rather than start a
+        // fresh row on every keystroke.
+        return;
+      }
+      void fetch('/api/lead/partial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          sessionKey, name: values.name, phone: values.phone, email: values.email,
+          platform: values.platform, service: values.service, step: 1, remind: true,
+          company: values.company, pageUrl: location.href,
+        }),
+      }).catch(() => { /* an unsaved draft must never break the form */ });
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [values.name, values.phone, values.email, values.platform, values.service, values.company, remind]);
 
   /** Free NHTSA decode: fills the truck and engine so they don't have to guess. */
   async function decodeVin() {
@@ -115,7 +165,7 @@ export function QuoteForm({ initialPlatform, initialService, initialDetails = ''
       const response = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, smsConsent }),
+        body: JSON.stringify({ ...values, smsConsent, sessionKey: readPartialKey() }),
       });
       const data: { ok?: boolean; delivered?: boolean; message?: string; errors?: Partial<Record<LeadField, string>> } =
         await response.json().catch(() => ({}));
@@ -255,6 +305,17 @@ export function QuoteForm({ initialPlatform, initialService, initialDetails = ''
           {SMS_CONSENT_TEXT}{' '}
           <Link href="/privacy" className="underline underline-offset-2 hover:text-clover">Privacy</Link>
         </span>
+      </label>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-sm border border-line bg-carbon p-3 text-xs leading-relaxed text-chalk/65 has-[:checked]:border-clover/50">
+        <input
+          type="checkbox"
+          name="remind"
+          checked={remind}
+          onChange={(e) => setRemind(e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 accent-[var(--clover)]"
+        />
+        <span>{REMIND_CONSENT_TEXT}</span>
       </label>
 
       {status.kind === 'error' && (

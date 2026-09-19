@@ -289,6 +289,48 @@ export function waitlistTopic(kind: 'product' | 'tune' | 'event', key: string): 
 }
 
 // ─── Partial forms ───────────────────────────────────────────────────────────
+
+/** Shared by the browser that mints the key and the route that validates it, so the two cannot drift. */
+export const PARTIAL_SESSION_KEY = /^[A-Za-z0-9_-]{16,64}$/;
+export const PARTIAL_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+export const REMIND_CONSENT_VERSION = '2026-09-17-quote-reminder';
+export const REMIND_CONSENT_TEXT = 'Email me one reminder if I don’t finish. No other marketing unless I opt in.';
+
+/** A stable id for one browser's unfinished form, so a return visit updates the row instead of adding one. */
+export function newPartialSessionKey(): string {
+  return globalThis.crypto.randomUUID().replace(/-/g, '');
+}
+
+/**
+ * Whether an unfinished quote form is worth storing at all.
+ *
+ * `partial_leads` is read by exactly one thing — the reminder the visitor opted
+ * into. A row for somebody who did not tick the box would be their name, phone
+ * and email kept for a purpose that does not exist, and the privacy policy says
+ * nothing about unfinished forms. So the tick is the gate, not just a filter
+ * applied later when the reminder is sent.
+ */
+export function shouldSavePartial(input: { name: string; phone: string; email: string; remind: boolean }): boolean {
+  if (!input.remind) return false;
+  return input.name.trim().length >= 2 && PARTIAL_EMAIL.test(input.email.trim()) && toE164Us(input.phone) !== null;
+}
+
+/**
+ * Whether `partial_leads.remind_consent` may be stored true.
+ *
+ * A tick in a box is an intention; the column is a claim that consent was
+ * recorded. Writing the column straight from the tick let the two come apart —
+ * when the ledger write failed (an undeliverable domain, say) the row still
+ * asserted consent with no evidence behind it, and the reminder could never be
+ * sent anyway because no contact had been created. An earlier successful grant
+ * still stands: a later save that captures nothing must not revoke it.
+ */
+export function remindConsentValue(input: { ticked: boolean; capturedNow: boolean; alreadyGranted: boolean }): boolean {
+  if (input.alreadyGranted) return true;
+  return input.ticked && input.capturedNow;
+}
+
 export const PARTIAL_FOLLOW_UP_AFTER_MS = 60 * 60_000;
 export const PARTIAL_FOLLOW_UP_MAX_AGE_MS = 3 * DAY_MS;
 

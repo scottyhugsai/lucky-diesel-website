@@ -4,13 +4,20 @@ import { captureConsent } from '@/lib/marketing/core/consent-capture';
 import type { Db } from '@/lib/marketing/core/settings';
 import { OTHER_PLATFORM, PLATFORMS, SERVICES } from '@/lib/site';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { duePartialFollowUps } from './rules';
+import {
+  duePartialFollowUps,
+  PARTIAL_EMAIL as EMAIL,
+  PARTIAL_SESSION_KEY as SESSION_KEY,
+  REMIND_CONSENT_TEXT,
+  REMIND_CONSENT_VERSION,
+  remindConsentValue,
+} from './rules';
 
-export const REMIND_CONSENT_VERSION = '2026-09-17-quote-reminder';
-export const REMIND_CONSENT_TEXT = 'Email me one reminder if I don’t finish. No other marketing unless I opt in.';
+// Re-exported so existing server imports keep working; the definitions live in
+// `rules.ts` because the quote form has to show the same consent sentence it
+// records, and this module is server-only.
+export { REMIND_CONSENT_TEXT, REMIND_CONSENT_VERSION };
 
-const SESSION_KEY = /^[A-Za-z0-9_-]{16,64}$/;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_FOLLOW_UPS = 100;
 
 export interface PartialInput {
@@ -66,14 +73,25 @@ export async function savePartial(input: PartialInput, meta: { ip: string | null
   if (existing?.converted_lead_id) return { ok: true };
 
   let customerId = existing?.customer_id ?? null;
-  const remind = input.remind || Boolean(existing?.remind_consent);
+  let capturedNow = false;
   if (input.remind && !existing?.remind_consent) {
     const consent = await captureConsent({
       channel: 'email', purpose: 'marketing', action: 'granted', email: input.email, fullName: input.name,
       consentTextVersion: REMIND_CONSENT_VERSION, consentText: REMIND_CONSENT_TEXT, sourceUrl: input.pageUrl ?? undefined,
-    }, meta, db).catch(() => null);
-    if (consent?.ok) customerId = consent.customerId;
+    }, meta, db).catch((error: unknown) => {
+      console.error(`[engage] reminder consent threw: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    });
+    if (consent?.ok) {
+      customerId = consent.customerId;
+      capturedNow = true;
+    } else if (consent) {
+      // Swallowing this left the visitor promised a reminder that could never be
+      // sent, and no trace of why. A dead email domain is the usual cause.
+      console.error(`[engage] reminder consent not recorded: ${consent.error}`);
+    }
   }
+  const remind = remindConsentValue({ ticked: input.remind, capturedNow, alreadyGranted: Boolean(existing?.remind_consent) });
 
   const row = {
     session_key: input.sessionKey, full_name: input.name, email: input.email, phone: input.phone, platform: input.platform, service_id: input.service,
