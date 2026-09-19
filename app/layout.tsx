@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Barlow, Barlow_Condensed } from 'next/font/google';
 import { BUSINESS, PLATFORMS } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
+import { businessId } from '@/lib/marketing/content/seo-schema';
 import './globals.css';
 
 const display = Barlow_Condensed({
@@ -42,6 +43,9 @@ export const viewport: Viewport = {
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'AutoRepair',
+  // The id every other page's schema points at. Without it the service pages'
+  // `provider` reference dangles and the shop has no node at all.
+  '@id': businessId(siteUrl()),
   name: BUSINESS.legalName,
   telephone: '+1-843-995-9252',
   email: BUSINESS.email,

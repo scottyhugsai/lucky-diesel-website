@@ -4,8 +4,25 @@ import { BUSINESS } from '@/lib/site';
 
 type Schema = Record<string, unknown>;
 
+/**
+ * The one node id for the shop. The root layout publishes the business itself
+ * on every page; everything else refers to it by this id.
+ */
+export function businessId(base: string): string {
+  return `${base}/#business`;
+}
+
+/**
+ * A reference, not a copy.
+ *
+ * This used to inline a second `AutoRepair` node — a different name
+ * (`BUSINESS.name` against the layout's `legalName`), a different phone format
+ * (`(843) 995-9252` against `+1-843-995-9252`) and a different `areaServed`
+ * shape. A parser reading /duramax saw two unlinked businesses with
+ * inconsistent NAP, and neither one inherited the other's signals.
+ */
 function provider(base: string): Schema {
-  return { '@type': 'AutoRepair', name: BUSINESS.name, telephone: BUSINESS.phoneDisplay, url: base, areaServed: BUSINESS.areaServed.map((name) => ({ '@type': 'City', name })) };
+  return { '@id': businessId(base) };
 }
 
 export function serviceSchema(input: { name: string; description: string; url: string; serviceType: string; base: string; area?: string }): Schema {
