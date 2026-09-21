@@ -27,7 +27,10 @@ export async function generateMetadata({ params }: BuildPageProps): Promise<Meta
     title: `${build.title} — ${build.vehicle_label} | Lucky Diesel`,
     description: build.summary,
     alternates: { canonical: `/builds/${build.slug}` },
-    openGraph: { images: [{ url: build.hero_image }] },
+    // Left to opengraph-image.tsx: the hero photo alone carries no shop name
+    // and cannot say "Example" on a sample build, which is the one thing a
+    // shared dyno result must not get wrong.
+    openGraph: {},
   };
 }
 

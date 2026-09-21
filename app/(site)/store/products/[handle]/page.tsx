@@ -37,12 +37,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: `Part not found | ${BUSINESS.name}` };
   const title = `${product.title} | ${BUSINESS.name}`;
   const description = product.summary || `${product.title} from ${product.vendor}. Shipped or installed by ${BUSINESS.name} in ${BUSINESS.city}, ${BUSINESS.region}.`;
-  const image = product.images[0];
   return {
     title,
     description,
     alternates: { canonical: `/store/products/${product.handle}` },
-    openGraph: { title, description, images: image ? [{ url: image.src, width: image.width, height: image.height, alt: image.alt }] : undefined },
+    // The photo is not dropped — opengraph-image.tsx renders it inside a card
+    // that also carries the shop, the price and whether it is a sample listing.
+    openGraph: { title, description },
   };
 }
 

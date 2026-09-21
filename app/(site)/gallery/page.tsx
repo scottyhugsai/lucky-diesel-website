@@ -12,9 +12,7 @@ import { seoMetadata } from '@/lib/site-content/metadata';
 import { str } from '@/lib/site-content/values';
 
 export async function generateMetadata(): Promise<Metadata> {
-  // The first published photo stands in as the share image until one is chosen.
-  const { photos } = await loadPublishedPhotos();
-  return seoMetadata('gallery', '/gallery', photos[0]?.src);
+  return seoMetadata('gallery', '/gallery');
 }
 
 export default async function GalleryPage({ searchParams }: PageProps<'/gallery'>) {

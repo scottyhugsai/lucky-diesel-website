@@ -32,7 +32,9 @@ export const metadata: Metadata = {
     title,
     description,
     type: 'website',
-    images: [{ url: '/images/shop-card.jpg', width: 1600, height: 900, alt: 'Lucky Diesel business card on a diesel engine' }],
+    // No `images` here on purpose: an explicit value at the root outranks the
+    // opengraph-image file convention on every route beneath it, which is how
+    // one card ended up on the whole site.
   },
 };
 

@@ -1,0 +1,54 @@
+# Runs on every PR and every push to main. Nothing here deploys.
+#
+# The Aegis pre-push gate already scans for secrets and vulnerabilities, but it
+# only runs on the machine doing the pushing. This is the half that runs
+# regardless of whose laptop the commit came from.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      # Pinned to commit SHAs: a tag can be repointed by whoever controls the
+      # action (the trivy-action compromise). Bump by resolving the new tag.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # `next build` type-checks too, but runs last and slowest; this names a
+      # type error directly instead of burying it in build output.
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npx vitest run
+
+      # Every Supabase read is lazy and every public page degrades when the
+      # store or the database is unreachable, so the build needs no environment
+      # variables at all. If it starts asking for one, that is a regression in
+      # that laziness, not a CI configuration gap.
+      - name: Production build
+        run: npm run build

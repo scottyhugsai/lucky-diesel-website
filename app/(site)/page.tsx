@@ -17,7 +17,7 @@ import { getSiteContent } from '@/lib/site-content/read';
 import { list } from '@/lib/site-content/values';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return seoMetadata('home', '/', '/images/shop-card.jpg');
+  return seoMetadata('home', '/');
 }
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
