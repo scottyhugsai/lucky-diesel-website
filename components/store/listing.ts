@@ -158,6 +158,22 @@ export function generationInfo(collection: string | null): { platform: PlatformI
   return null;
 }
 
+/**
+ * The path segment for a generation: the Shopify collection handle with the
+ * platform prefix removed, because the URL already carries it as
+ * `/duramax/2011-2016-lml`. Derived rather than hand-maintained, so a new
+ * generation gets a URL the moment it is added to PLATFORMS.
+ */
+export function generationSlug(platform: PlatformId, collection: string): string {
+  return collection.startsWith(`${platform}-`) ? collection.slice(platform.length + 1) : collection;
+}
+
+/** The reverse, validated: only a slug this platform actually has comes back. */
+export function generationCollectionFor(platform: PlatformId, slug: string): string | null {
+  const entry = PLATFORMS.find((p) => p.id === platform);
+  return entry?.generationCollections.find((collection) => generationSlug(platform, collection) === slug) ?? null;
+}
+
 export function truckLabel(truck: TruckSelection | null): string | null {
   if (!truck) return null;
   const platform = PLATFORMS.find((p) => p.id === truck.platform);

@@ -4,7 +4,10 @@ import { notFound } from 'next/navigation';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Reveal } from '@/components/ui/Reveal';
+import { generationSlug } from '@/components/store/listing';
 import { serviceSchema } from '@/lib/marketing/content/seo-schema';
+import type { PlatformId } from '@/lib/store/normalize';
+import { trucksForGeneration } from '@/lib/vehicles';
 import { BUSINESS, PLATFORMS, SERVICES } from '@/lib/site';
 import { siteUrl } from '@/lib/site-url';
 import { getSiteContent } from '@/lib/site-content/read';
@@ -40,6 +43,14 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
   const copy = (await getSiteContent()).block(`platform.${platform.id}`);
 
   const services = SERVICES.filter((service) => PLATFORM_SERVICES.includes(service.id));
+  // A generation links to its own page when there is one; the two pre-2001
+  // Cummins 12-valves have no truck data, so their cards stay plain text and
+  // the buttons below still reach the filtered listing.
+  const genHref = (index: number) => {
+    const collection = platform.generationCollections[index];
+    if (!collection || trucksForGeneration(collection).length === 0) return null;
+    return `/${platform.id}/${generationSlug(platform.id as PlatformId, collection)}`;
+  };
   const others = PLATFORMS.filter((p) => p.id !== platform.id);
 
   const base = siteUrl();
@@ -84,7 +95,13 @@ export default async function PlatformPage({ params }: PlatformPageProps) {
             {platform.generations.map((generation, index) => (
               <Reveal as="li" key={generation} delayMs={index * 50}>
                 <div className="group flex h-full flex-col justify-between gap-6 rounded-sm border border-line bg-carbon-2 p-6 transition-colors hover:border-clover">
-                  <p className="display text-4xl not-italic tabular-nums">{generation}</p>
+                  <p className="display text-4xl not-italic tabular-nums">
+                    {genHref(index) ? (
+                      <Link href={genHref(index) as string} className="transition-colors hover:text-clover">{generation}</Link>
+                    ) : (
+                      generation
+                    )}
+                  </p>
                   {/* Six generations, six cards: none of them is *the* action on
                       this page, and six filled green buttons in one screen made
                       the accent mean nothing. The page's one primary sits in the

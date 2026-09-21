@@ -34,3 +34,27 @@ describe('aggregateBuilds', () => {
     expect(stats.allSamples).toBe(false);
   });
 });
+
+describe('the biggest gain the shop can claim', () => {
+  // v2's bento tile prints this at 88px under the words "Real numbers." It was
+  // computed by its own query with no is_sample filter, so on a seeded database
+  // the sample build's gain was the headline. Same shape as the hero stats and
+  // the shop-volume counts before it.
+  it('is null when every build is a sample, however big the sample gain', () => {
+    expect(aggregateBuilds([build({ isSample: true, hpGain: 999 })]).topHpGain).toBeNull();
+  });
+
+  it('ignores a bigger sample gain in favour of the best real one', () => {
+    const stats = aggregateBuilds([
+      build({ slug: 'real-small', hpGain: 80 }),
+      build({ slug: 'real-big', hpGain: 140 }),
+      build({ slug: 'sample', isSample: true, hpGain: 900 }),
+    ]);
+    expect(stats.topHpGain).toBe(140);
+  });
+
+  it('is null when no real build has a dyno figure at all', () => {
+    expect(aggregateBuilds([build({ hpGain: null })]).topHpGain).toBeNull();
+    expect(aggregateBuilds([]).topHpGain).toBeNull();
+  });
+});

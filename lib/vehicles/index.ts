@@ -26,3 +26,40 @@ export function truckLabel(truck: TruckModel, generation?: TruckGeneration): str
   const dodge = truck.make === 'ram' && generation !== undefined && (generation.yearTo ?? Infinity) < 2011;
   return `${dodge ? 'Dodge Ram' : MAKE_NAME[truck.make]} ${truck.model}`;
 }
+
+export interface GenerationFitment {
+  truckId: string;
+  /** Badge and model as it was sold, e.g. "Dodge Ram 2500" or "GMC Sierra 3500HD". */
+  name: string;
+  /** The designation people use, which can carry a half year. */
+  label: string;
+  yearFrom: number;
+  yearTo: number | null;
+  /** Engine names on that generation that belong to this collection. */
+  engines: string[];
+}
+
+/**
+ * Which trucks were sold with one engine generation.
+ *
+ * This is what makes a generation page worth having: the tiers and the services
+ * on it are the same for all nineteen, but the trucks that carry the engine are
+ * different every time, and they are public vehicle facts rather than a claim
+ * about the shop. Ordered oldest first, then by name, so the list is stable.
+ */
+export function trucksForGeneration(collection: string): GenerationFitment[] {
+  if (!collection) return [];
+  const found = TRUCKS.flatMap((truck) =>
+    truck.generations
+      .filter((generation) => generation.generationCollection === collection)
+      .map((generation) => ({
+        truckId: truck.id,
+        name: truckLabel(truck, generation),
+        label: generation.label,
+        yearFrom: generation.yearFrom,
+        yearTo: generation.yearTo,
+        engines: generation.engines.filter((engine) => engine.fuel === 'diesel' && engine.platform !== null).map((engine) => engine.name),
+      })),
+  );
+  return found.sort((a, b) => a.yearFrom - b.yearFrom || a.name.localeCompare(b.name));
+}

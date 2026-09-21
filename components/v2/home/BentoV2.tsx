@@ -1,25 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Reveal } from '@/components/ui/Reveal';
+import { getBuildStats } from '@/components/v3/data';
 import { TUNING_BRANDS } from '@/lib/site';
-import { createClient } from '@/lib/supabase/server';
 import { Band, SectionHeading } from '../ui';
-
-/** Biggest published dyno gain, or null when there is no data (never invent a number). */
-async function getBestGain(): Promise<{ hp: number; count: number } | null> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from('builds').select('before_hp, after_hp').eq('published', true);
-    if (!data?.length) return null;
-    const gains = data
-      .map((build) => (build.after_hp ?? 0) - (build.before_hp ?? 0))
-      .filter((gain) => gain > 0);
-    if (!gains.length) return null;
-    return { hp: Math.max(...gains), count: data.length };
-  } catch {
-    return null;
-  }
-}
 
 interface TileProps {
   href: string;
@@ -49,7 +33,11 @@ function Tile({ href, label, title, action, className = '', children }: TileProp
 }
 
 export async function BentoV2() {
-  const best = await getBestGain();
+  // This prints at 88px under the words "Real numbers." It used to run its own
+  // query with no is_sample filter, so on a seeded database the headline was a
+  // sample build's gain. getBuildStats already draws the line in one place and
+  // returns null when the shop has no real dyno figure of its own.
+  const { topHpGain } = await getBuildStats();
   return (
     <Band id="explore" tone="carbon" labelledBy="explore-heading">
       <div className="mx-auto max-w-[1024px] px-4 sm:px-6">
@@ -70,10 +58,10 @@ export async function BentoV2() {
             </Tile>
           </Reveal>
           <Reveal className="col-span-2" delayMs={60}>
-            <Tile href="/builds" label="Builds & dyno" title={best ? 'Real numbers.' : 'Dyno proven.'} action="See the builds" className="h-full bg-gunmetal text-chalk">
-              {best && (
+            <Tile href="/builds" label="Builds & dyno" title={topHpGain !== null ? 'Real numbers.' : 'Dyno proven.'} action="See the builds" className="h-full bg-gunmetal text-chalk">
+              {topHpGain !== null && (
                 <p className="relative z-10 mt-4 text-[64px] font-semibold leading-none tracking-tight text-clover tabular-nums sm:text-[88px]">
-                  +{best.hp}<span className="ml-1 text-[22px] font-medium text-chalk/60 sm:text-[28px]">hp</span>
+                  +{topHpGain}<span className="ml-1 text-[22px] font-medium text-chalk/60 sm:text-[28px]">hp</span>
                 </p>
               )}
             </Tile>

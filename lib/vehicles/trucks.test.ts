@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PLATFORMS } from '@/lib/site';
-import { TRUCKS, findTruck, truckLabel } from './index';
+import { TRUCKS, findTruck, truckLabel, trucksForGeneration } from './index';
 
 const COLLECTIONS = new Set(PLATFORMS.flatMap((platform) => platform.generationCollections));
 const generations = TRUCKS.flatMap((truck) => truck.generations.map((generation) => ({ truck, generation })));
@@ -97,5 +97,46 @@ describe('truckLabel', () => {
     const ram = findTruck('ram-2500');
     const generation = ram?.generations.find((g) => g.id === 'ramhd-2019');
     expect(ram && generation ? truckLabel(ram, generation) : '').toBe('Ram 2500');
+  });
+});
+
+describe('the trucks behind one engine generation', () => {
+  it('lists every model that shipped with an LML, newest badge first', () => {
+    const fitted = trucksForGeneration('duramax-2011-2016-lml');
+    expect(fitted.length).toBeGreaterThan(0);
+    for (const entry of fitted) {
+      expect(entry.yearFrom).toBeGreaterThanOrEqual(2011);
+      expect(entry.engines.length).toBeGreaterThan(0);
+    }
+    expect(fitted.map((f) => f.name)).toContain('Chevrolet Silverado 2500HD');
+    expect(fitted.map((f) => f.name)).toContain('GMC Sierra 3500HD');
+  });
+
+  it('carries the Dodge badge on a Ram generation that predates 2011', () => {
+    const fitted = trucksForGeneration('cummins-2003-2007-5-9l-common-rail');
+    expect(fitted.every((f) => f.name.startsWith('Dodge Ram'))).toBe(true);
+  });
+
+  it('names only the engines that belong to the generation, not the gas options', () => {
+    for (const entry of trucksForGeneration('powerstroke-2020-2022-6-7l')) {
+      for (const engine of entry.engines) expect(engine.toLowerCase()).toContain('6.7');
+    }
+  });
+
+  it('returns nothing for a handle no truck carries', () => {
+    expect(trucksForGeneration('not-a-collection')).toEqual([]);
+    expect(trucksForGeneration('')).toEqual([]);
+  });
+
+  /**
+   * A generation only earns its own page if this list is non-empty — otherwise
+   * the page is a heading with nothing underneath it. TRUCKS starts at the 2001
+   * model year, so the two 12-valve Cummins generations that ended before then
+   * have no entry and deliberately get no page; their cards still link to the
+   * filtered parts listing. Pinned here so the set cannot drift unnoticed.
+   */
+  it('names trucks for every generation the site gives a page to', () => {
+    const empty = [...COLLECTIONS].filter((collection) => trucksForGeneration(collection).length === 0);
+    expect(empty.sort()).toEqual(['cummins-1989-1993-5-9l-12v', 'cummins-1994-1998-5-5-9l-12v']);
   });
 });

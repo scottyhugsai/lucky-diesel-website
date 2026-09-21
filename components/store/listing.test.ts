@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { StoreProduct } from '@/lib/store/normalize';
-import { countStocked, featuredProducts, pageWindow, firstExampleIndex, generationInfo, listingTruckFilter, paginate, parseStoreParams, priceLabel, productsHref, relatedProducts, savedTruckLabel, sortProducts, stockedFirst, truckLabel } from './listing';
+import { PLATFORMS } from '@/lib/site';
+import { countStocked, featuredProducts, generationCollectionFor, generationSlug, pageWindow, firstExampleIndex, generationInfo, listingTruckFilter, paginate, parseStoreParams, priceLabel, productsHref, relatedProducts, savedTruckLabel, sortProducts, stockedFirst, truckLabel } from './listing';
 import { truckFromFitment, truckFromSelection } from '@/lib/fitment/truck-cookie';
 
 const product = (over: Partial<StoreProduct>): StoreProduct => ({
@@ -223,5 +224,26 @@ describe('the page-number window', () => {
 
   test('never draws a gap that hides a single page', () => {
     expect(pageWindow(4, 6)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+});
+
+describe('generation page slugs', () => {
+  test('drops the platform prefix the handle already carries in the path', () => {
+    expect(generationSlug('duramax', 'duramax-2011-2016-lml')).toBe('2011-2016-lml');
+    expect(generationSlug('cummins', 'cummins-2019-present-6-7l')).toBe('2019-present-6-7l');
+  });
+
+  test('round-trips back to the collection handle', () => {
+    for (const platform of PLATFORMS) {
+      for (const collection of platform.generationCollections) {
+        expect(generationCollectionFor(platform.id, generationSlug(platform.id, collection))).toBe(collection);
+      }
+    }
+  });
+
+  test('refuses a slug that does not belong to the platform', () => {
+    expect(generationCollectionFor('duramax', '2019-present-6-7l')).toBeNull();
+    expect(generationCollectionFor('duramax', '../../etc/passwd')).toBeNull();
+    expect(generationCollectionFor('nope' as never, '2011-2016-lml')).toBeNull();
   });
 });

@@ -22,6 +22,8 @@ export interface BuildStats {
   leaderboard: DynoBuild[];
   trucks: number;
   avgHpGain: number | null;
+  /** The biggest single gain the shop can honestly claim; real builds only. */
+  topHpGain: number | null;
   topTorque: number | null;
   /** True when every counted build is a shop example, so the UI can say so. */
   allSamples: boolean;
@@ -49,6 +51,7 @@ export function aggregateBuilds(builds: readonly DynoBuild[]): BuildStats {
     leaderboard,
     trucks: real.length,
     avgHpGain: realWithHp.length ? Math.round(realWithHp.reduce((sum, b) => sum + b.hpGain, 0) / realWithHp.length) : null,
+    topHpGain: realWithHp.length ? Math.max(...realWithHp.map((b) => b.hpGain)) : null,
     topTorque: realTorques.length ? Math.max(...realTorques) : null,
     allSamples: builds.length > 0 && builds.every((b) => b.isSample),
   };

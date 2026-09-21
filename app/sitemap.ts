@@ -1,7 +1,10 @@
 import type { MetadataRoute } from 'next';
 import { loadAreaPages, loadFaqItems, loadPosts } from '@/lib/marketing/content/seo-public';
 import { getBuildStats } from '@/components/v3/data';
+import { generationSlug } from '@/components/store/listing';
 import { PLATFORMS } from '@/lib/site';
+import type { PlatformId } from '@/lib/store/normalize';
+import { trucksForGeneration } from '@/lib/vehicles';
 import { siteUrl } from '@/lib/site-url';
 
 export const revalidate = 3600;
@@ -37,6 +40,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: `${base}/`, changeFrequency: 'weekly', priority: 1 },
     ...PLATFORMS.map((platform) => ({ url: `${base}/${platform.id}`, changeFrequency: 'monthly' as const, priority: 0.8 })),
+    // One URL per engine generation the site can actually describe. Before
+    // these existed the whole engine-code layer lived behind `?platform=&gen=`,
+    // which robots.ts disallows — nineteen of the most searched terms in this
+    // trade had no crawlable page at all.
+    ...PLATFORMS.flatMap((platform) =>
+      platform.generationCollections
+        .filter((collection) => trucksForGeneration(collection).length > 0)
+        .map((collection) => ({
+          url: `${base}/${platform.id}/${generationSlug(platform.id as PlatformId, collection)}`,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        })),
+    ),
     { url: `${base}/book`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${base}/store`, changeFrequency: 'daily', priority: 0.9 },
     // The parts listing itself. Individual product URLs stay out until the
