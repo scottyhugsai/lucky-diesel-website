@@ -35,6 +35,13 @@ jobs:
 
       - run: npm ci
 
+      # PageProps, LayoutProps and RouteContext are globals Next writes into
+      # .next/types. Locally a running dev server has always generated them, so
+      # tsc passes; on a fresh checkout nothing has, and the first CI run failed
+      # on exactly that. typegen writes them without doing a build.
+      - name: Generate route types
+        run: npx next typegen
+
       # `next build` type-checks too, but runs last and slowest; this names a
       # type error directly instead of burying it in build output.
       - name: Type check
