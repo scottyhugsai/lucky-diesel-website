@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ATTRIBUTION_MAX_AGE_SECONDS, REFERRAL_COOKIE } from '@/lib/marketing/core/attribution-touch';
 import { lookupAnyReferralCode, normalizeReferralCode } from '@/lib/marketing/core/referrals';
-import { clientIp, createThrottle } from '@/lib/marketing/core/requests';
+import { clientIp } from '@/lib/marketing/core/requests';
+import { overRateLimit } from '@/lib/marketing/core/rate-limit';
 import { siteUrl } from '@/lib/site-url';
 
-const throttled = createThrottle(60_000, 30);
 
 /**
  * Referral landing: `/api/marketing/referral?code=CODY-7KQ2`. Validates the code,
@@ -14,7 +14,7 @@ const throttled = createThrottle(60_000, 30);
 export async function GET(request: NextRequest) {
   const code = normalizeReferralCode(request.nextUrl.searchParams.get('code'));
   const destination = new URL('/book', siteUrl());
-  if (!code || throttled(clientIp(request) ?? 'unknown')) return NextResponse.redirect(destination, 302);
+  if (!code || await overRateLimit('referral', clientIp(request) ?? 'unknown')) return NextResponse.redirect(destination, 302);
 
   const valid = await lookupAnyReferralCode(code).catch(() => null);
   if (!valid) return NextResponse.redirect(destination, 302);

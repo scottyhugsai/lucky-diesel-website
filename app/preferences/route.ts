@@ -1,11 +1,11 @@
 import { preferencesForToken, saveEmailPreferences } from '@/lib/marketing/core/consent';
-import { clientIp, createThrottle } from '@/lib/marketing/core/requests';
+import { clientIp } from '@/lib/marketing/core/requests';
+import { overRateLimit } from '@/lib/marketing/core/rate-limit';
 import { EMAIL_TOPICS } from '@/lib/marketing/core/topics';
 import { BUSINESS } from '@/lib/site';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 const TOPIC_KEYS = EMAIL_TOPICS.map((t) => t.key);
-const throttle = createThrottle(60_000, 20);
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const url = new URL(request.url);
   const token = url.searchParams.get('t');
   const ip = clientIp(request) ?? 'unknown';
-  if (throttle(ip)) return page('Try again shortly', '<p>Too many changes at once.</p>', 429);
+  if (await overRateLimit('preferences', ip)) return page('Try again shortly', '<p>Too many changes at once.</p>', 429);
   const form = await request.formData().catch(() => null);
   if (!form) return invalid();
   const on = new Set(form.getAll('topic').map((v) => String(v)).filter((v) => TOPIC_KEYS.includes(v as (typeof TOPIC_KEYS)[number])));

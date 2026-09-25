@@ -5121,6 +5121,29 @@ export interface Database {
 
         ];
       };
+      rate_limits: {
+        Row: {
+          bucket: string;
+          subject: string;
+          window_started_at: string;
+          count: number;
+        };
+        Insert: {
+          bucket: string;
+          subject: string;
+          window_started_at?: string;
+          count?: number;
+        };
+        Update: {
+          bucket?: string;
+          subject?: string;
+          window_started_at?: string;
+          count?: number;
+        };
+        Relationships: [
+
+        ];
+      };
       referral_codes: {
         Row: {
           id: string;

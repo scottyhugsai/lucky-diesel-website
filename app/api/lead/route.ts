@@ -4,23 +4,12 @@ import { deliverLead } from '@/lib/deliver-lead';
 import { createWebsiteLead } from '@/lib/domain/leads';
 import { parseLead } from '@/lib/lead';
 import { markPartialConverted } from '@/lib/marketing/engage/partial';
+import { overRateLimit } from '@/lib/marketing/core/rate-limit';
 import { trackConversion } from '@/lib/marketing/wire';
-
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 5;
-
-/** Best-effort per-instance throttle; enough to blunt a form-spamming script. */
-const recent = new Map<string, number[]>();
-
-function isThrottled(ip: string, now: number): boolean {
-  const hits = (recent.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  recent.set(ip, [...hits, now]);
-  return hits.length >= MAX_PER_WINDOW;
-}
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
-  if (isThrottled(ip ?? 'unknown', Date.now())) {
+  if (await overRateLimit('lead', ip)) {
     return NextResponse.json({ ok: false, message: 'Too many requests. Give us a call instead.' }, { status: 429 });
   }
 

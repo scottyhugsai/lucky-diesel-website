@@ -2,19 +2,19 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { csvResponse, toCsv } from '@/lib/marketing/core/csv';
 import { feedTokenHash, isFeedToken } from '@/lib/marketing/core/report-feed';
 import { buildReportTable, parseReportKind } from '@/lib/marketing/core/report-export';
-import { clientIp, createThrottle } from '@/lib/marketing/core/requests';
+import { clientIp } from '@/lib/marketing/core/requests';
+import { overRateLimit } from '@/lib/marketing/core/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 const DAY_MS = 86_400_000;
 const MAX_DAYS = 400;
-const throttled = createThrottle(60 * 60_000, 60);
 
 /**
  * Read-only aggregate CSV for a BI tool (Looker Studio, Sheets). Authorised by a
  * hashed token the owner creates and can revoke. Aggregates only — no contact data.
  */
 export async function GET(request: NextRequest) {
-  if (throttled(clientIp(request) ?? 'unknown')) return NextResponse.json({ error: 'Slow down' }, { status: 429 });
+  if (await overRateLimit('report-feed', clientIp(request) ?? 'unknown')) return NextResponse.json({ error: 'Slow down' }, { status: 429 });
   const token = request.nextUrl.searchParams.get('token');
   if (!isFeedToken(token)) return NextResponse.json({ error: 'Not allowed' }, { status: 403 });
 
