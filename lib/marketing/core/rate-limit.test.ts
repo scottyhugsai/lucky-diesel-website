@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { LIMITS } from './rate-limit';
+import { LIMITS } from './rate-limit-policy';
 
 describe('the request limits', () => {
   test('covers every public endpoint that accepts a write', () => {

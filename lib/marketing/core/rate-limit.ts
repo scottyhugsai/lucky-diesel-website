@@ -1,6 +1,9 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { LIMITS, type Bucket } from './rate-limit-policy';
 import { createThrottle } from './requests';
+
+export { LIMITS, type Bucket, type Limit } from './rate-limit-policy';
 
 /**
  * Request limits counted where every instance can see them.
@@ -11,22 +14,6 @@ import { createThrottle } from './requests';
  * weakest exactly when traffic was highest.
  */
 
-export interface Limit {
-  windowSeconds: number;
-  max: number;
-}
-
-/** The named limits, in one place so they can be read without hunting routes. */
-export const LIMITS = {
-  lead: { windowSeconds: 600, max: 5 },
-  'lead-partial': { windowSeconds: 600, max: 20 },
-  waitlist: { windowSeconds: 600, max: 10 },
-  referral: { windowSeconds: 60, max: 30 },
-  'report-feed': { windowSeconds: 3600, max: 60 },
-  preferences: { windowSeconds: 60, max: 20 },
-} as const satisfies Record<string, Limit>;
-
-export type Bucket = keyof typeof LIMITS;
 
 /**
  * Last resort only. If Postgres cannot be reached we still refuse a flood from
