@@ -15,7 +15,11 @@ async function loadEvent(idOrSlug: string) {
   const key = UUID.test(idOrSlug) ? 'id' : SLUG.test(idOrSlug) ? 'slug' : null;
   if (!key) return null;
   const db = createAdminClient();
-  const { data: event } = await db.from('events').select('*').eq(key, idOrSlug).eq('published', true).maybeSingle();
+  // Named columns, not '*': a public page that selects everything publishes
+  // whatever column someone adds to the table next.
+  const { data: event } = await db
+    .from('events')
+    .select('id, slug, name, kind, description, location, starts_at, ends_at, capacity, price_cents, registration_open, is_sample, waiver_text').eq(key, idOrSlug).eq('published', true).maybeSingle();
   if (!event) return null;
   const { count } = await db.from('event_registrations').select('id', { count: 'exact', head: true }).eq('event_id', event.id).in('status', ['registered', 'checked_in']);
   return { event, taken: count ?? 0 };
