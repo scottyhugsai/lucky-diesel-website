@@ -53,27 +53,16 @@ Reviewed 2026-09-25: all twenty-two surfaces read business-public data
 ## Data retention
 
 The site holds names, phone numbers, email addresses, vehicle details and
-message history. The commitments:
-
-| Data | Kept | Then |
-| --- | --- | --- |
-| Leads that never became customers | 24 months | Deleted |
-| Customer records and job history | While a customer, then 7 years | Deleted, except what tax law requires |
-| Unfinished quote forms (`partial_leads`) | 90 days | Deleted |
-| Marketing analytics (`tracking_visitors`, attribution) | 14 months | Deleted |
-| Rate-limit counters | 1 hour | Overwritten |
-| Consent ledger (`contact_consent_events`) | 7 years | Kept — it is the evidence a contact opted in |
-| Message and call logs | 24 months | Deleted |
+message history. **The schedule lives in `lib/retention.ts` and is published on
+`/privacy`**, so the promise made to the customer and the answer in the codebase
+are the same object. It is not restated here; restating it is how the two drift.
 
 **Deletion on request.** A customer may ask for their data to be removed.
 `customers.anonymized_at` exists and the contact list already filters on it,
 so the mechanism is there; the request path is a manual admin action today.
 
-**Still owed** (both need the owner, and neither is code):
-- The retention table above published in `/privacy` so it is a promise, not a
-  note in a repo.
-- An attorney's review of the privacy, SMS-consent and waiver text before
-  launch.
+**Still owed**: an attorney's review of the privacy, SMS-consent and waiver
+text before launch. The page is marked a draft for exactly that reason.
 
 ## Before going live
 
