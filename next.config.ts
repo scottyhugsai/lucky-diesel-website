@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { STATIC_SECURITY_HEADERS } from './lib/security-headers';
 
 const nextConfig: NextConfig = {
   images: {
@@ -10,6 +11,9 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // Everything, including API routes and static files, which the proxy
+      // does not match. The CSP is set in the proxy because it needs a nonce.
+      { source: '/:path*', headers: [...STATIC_SECURITY_HEADERS] },
       {
         // Preview/demo hosts must never compete with the real domain in search.
         source: '/:path*',

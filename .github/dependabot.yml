@@ -1,0 +1,27 @@
+# Vulnerability alerts arrive whether or not this file exists; this is what
+# turns them into a pull request that CI can prove safe to merge.
+#
+# Weekly rather than daily, and minor/patch grouped into one PR, because a
+# stream of individual bumps on a small site gets ignored — and an ignored
+# alert is the failure mode this is meant to prevent. Majors come separately
+# since they need reading.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(ci)"
